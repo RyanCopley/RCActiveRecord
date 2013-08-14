@@ -8,6 +8,7 @@
 
 #import "FMDatabase.h"
 #import "FMDatabaseQueue.h"
+#import "RCCriteria.h"
 
 typedef enum  {
     /* Typical operators */
@@ -38,17 +39,13 @@ typedef enum  {
 
 
 +(id)model;
++(id)modelWithCriteria:(RCCriteria*) criteria;
 
 -(id)recordByIntPK:(int) pk;
 -(id)recordByPK:(NSNumber*) pk;
 -(NSArray*)recordsByAttribute:(NSString*) attributeName value:(id) value;
 -(NSArray*)allRecords;
 
-
--(id)limit:(int) count;
--(id)addCondition:(NSString*) columnName is:(RCActiveRecordComparisonOperator) comparer to:(id) value;
--(id)orderByAsc:(NSString*) columnName;
--(id)orderByDesc:(NSString*) columnName;
 
 -(id)joinWith:(id) resultSet foreignKeyName:(NSString*) foreignKey;
 -(id)mergeResults:(id) resultSet;

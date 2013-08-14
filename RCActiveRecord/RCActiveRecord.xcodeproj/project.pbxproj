@@ -27,7 +27,8 @@
 		4E2936CF17BB3D070088B96B /* FMDatabaseQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936C817BB3D070088B96B /* FMDatabaseQueue.m */; };
 		4E2936D017BB3D070088B96B /* fmdb.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936C917BB3D070088B96B /* fmdb.m */; };
 		4E2936D117BB3D070088B96B /* FMResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936CB17BB3D070088B96B /* FMResultSet.m */; };
-		4E2936D717BB3D9E0088B96B /* RCActiveRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936D617BB3D9E0088B96B /* RCActiveRecord.m */; };
+		4E2936DB17BBD0250088B96B /* RCActiveRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936DA17BBD0250088B96B /* RCActiveRecord.m */; };
+		4E2936DE17BBD0340088B96B /* RCCriteria.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936DD17BBD0340088B96B /* RCCriteria.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,8 +72,10 @@
 		4E2936C917BB3D070088B96B /* fmdb.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = fmdb.m; path = ../fmdb/src/fmdb.m; sourceTree = "<group>"; };
 		4E2936CA17BB3D070088B96B /* FMResultSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FMResultSet.h; path = ../fmdb/src/FMResultSet.h; sourceTree = "<group>"; };
 		4E2936CB17BB3D070088B96B /* FMResultSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FMResultSet.m; path = ../fmdb/src/FMResultSet.m; sourceTree = "<group>"; };
-		4E2936D517BB3D9E0088B96B /* RCActiveRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RCActiveRecord.h; path = Classes/RCActiveRecord.h; sourceTree = "<group>"; };
-		4E2936D617BB3D9E0088B96B /* RCActiveRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RCActiveRecord.m; path = Classes/RCActiveRecord.m; sourceTree = "<group>"; };
+		4E2936D917BBD0250088B96B /* RCActiveRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCActiveRecord.h; sourceTree = "<group>"; };
+		4E2936DA17BBD0250088B96B /* RCActiveRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCActiveRecord.m; sourceTree = "<group>"; };
+		4E2936DC17BBD0340088B96B /* RCCriteria.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCCriteria.h; sourceTree = "<group>"; };
+		4E2936DD17BBD0340088B96B /* RCCriteria.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCCriteria.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,8 +137,7 @@
 		4E29369117BB3CDF0088B96B /* RCActiveRecord */ = {
 			isa = PBXGroup;
 			children = (
-				4E2936D517BB3D9E0088B96B /* RCActiveRecord.h */,
-				4E2936D617BB3D9E0088B96B /* RCActiveRecord.m */,
+				4E2936D817BBD0250088B96B /* Classes */,
 			);
 			path = RCActiveRecord;
 			sourceTree = "<group>";
@@ -193,6 +195,18 @@
 			);
 			name = fmdb;
 			sourceTree = "<group>";
+		};
+		4E2936D817BBD0250088B96B /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				4E2936DC17BBD0340088B96B /* RCCriteria.h */,
+				4E2936DD17BBD0340088B96B /* RCCriteria.m */,
+				4E2936D917BBD0250088B96B /* RCActiveRecord.h */,
+				4E2936DA17BBD0250088B96B /* RCActiveRecord.m */,
+			);
+			name = Classes;
+			path = ../Classes;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -312,7 +326,8 @@
 				4E2936CF17BB3D070088B96B /* FMDatabaseQueue.m in Sources */,
 				4E2936D017BB3D070088B96B /* fmdb.m in Sources */,
 				4E2936D117BB3D070088B96B /* FMResultSet.m in Sources */,
-				4E2936D717BB3D9E0088B96B /* RCActiveRecord.m in Sources */,
+				4E2936DB17BBD0250088B96B /* RCActiveRecord.m in Sources */,
+				4E2936DE17BBD0340088B96B /* RCCriteria.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -487,6 +502,7 @@
 				4E2936BC17BB3CE00088B96B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		4E2936BD17BB3CE00088B96B /* Build configuration list for PBXNativeTarget "RCActiveRecordTests" */ = {
 			isa = XCConfigurationList;
@@ -495,6 +511,7 @@
 				4E2936BF17BB3CE00088B96B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
