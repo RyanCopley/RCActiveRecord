@@ -11,7 +11,18 @@
 @implementation App
 @synthesize name2,age2,address2;
 
--(id)init{
+-(id)initModelValues{
+    self = [super init];
+    
+    name2 = @"";
+    address2 = @"";
+    age2 = @(0);
+    
+    return self;
+}
+
+
+-(id)initModel{
     self = [super init];
     if (self){
         NSLog(@"Initialized App");

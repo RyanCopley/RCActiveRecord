@@ -9,19 +9,31 @@
 #import "Person.h"
 
 @implementation Person
-@synthesize name,address,age;
+@synthesize name,address,age, ip;
 
--(id)init{
+-(id)initModelValues{
+    self = [super init];
+    
+    name = @"";
+    address = [@"" mutableCopy];
+    age = @(0);
+    ip = @"";
+    
+    return self;
+}
+
+
+-(id)initModel{
     self = [super init];
     if (self){
         NSLog(@"Initialized person");
         if (![Person hasSchemaDeclared]){
             NSLog(@"Initialized person schema");
-            [Person registerPrimaryKey:@"personPK"];
             [Person registerColumn:@"name"];
             [Person registerColumn:@"address"];
             [Person registerColumn:@"age"];
-            [Person generateSchema:NO]; // If you use "YES" here, it will DROP the table and re-create the table in SQLite.
+            [Person registerColumn:@"ip"];
+            [Person generateSchema:YES]; // If you use "YES" here, it will DROP the table and re-create the table in SQLite.
         }
     }
     return self;

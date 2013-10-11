@@ -7,6 +7,7 @@
 //
 
 #import "RCActiveRecord.h"
+#import <objc/runtime.h>
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
@@ -20,6 +21,7 @@ static NSMutableDictionary* RCActiveRecordSchemas;
 
 static NSMutableDictionary* pkName;
 static NSMutableDictionary* schemaData;
+static NSMutableDictionary* foreignKeyData;
 
 #pragma mark Active Record functions
 -(id)init{
@@ -28,11 +30,13 @@ static NSMutableDictionary* schemaData;
         if (pkName == nil){
             pkName = [[NSMutableDictionary alloc] init];
             schemaData = [[NSMutableDictionary alloc] init];
+            foreignKeyData = [[NSMutableDictionary alloc] init];
         }
         
         NSString *key = NSStringFromClass( [self class] );
         [pkName setObject:@"_id" forKey:key]; /* default */
-        [schemaData setObject: @[] forKey:key]; /* empty */
+        [schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
+        [foreignKeyData setObject: [@{} mutableCopy] forKey:key]; /* empty */
         
         isNewRecord = YES;
         isSavedRecord = NO;
@@ -50,8 +54,7 @@ static NSMutableDictionary* schemaData;
 }
 
 +(id) model{
-    // TODO: Perhaps make it initModel instead of init ? Think about this
-    return [[[self class] alloc] init];
+    return [[[[self class] alloc] initModelValues] initModel];
 }
 
 -(void)setCriteria:(RCCriteria*) _criteria{
@@ -105,9 +108,9 @@ static NSMutableDictionary* schemaData;
     return YES;
 }
 
-
 +(BOOL) hasSchemaDeclared{
-    return NO;
+    NSString *key = NSStringFromClass( [self class] );
+    return [[schemaData objectForKey:key] count] > 0;
 }
 
 
@@ -117,8 +120,22 @@ static NSMutableDictionary* schemaData;
     return YES;
 }
 
+
 +(BOOL) registerColumn:(NSString*) columnName{
-    NSLog(@"Registering %@", columnName);
+    
+    NSString *key = NSStringFromClass( [self class] );
+    
+    NSMutableDictionary* columnData = [schemaData objectForKey:key];
+    // TODO: Test for this function to exist perhaps?
+    id obj = [[self alloc] initModelValues];
+    
+    [columnData setObject:@{
+                            @"columnName" : columnName,
+                            @"type" : NSStringFromClass([[obj performSelector:NSSelectorFromString(columnName)] class])
+                            }
+                   forKey: columnName];
+    
+    [schemaData setObject:columnData forKey:key];
     return YES;
 }
 
@@ -127,32 +144,58 @@ static NSMutableDictionary* schemaData;
 }
 
 
+-(NSString*) objCDataTypeToSQLiteDataType:(NSString*)dataTypeStrRepresentation {
+    if ([dataTypeStrRepresentation isEqualToString:@"__NSCFConstantString"]){
+        return @"TEXT";
+    }else if ([dataTypeStrRepresentation isEqualToString:@"__NSCFString"]){
+        return @"TEXT";
+    }else if ([dataTypeStrRepresentation isEqualToString:@"__NSCFNumber"]){
+        return @"REAL";
+    }
+    
+    return @"INTEGER";
+}
 
 +(BOOL) generateSchema: (BOOL)force{
+    
+    NSString *key = NSStringFromClass( [self class] );
+    
     NSLog(@"Generating schema for table: %@",[[[self class] alloc] tableName]);
-    NSLog(@"GPK: %@",[[[self class] alloc] primaryKey]);
+    id obj = [[self class] alloc];
+    
+    NSDictionary* schema = [schemaData objectForKey:key];
     
     if ([RCActiveRecordSchemas objectForKey: [[[self class] alloc] tableName]] == nil) {
         
-        [RCActiveRecordSchemas setObject: @"" forKey: [[[self class] alloc] tableName]];
-        /*
+        [RCActiveRecordSchemas setObject: @"Defined" forKey: [obj tableName]];
+        
+        
         NSMutableString* columnData = [[NSMutableString alloc] init];
-        [columnData appendFormat:@"%@ INTEGER PRIMARY KEY AUTOINCREMENT", pkName];
+        [columnData appendFormat:@"%@ INTEGER PRIMARY KEY AUTOINCREMENT", [obj primaryKey]];
         
         
-        for (NSString* keys in schemaData){
-            [columnData appendFormat:@", %@ TEXT", keys];
+        for (NSString* columnName in schema){
+            NSDictionary* columnSchema = [schema objectForKey:columnName];
+            
+            [columnData appendFormat:@", %@ %@", columnName, [obj objCDataTypeToSQLiteDataType: [columnSchema objectForKey:@"type"] ] ];
         }
         
         [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
-            NSString* query = [NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (%@)", [self recordIdentifier], columnData];
-            NSLog(@"Query: %@", query);
+            if (force){
+                NSString* dropQuery = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;", [obj tableName]];
+                NSLog(@"Running: %@",dropQuery);
+                [db executeUpdate: dropQuery];
+            }
+            
+            NSString* query = [NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (%@);", [obj tableName], columnData];
+            NSLog(@"Running: %@",query);
+            
             if (![db executeUpdate: query]){
                 if ([db lastErrorCode] != 0){
-                    NSLog(@"(0xd34d4) Error %d: %@ %@", [db lastErrorCode], [db lastErrorMessage], query);
+                    NSLog(@"RCActiveRecord Error %d: %@ Query: %@", [db lastErrorCode], [db lastErrorMessage], query);
                 }
             }
-        }];*/
+        }];
         
     }
 }
@@ -187,12 +230,8 @@ static NSMutableDictionary* schemaData;
     return RCActiveRecordQueue;
 }
 
-/*
--(NSString*)dataTypeOfVariable:(NSString*)variableName{
-    NSString* dataType = NSStringFromClass([[AR performSelector:NSSelectorFromString(variableName)] class]);
-    return dataType;
-}
-*/
+
+
 @end
 
 #pragma clang diagnostic pop

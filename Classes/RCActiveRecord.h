@@ -30,6 +30,8 @@
 @property (nonatomic) BOOL isSavedRecord;
 @property (nonatomic, retain) NSNumber* _id;
 
+-(id) initModelValues;
+-(id) initModel;
 +(id) model;
 
 -(void) setCriteria:(RCCriteria*) criteria;
@@ -59,6 +61,9 @@
 -(NSArray*) getErrors;
 
 -(FMDatabaseQueue*) getFMDBQueue;
+
+
+-(NSString*) objCDataTypeToSQLiteDataType:(NSString*)dataTypeStrRepresentation;
 
 
 @end

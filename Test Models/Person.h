@@ -10,12 +10,14 @@
 
 @interface Person : RCActiveRecord{
     NSString* name;
-    NSString* address;
+    NSString* ip;
+    NSMutableString* address;
     NSNumber* age;
 }
 
 @property (nonatomic, retain) NSString* name;
-@property (nonatomic, retain) NSString* address;
+@property (nonatomic, retain) NSString* ip;
+@property (nonatomic, retain) NSMutableString* address;
 @property (nonatomic, retain) NSNumber* age;
 
 @end

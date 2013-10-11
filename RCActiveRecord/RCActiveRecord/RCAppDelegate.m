@@ -24,14 +24,12 @@
     p.age = @(21);
     [p saveRecord];
     
-    
     App* a = [App model];
     a.name2 = @"Ryan3";
     a.address2 = @"Elm St3";
     a.age2 = @(22);
     [a saveRecord];
     
-    [Person generateSchema:YES];
     
     /*
     [[[Person model] allRecords] execute:^(Person* record){
