@@ -29,6 +29,7 @@
 		4E2936D117BB3D070088B96B /* FMResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936CB17BB3D070088B96B /* FMResultSet.m */; };
 		4E2936DB17BBD0250088B96B /* RCActiveRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936DA17BBD0250088B96B /* RCActiveRecord.m */; };
 		4E2936DE17BBD0340088B96B /* RCCriteria.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936DD17BBD0340088B96B /* RCCriteria.m */; };
+		4EF75F331807A6CF0058DA37 /* RCActiveRecordResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4EF75F321807A6CF0058DA37 /* RCActiveRecordResultSet.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,6 +77,8 @@
 		4E2936DA17BBD0250088B96B /* RCActiveRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCActiveRecord.m; sourceTree = "<group>"; };
 		4E2936DC17BBD0340088B96B /* RCCriteria.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCCriteria.h; sourceTree = "<group>"; };
 		4E2936DD17BBD0340088B96B /* RCCriteria.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCCriteria.m; sourceTree = "<group>"; };
+		4EF75F311807A6CF0058DA37 /* RCActiveRecordResultSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCActiveRecordResultSet.h; sourceTree = "<group>"; };
+		4EF75F321807A6CF0058DA37 /* RCActiveRecordResultSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCActiveRecordResultSet.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -203,6 +206,8 @@
 				4E2936DD17BBD0340088B96B /* RCCriteria.m */,
 				4E2936D917BBD0250088B96B /* RCActiveRecord.h */,
 				4E2936DA17BBD0250088B96B /* RCActiveRecord.m */,
+				4EF75F311807A6CF0058DA37 /* RCActiveRecordResultSet.h */,
+				4EF75F321807A6CF0058DA37 /* RCActiveRecordResultSet.m */,
 			);
 			name = Classes;
 			path = ../Classes;
@@ -328,6 +333,7 @@
 				4E2936D117BB3D070088B96B /* FMResultSet.m in Sources */,
 				4E2936DB17BBD0250088B96B /* RCActiveRecord.m in Sources */,
 				4E2936DE17BBD0340088B96B /* RCCriteria.m in Sources */,
+				4EF75F331807A6CF0058DA37 /* RCActiveRecordResultSet.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

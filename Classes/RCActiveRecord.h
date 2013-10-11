@@ -8,60 +8,51 @@
 
 #import "FMDatabase.h"
 #import "FMDatabaseQueue.h"
-#import "RCCriteria.h"
 
-typedef enum  {
-    /* Typical operators */
-    RCGreaterThan,
-    RCGreaterThanOrEqualTo,
-    RCEqualTo,
-    RCLessThan,
-    RCLessThanOrEqualTo,
-    RCNotEqualTo,
-    
-    /* These are range operators. If you are querying an ID of 7 with RCDifferenceOf 2, it will get from 5 to 9. */
-    /* RCLessDifferenceOf would be 5 to 7, and RCGreaterDifferenceOf is from 7 to 9 */
-    RCLessDifferenceOf,
-    RCDifferenceOf,
-    RCGreaterDifferenceOf
-} RCActiveRecordComparisonOperator;
+#import "RCCriteria.h"
+#import "RCActiveRecordResultSet.h"
 
 
 @interface RCActiveRecord : NSObject{
     BOOL isNewRecord;
-    NSString* pkName;
     NSArray* errors;
     
-    NSMutableArray* recordData;
-    NSMutableArray* conditions;
+    NSString* pkName;
+    NSMutableDictionary* schemaData;
+    
+    RCCriteria* criteria;
 }
 
+@property (nonatomic) BOOL isNewRecord;
 
 
-+(id)model;
-+(id)modelWithCriteria:(RCCriteria*) criteria;
+-(void) setCriteria:(RCCriteria*) criteria;
 
--(id)recordByIntPK:(int) pk;
--(id)recordByPK:(NSNumber*) pk;
--(NSArray*)recordsByAttribute:(NSString*) attributeName value:(id) value;
--(NSArray*)allRecords;
+-(RCActiveRecordResultSet*) recordByPK:(NSNumber*) pk;
+-(RCActiveRecordResultSet*) recordsByAttribute:(NSString*) attributeName value:(id) value;
+-(RCActiveRecordResultSet*) allRecords;
 
+-(BOOL) saveRecord;
+-(BOOL) deleteRecord;
+-(BOOL) isNewRecord;
 
--(id)joinWith:(id) resultSet foreignKeyName:(NSString*) foreignKey;
--(id)mergeResults:(id) resultSet;
++(BOOL) generateSchema: (BOOL)force;
++(BOOL) isSchemaUptoDate;
++(BOOL) dropTable;
++(BOOL) emptyTable;
 
--(BOOL)saveRecord;
--(BOOL)deleteRecord;
++(BOOL) hasSchemaDeclared;
++(BOOL) registerPrimaryKey:(NSString*) columnName;
++(BOOL) registerColumn:(NSString*) columnName;
++(BOOL) registerForeignKey:(Class*) activeRecord forColumn:(NSString*) column;
 
--(void)generateSchema;
--(void)updateSchema;
--(void)dropTable;
+-(NSString*) primaryKey;
+-(NSString*) tableName;
+-(NSArray*) columns;
 
--(BOOL)registerPrimaryKey:(NSString*) title;
--(BOOL)registerVariable:(NSString*) title;
+-(NSArray*) getErrors;
 
--(NSString*)recordIdentifier;
--(FMDatabaseQueue*) getDB;
+-(FMDatabaseQueue*) getFMDBQueue;
 
 
 @end
