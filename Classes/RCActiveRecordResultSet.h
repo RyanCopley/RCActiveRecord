@@ -12,16 +12,17 @@
 @interface RCActiveRecordResultSet : NSObject{
     FMDatabaseQueue* queue;
     FMResultSet* resultSet;
-    
-    Class* ARClass;
+    NSString* internalQuery;
+    Class ARClass;
+    BOOL error;
 }
 
 
--(void) execute: (void (^) (id recordResult)) resultCallback;
--(void) execute: (void (^) (id recordResult)) resultCallback finished: (void (^) ()) finishedCallback;
+-(void) execute: (void (^) (id recordResult)) recordCallback;
+-(void) execute: (void (^) (id recordResult)) recordCallback finished: (void (^) (BOOL error)) finishedCallback;
 
 
 //Internal
--(void) initWithFMDatabaseQueue:(FMDatabaseQueue*) _queue andQuery:(NSString*) query andActiveRecordClass:(Class*) _ARClass;
+-(RCActiveRecordResultSet*) initWithFMDatabaseQueue:(FMDatabaseQueue*) _queue andQuery:(NSString*) query andActiveRecordClass:(Class) _ARClass;
 
 @end

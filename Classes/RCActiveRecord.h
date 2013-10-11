@@ -15,6 +15,8 @@
 
 @interface RCActiveRecord : NSObject{
     BOOL isNewRecord;
+    BOOL isSavedRecord;
+    
     NSArray* errors;
     
     NSString* pkName;
@@ -24,6 +26,7 @@
 }
 
 @property (nonatomic) BOOL isNewRecord;
+@property (nonatomic) BOOL isSavedRecord;
 
 
 +(id) model;
@@ -61,6 +64,8 @@
 
 /*
  
-    [[[Image model] allRecords] execute: ^(Image* img){ ...img... }];
+    [[[Image model] allRecords] execute: ^(Image* img){ 
+        ...img... 
+    }];
  
  */

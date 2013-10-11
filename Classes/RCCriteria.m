@@ -22,7 +22,7 @@
     return self;
 }
 
--(void) limit:(int) count{
+-(void) setLimit:(int) count{
     limit = count;
 }
 
@@ -58,10 +58,12 @@
     }
 }
 
+//Needs SQL injection proofing.
 -(void) addCondition:(NSString*) columnName is:(RCActiveRecordComparisonOperator) comparer to:(id) value{
     
-    // TODO: Should also check to ensure value is of type NSArray
+    // TODO: Should also check to ensure value is of type NSArray.
     if (comparer == RCIn || comparer == RCNotIn){
+        // TODO: Sanitize the array.
         NSString* arrayStr = [NSString stringWithFormat:@"\"%@\"", [((NSArray*)value) componentsJoinedByString:@"\",\""] ];
         [conditions addObject:
             [NSString stringWithFormat:
@@ -77,7 +79,7 @@
                 @"%@ %@ \"%@\"",
                 columnName,
                 [self stringFromCompareOperator:comparer],
-                [NSString stringWithFormat:@"%@",value]
+                [NSString stringWithFormat:@"%@",[self sanitize:value]]
              ]
          ];
     }
@@ -85,12 +87,12 @@
 
 -(void) orderByAsc:(NSString*) columnName{
     order = RCAscend;
-    orderColumn = columnName;
+    orderColumn = [self sanitize:columnName];
 }
 
 -(void) orderByDesc:(NSString*) columnName{
     order = RCDescend;
-    orderColumn = columnName;
+    orderColumn = [self sanitize:columnName];
     
 }
 
@@ -108,6 +110,8 @@
             [whereClause appendFormat: @"%@ AND",condition];
         }
         whereClause = [[whereClause substringToIndex:whereClause.length - 4] mutableCopy];
+    }else{
+        whereClause = [@"1=1" mutableCopy];
     }
     
     //Limit...
@@ -135,6 +139,13 @@
 -(void) where:(NSString*) sqlWhere {
     overrideSQL = sqlWhere;
     sqlOverride = YES;
+}
+
+
+-(NSString*)sanitize:(NSString*)string{
+    string = [NSString stringWithFormat:@"%@",string];
+    string = [string stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""];
+    return string;
 }
 
 @end

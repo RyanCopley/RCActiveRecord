@@ -42,7 +42,7 @@ typedef enum {
     bool sqlOverride;
 }
 
--(void) limit:(int) count;
+-(void) setLimit:(int) count;
 -(void) addCondition:(NSString*) columnName is:(RCActiveRecordComparisonOperator) comparer to:(id) value;
 -(void) orderByAsc:(NSString*) columnName;
 -(void) orderByDesc:(NSString*) columnName;
