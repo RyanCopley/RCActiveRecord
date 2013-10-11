@@ -19,24 +19,48 @@
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     Person* p = [Person model];
-    p.name = @"Ryan";
-    p.address = @"Elm St";
+    p.name = @"Ryana";
+    p.address = [@"Elm St" mutableCopy];
     p.age = @(21);
+    p.ip = @"DAWEF";
+    NSLog(@"ID (Before insert): %@",p._id);
     [p saveRecord];
+    NSLog(@"ID (After insert): %@",p._id);
+    [p saveRecord];
+    p.address = [@"Elm2222 St" mutableCopy];
+    [p saveRecord];
+    p.address = [@"Elm4444 St" mutableCopy];
+    [p saveRecord];
+    NSLog(@"ID (After 4 inserts): %@",p._id);
     
     App* a = [App model];
-    a.name2 = @"Ryan3";
+    
+    int testSize = 10000;
+    int i = testSize;
+    a.name2 = [NSString stringWithFormat:@"Ryan-%i",arc4random()%10000];
     a.address2 = @"Elm St3";
     a.age2 = @(22);
-    [a saveRecord];
     
     
-    /*
-    [[[Person model] allRecords] execute:^(Person* record){
-        NSLog(@"Got a record!");
+    __block NSTimeInterval writeStart = [NSDate timeIntervalSinceReferenceDate];
+    [a beginTransaction];
+    do {
+        [a insertRecord];
+    } while (i-->0);
+    [a commit];
+    NSTimeInterval writeDuration = [NSDate timeIntervalSinceReferenceDate] - writeStart;
+    NSLog(@"(WRITE) Duration: %f, count: %i, seconds per record: %f", writeDuration, testSize, (writeDuration/testSize));
+    
+    
+    __block int recordCount = 0;
+    __block NSTimeInterval readStart = [NSDate timeIntervalSinceReferenceDate];
+    [[[App model] allRecords] execute:^(App* record){
+        recordCount++;
     } finished:^ (BOOL error){
-        NSLog(@"Finished!");
-    }];*/
+        NSTimeInterval readDuration = [NSDate timeIntervalSinceReferenceDate] - readStart;
+        NSLog(@"(READ) Duration: %f, count: %i, seconds per record: %f", readDuration, recordCount, (readDuration/recordCount));
+    }];
+    
     
     return YES;
 }

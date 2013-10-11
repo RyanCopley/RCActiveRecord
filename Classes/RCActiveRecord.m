@@ -9,6 +9,7 @@
 #import "RCActiveRecord.h"
 #import <objc/runtime.h>
 
+#define RCACTIVERECORDLOGGING 0
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
@@ -32,6 +33,8 @@ static NSMutableDictionary* foreignKeyData;
             schemaData = [[NSMutableDictionary alloc] init];
             foreignKeyData = [[NSMutableDictionary alloc] init];
         }
+        
+        _id = @(-1);
         
         NSString *key = NSStringFromClass( [self class] );
         [pkName setObject:@"_id" forKey:key]; /* default */
@@ -97,7 +100,109 @@ static NSMutableDictionary* foreignKeyData;
 }
 
 
+-(void)beginTransaction{
+    
+    [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
+        [db beginTransaction];
+    }];
+}
+
+-(void)commit{
+    [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
+        [db commit];
+    }];
+}
+
+-(BOOL) insertRecord{
+    isNewRecord = NO;
+    isSavedRecord = YES;
+    
+    id obj = [[self class] alloc];
+    
+    NSString *key = NSStringFromClass( [self class] );
+    NSDictionary* schema = [schemaData objectForKey:key];
+    
+    NSMutableString* columns = [[NSMutableString alloc] init];
+    NSMutableString* data = [[NSMutableString alloc] init];
+    
+    for (NSString* columnName in schema){
+        
+        [columns appendFormat:@"%@, ", columnName];
+        [data appendFormat:@"\"%@\", ", [self performSelector: NSSelectorFromString(columnName)] ];
+    }
+    
+    if ([columns isEqualToString:@""] == FALSE && [data isEqualToString:@""] == FALSE){
+        
+        columns = [[columns substringToIndex:columns.length-2] mutableCopy];
+        data = [[data substringToIndex:data.length-2] mutableCopy];
+        
+        __block NSString* query = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)", [obj tableName], columns, data];
+        if (RCACTIVERECORDLOGGING){
+            NSLog(@"Query: %@", query);
+        }
+        
+        [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
+            
+            [db executeUpdate: query];
+            NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[[self primaryKey] substringToIndex:1] uppercaseString],[[self primaryKey] substringFromIndex:1]];
+            @try {
+                [self performSelector: NSSelectorFromString(setConversion) withObject: @([db lastInsertRowId])];
+            }
+            @catch (NSException* e){
+                NSLog(@"[Email to ampachex@ryancopley.com please] Error thrown! This object is not properly synthesized. Unable to set: %@", [self primaryKey]);
+            }
+            
+        }];
+    }
+    return YES;
+}
+
+-(BOOL) updateRecord{
+    isNewRecord = NO;
+    isSavedRecord = YES;
+    
+    id obj = [[self class] alloc];
+    
+    NSString *key = NSStringFromClass( [self class] );
+    NSDictionary* schema = [schemaData objectForKey:key];
+    
+    NSMutableString* updateData = [[NSMutableString alloc] init];
+    
+    for (NSString* columnName in schema){
+        
+        [updateData appendFormat:@"`%@`=\"%@\", ", columnName,[self performSelector: NSSelectorFromString(columnName)]];
+    }
+    
+    if ([updateData isEqualToString:@""] == FALSE){
+        
+        updateData = [[updateData substringToIndex:updateData.length-2] mutableCopy];
+        
+        __block NSString* query = [NSString stringWithFormat:@"UPDATE %@ SET %@;", [obj tableName], updateData];
+        if (RCACTIVERECORDLOGGING){
+            NSLog(@"Query: %@", query);
+        }
+        
+        [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
+            
+            [db executeUpdate: query];
+            
+        }];
+    }
+    return YES;
+}
+
+
 -(BOOL)saveRecord{
+    if (RCACTIVERECORDLOGGING){
+        NSLog(@"Saving record...");
+    }
+    
+    if (isNewRecord){
+        return [self insertRecord];
+    }else if (isSavedRecord){
+        return [self updateRecord];
+    }
+    
     return YES;
 }
 
@@ -159,12 +264,12 @@ static NSMutableDictionary* foreignKeyData;
 +(BOOL) generateSchema: (BOOL)force{
     
     NSString *key = NSStringFromClass( [self class] );
-    
-    NSLog(@"Generating schema for table: %@",[[[self class] alloc] tableName]);
+    if (RCACTIVERECORDLOGGING){
+        NSLog(@"Generating schema for table: %@",[[[self class] alloc] tableName]);
+    }
     id obj = [[self class] alloc];
     
     NSDictionary* schema = [schemaData objectForKey:key];
-    
     if ([RCActiveRecordSchemas objectForKey: [[[self class] alloc] tableName]] == nil) {
         
         [RCActiveRecordSchemas setObject: @"Defined" forKey: [obj tableName]];
@@ -179,16 +284,17 @@ static NSMutableDictionary* foreignKeyData;
             
             [columnData appendFormat:@", %@ %@", columnName, [obj objCDataTypeToSQLiteDataType: [columnSchema objectForKey:@"type"] ] ];
         }
+        if (force){
+            [[self class] dropTable];
+        }
         
         [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
-            if (force){
-                NSString* dropQuery = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;", [obj tableName]];
-                NSLog(@"Running: %@",dropQuery);
-                [db executeUpdate: dropQuery];
-            }
+            
             
             NSString* query = [NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (%@);", [obj tableName], columnData];
-            NSLog(@"Running: %@",query);
+            if (RCACTIVERECORDLOGGING){
+                NSLog(@"Running: %@",query);
+            }
             
             if (![db executeUpdate: query]){
                 if ([db lastErrorCode] != 0){
@@ -198,18 +304,26 @@ static NSMutableDictionary* foreignKeyData;
         }];
         
     }
+    return YES;
 }
 
--(NSDictionary*)schemaProfile{
-    return @{@"primaryKey" : pkName, @"columns" : schemaData };
++(BOOL)updateSchema{
+    [[self class] generateSchema:YES];
+    return YES;
 }
 
--(void)updateSchema{
++(BOOL)dropTable{
     
-}
-
--(void)dropTable{
+    id obj = [[self class] alloc];
     
+    [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
+        NSString* dropQuery = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;", [obj tableName]];
+        if (RCACTIVERECORDLOGGING){
+            NSLog(@"Running: %@",dropQuery);
+        }
+        [db executeUpdate: dropQuery];
+    }];
+    return YES;
 }
 
 

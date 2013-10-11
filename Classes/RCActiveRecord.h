@@ -14,7 +14,7 @@
 
 
 @interface RCActiveRecord : NSObject{
-    
+    @protected
     NSNumber* _id;
     
     BOOL isNewRecord;
@@ -40,6 +40,9 @@
 -(RCActiveRecordResultSet*) recordsByAttribute:(NSString*) attributeName value:(id) value;
 -(RCActiveRecordResultSet*) allRecords;
 
+
+-(BOOL) insertRecord;
+-(BOOL) updateRecord;
 -(BOOL) saveRecord;
 -(BOOL) deleteRecord;
 -(BOOL) isNewRecord;
@@ -47,6 +50,7 @@
 +(BOOL) generateSchema: (BOOL)force;
 +(BOOL) isSchemaUptoDate;
 +(BOOL) dropTable;
++(BOOL) updateSchema;
 +(BOOL) emptyTable;
 
 +(BOOL) hasSchemaDeclared;
@@ -62,6 +66,8 @@
 
 -(FMDatabaseQueue*) getFMDBQueue;
 
+-(void)beginTransaction;
+-(void)commit;
 
 -(NSString*) objCDataTypeToSQLiteDataType:(NSString*)dataTypeStrRepresentation;
 

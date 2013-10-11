@@ -26,11 +26,12 @@
     error = NO;
     
     dispatch_queue_t fetchQ = dispatch_queue_create("__RCACTIVERECORDCALLBACK", NULL);
-    
+    __block int recordTally = 1;
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [queue inDatabase:^(FMDatabase *db) {
             FMResultSet* s = [db executeQuery: internalQuery];
             while ([s next]){
+                recordTally++;
                 id AR = [[ARClass alloc] init];
                 [(RCActiveRecord*)AR setIsNewRecord:NO];
                 [(RCActiveRecord*)AR setIsSavedRecord:YES];
@@ -40,7 +41,7 @@
                     
                     NSString* varName = [s columnNameForIndex: i];
                     NSString* dataType = NSStringFromClass([[AR performSelector:NSSelectorFromString(varName)] class]);
-                    NSLog(@"Data Type: %@", dataType);
+                    //^ Is showing up as NULL.
                     
                     // TODO: Data type comparison would be nice here
                     
@@ -58,12 +59,23 @@
                 }
                 dispatch_async(fetchQ, ^{
                     recordCallback(AR);
+                    recordTally--;
                 });
             }
             
-            //I do this because the finish callback is often used to update the UI, and as any competent iOS developer knows you shouldn't update the UI on any non-main thread.
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                finishedCallback(error);
+            recordTally--;
+            
+            dispatch_queue_t finishQueue = dispatch_queue_create("__RCACTIVERECORDFINISHCALLBACK", NULL);
+            
+            dispatch_async(finishQueue, ^{
+                while (recordTally > 0){
+                    //Burn CPU... not finished...
+                }
+                //I do this because the finish callback is often used to update the UI, and as any competent iOS developer knows you shouldn't update the UI on any non-main thread.
+                dispatch_sync(dispatch_get_main_queue(), ^{
+                    finishedCallback(error);
+                });
+                
             });
         }];
     });
