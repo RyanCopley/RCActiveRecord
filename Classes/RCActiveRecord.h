@@ -30,8 +30,10 @@
 @property (nonatomic) BOOL isSavedRecord;
 @property (nonatomic, retain) NSNumber* _id;
 
--(id) initModelValues;
--(id) initModel;
+-(id) initModelValues; // Protocol method
+-(id) initModel; // Protocol Method
+
+-(id) init;
 +(id) model;
 
 -(void) setCriteria:(RCCriteria*) criteria;
@@ -40,6 +42,9 @@
 -(RCActiveRecordResultSet*) recordsByAttribute:(NSString*) attributeName value:(id) value;
 -(RCActiveRecordResultSet*) allRecords;
 
+
+-(void)beginTransaction;
+-(void)commit;
 
 -(BOOL) insertRecord;
 -(BOOL) updateRecord;
@@ -59,6 +64,7 @@
 +(BOOL) registerForeignKey:(Class*) activeRecord forColumn:(NSString*) column;
 
 -(NSString*) primaryKey;
+-(NSNumber*) primaryKeyValue;
 -(NSString*) tableName;
 +(NSArray*) columns;
 
@@ -66,8 +72,6 @@
 
 -(FMDatabaseQueue*) getFMDBQueue;
 
--(void)beginTransaction;
--(void)commit;
 
 -(NSString*) objCDataTypeToSQLiteDataType:(NSString*)dataTypeStrRepresentation;
 

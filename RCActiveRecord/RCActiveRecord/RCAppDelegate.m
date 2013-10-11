@@ -35,7 +35,7 @@
     
     App* a = [App model];
     
-    int testSize = 10000;
+    int testSize = 1000;
     int i = testSize;
     a.name2 = [NSString stringWithFormat:@"Ryan-%i",arc4random()%10000];
     a.address2 = @"Elm St3";
@@ -44,10 +44,17 @@
     
     __block NSTimeInterval writeStart = [NSDate timeIntervalSinceReferenceDate];
     [a beginTransaction];
+    [a beginTransaction];//Whoops! Started a transaction twice!
     do {
         [a insertRecord];
     } while (i-->0);
+    
     [a commit];
+    
+    //Delete the latest
+    [a deleteRecord];
+    
+    
     NSTimeInterval writeDuration = [NSDate timeIntervalSinceReferenceDate] - writeStart;
     NSLog(@"(WRITE) Duration: %f, count: %i, seconds per record: %f", writeDuration, testSize, (writeDuration/testSize));
     

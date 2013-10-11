@@ -9,7 +9,7 @@
 #import "RCActiveRecord.h"
 #import <objc/runtime.h>
 
-#define RCACTIVERECORDLOGGING 0
+#define RCACTIVERECORDLOGGING 1
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
@@ -23,6 +23,7 @@ static NSMutableDictionary* RCActiveRecordSchemas;
 static NSMutableDictionary* pkName;
 static NSMutableDictionary* schemaData;
 static NSMutableDictionary* foreignKeyData;
+static BOOL inTransaction;
 
 #pragma mark Active Record functions
 -(id)init{
@@ -32,6 +33,7 @@ static NSMutableDictionary* foreignKeyData;
             pkName = [[NSMutableDictionary alloc] init];
             schemaData = [[NSMutableDictionary alloc] init];
             foreignKeyData = [[NSMutableDictionary alloc] init];
+            inTransaction = NO;
         }
         
         _id = @(-1);
@@ -101,15 +103,18 @@ static NSMutableDictionary* foreignKeyData;
 
 
 -(void)beginTransaction{
-    
-    [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
-        [db beginTransaction];
-    }];
+    if (!inTransaction){
+        inTransaction = YES;
+        [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
+            [db beginTransaction];
+        }];
+    }
 }
 
 -(void)commit{
     [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
         [db commit];
+        inTransaction = NO;
     }];
 }
 
@@ -208,10 +213,25 @@ static NSMutableDictionary* foreignKeyData;
 
 -(BOOL)deleteRecord{
     if (!isNewRecord && isSavedRecord){
+        __block NSString* query = [NSString stringWithFormat:@"DELETE FROM %@ WHERE `%@`='%@';", [self tableName], [self primaryKey], [self primaryKeyValue]];
+        if (RCACTIVERECORDLOGGING){
+            NSLog(@"Query: %@", query);
+        }
         
+        [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
+            
+            [db executeUpdate: query];
+            
+        }];
     }
     return YES;
 }
+
+
+-(BOOL)isNewRecord{
+    return isNewRecord;
+}
+
 
 +(BOOL) hasSchemaDeclared{
     NSString *key = NSStringFromClass( [self class] );
@@ -231,7 +251,7 @@ static NSMutableDictionary* foreignKeyData;
     NSString *key = NSStringFromClass( [self class] );
     
     NSMutableDictionary* columnData = [schemaData objectForKey:key];
-    // TODO: Test for this function to exist perhaps?
+    
     id obj = [[self alloc] initModelValues];
     
     [columnData setObject:@{
@@ -244,22 +264,11 @@ static NSMutableDictionary* foreignKeyData;
     return YES;
 }
 
+//TODO: Foreign key
 +(BOOL) registerForeignKey:(Class*) activeRecord forColumn:(NSString*) column{
     return YES;
 }
 
-
--(NSString*) objCDataTypeToSQLiteDataType:(NSString*)dataTypeStrRepresentation {
-    if ([dataTypeStrRepresentation isEqualToString:@"__NSCFConstantString"]){
-        return @"TEXT";
-    }else if ([dataTypeStrRepresentation isEqualToString:@"__NSCFString"]){
-        return @"TEXT";
-    }else if ([dataTypeStrRepresentation isEqualToString:@"__NSCFNumber"]){
-        return @"REAL";
-    }
-    
-    return @"INTEGER";
-}
 
 +(BOOL) generateSchema: (BOOL)force{
     
@@ -332,9 +341,11 @@ static NSMutableDictionary* foreignKeyData;
     return [pkName valueForKey:key];
 }
 
--(BOOL)isNewRecord{
-    return isNewRecord;
+-(NSNumber*) primaryKeyValue {
+    
+    return [self performSelector:NSSelectorFromString([self primaryKey])];
 }
+
 
 -(NSString*) tableName{
     return [NSStringFromClass([self class]) lowercaseString];
@@ -345,6 +356,18 @@ static NSMutableDictionary* foreignKeyData;
 }
 
 
+
+-(NSString*) objCDataTypeToSQLiteDataType:(NSString*)dataTypeStrRepresentation {
+    if ([dataTypeStrRepresentation isEqualToString:@"__NSCFConstantString"]){
+        return @"TEXT";
+    }else if ([dataTypeStrRepresentation isEqualToString:@"__NSCFString"]){
+        return @"TEXT";
+    }else if ([dataTypeStrRepresentation isEqualToString:@"__NSCFNumber"]){
+        return @"REAL";
+    }
+    
+    return @"INTEGER";
+}
 
 @end
 
