@@ -12,23 +12,35 @@
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
 @implementation RCActiveRecord
-@synthesize isNewRecord, isSavedRecord;
+@synthesize isNewRecord, isSavedRecord, _id;
+
 
 static FMDatabaseQueue* RCActiveRecordQueue;
 static NSMutableDictionary* RCActiveRecordSchemas;
+
+static NSMutableDictionary* pkName;
+static NSMutableDictionary* schemaData;
 
 #pragma mark Active Record functions
 -(id)init{
     self = [super init];
     if (self){
-        pkName = @"id"; /* default */
+        if (pkName == nil){
+            pkName = [[NSMutableDictionary alloc] init];
+            schemaData = [[NSMutableDictionary alloc] init];
+        }
+        
+        NSString *key = NSStringFromClass( [self class] );
+        [pkName setObject:@"_id" forKey:key]; /* default */
+        [schemaData setObject: @[] forKey:key]; /* empty */
         
         isNewRecord = YES;
         isSavedRecord = NO;
+        
         if (!RCActiveRecordQueue){
             NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
             NSString *documentsDirectory = [paths objectAtIndex:0];
-            NSString* dbPath =  [NSString stringWithFormat:@"%@/RCActiveRecord/db.sqlite",documentsDirectory];
+            NSString* dbPath =  [NSString stringWithFormat:@"%@/db.sqlite",documentsDirectory];
             RCActiveRecordQueue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
             
             RCActiveRecordSchemas = [[NSMutableDictionary alloc] init];
@@ -50,11 +62,11 @@ static NSMutableDictionary* RCActiveRecordSchemas;
     
     if (!criteria){
         criteria = [[RCCriteria alloc] init];
-        [criteria addCondition:pkName is:RCEqualTo to: [NSString stringWithFormat:@"%@",pk]];
+        [criteria addCondition: [self primaryKey] is:RCEqualTo to: [NSString stringWithFormat:@"%@",pk]];
     }
     [criteria setLimit:1];
 
-    NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [self recordIdentifier], [criteria generateWhereClause] ];
+    NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
     
     return [[RCActiveRecordResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
@@ -65,34 +77,65 @@ static NSMutableDictionary* RCActiveRecordSchemas;
         [criteria addCondition:attributeName is:RCEqualTo to: [NSString stringWithFormat:@"%@",value]];
     }
     
-    NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [self recordIdentifier], [criteria generateWhereClause] ];
+    NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
     
     return [[RCActiveRecordResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
 
 -(RCActiveRecordResultSet*)allRecords{
-    NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@;", [self recordIdentifier] ];
+    if (!criteria){
+        criteria = [[RCCriteria alloc] init];
+    }
+    
+    NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
+    
     return [[RCActiveRecordResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
 
 -(BOOL)saveRecord{
-    
+    return YES;
 }
 
 -(BOOL)deleteRecord{
     if (!isNewRecord && isSavedRecord){
         
     }
+    return YES;
 }
 
--(void)generateSchema{
+
++(BOOL) hasSchemaDeclared{
+    return NO;
+}
+
+
++(BOOL) registerPrimaryKey:(NSString*) columnName{
+    NSString *key = NSStringFromClass( [self class] );
+    [pkName setObject:columnName forKey:key];
+    return YES;
+}
+
++(BOOL) registerColumn:(NSString*) columnName{
+    NSLog(@"Registering %@", columnName);
+    return YES;
+}
+
++(BOOL) registerForeignKey:(Class*) activeRecord forColumn:(NSString*) column{
+    return YES;
+}
+
+
+
++(BOOL) generateSchema: (BOOL)force{
+    NSLog(@"Generating schema for table: %@",[[[self class] alloc] tableName]);
+    NSLog(@"GPK: %@",[[[self class] alloc] primaryKey]);
     
-    if ([RCActiveRecordSchemas objectForKey:[self recordIdentifier]] == nil) {
+    if ([RCActiveRecordSchemas objectForKey: [[[self class] alloc] tableName]] == nil) {
         
-        [RCActiveRecordSchemas setObject: [self schemaProfile] forKey: [self recordIdentifier]];
-        
+        [RCActiveRecordSchemas setObject: @"" forKey: [[[self class] alloc] tableName]];
+        /*
         NSMutableString* columnData = [[NSMutableString alloc] init];
         [columnData appendFormat:@"%@ INTEGER PRIMARY KEY AUTOINCREMENT", pkName];
         
@@ -109,7 +152,8 @@ static NSMutableDictionary* RCActiveRecordSchemas;
                     NSLog(@"(0xd34d4) Error %d: %@ %@", [db lastErrorCode], [db lastErrorMessage], query);
                 }
             }
-        }];
+        }];*/
+        
     }
 }
 
@@ -125,20 +169,17 @@ static NSMutableDictionary* RCActiveRecordSchemas;
     
 }
 
+
+-(NSString*) primaryKey{
+    NSString *key = NSStringFromClass( [self class] );
+    return [pkName valueForKey:key];
+}
+
 -(BOOL)isNewRecord{
     return isNewRecord;
 }
 
--(BOOL)registerPrimaryKey:(NSString*) title{
-    pkName = title;
-    return YES;
-}
-
--(BOOL)registerVariable:(NSString*) title{
-    
-}
-
--(NSString*)recordIdentifier{
+-(NSString*) tableName{
     return [NSStringFromClass([self class]) lowercaseString];
 }
 

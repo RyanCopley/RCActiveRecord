@@ -25,11 +25,13 @@
 		4E2936CD17BB3D070088B96B /* FMDatabaseAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936C417BB3D070088B96B /* FMDatabaseAdditions.m */; };
 		4E2936CE17BB3D070088B96B /* FMDatabasePool.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936C617BB3D070088B96B /* FMDatabasePool.m */; };
 		4E2936CF17BB3D070088B96B /* FMDatabaseQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936C817BB3D070088B96B /* FMDatabaseQueue.m */; };
-		4E2936D017BB3D070088B96B /* fmdb.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936C917BB3D070088B96B /* fmdb.m */; };
 		4E2936D117BB3D070088B96B /* FMResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936CB17BB3D070088B96B /* FMResultSet.m */; };
 		4E2936DB17BBD0250088B96B /* RCActiveRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936DA17BBD0250088B96B /* RCActiveRecord.m */; };
 		4E2936DE17BBD0340088B96B /* RCCriteria.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936DD17BBD0340088B96B /* RCCriteria.m */; };
 		4EF75F331807A6CF0058DA37 /* RCActiveRecordResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4EF75F321807A6CF0058DA37 /* RCActiveRecordResultSet.m */; };
+		4EF75F37180881940058DA37 /* Person.m in Sources */ = {isa = PBXBuildFile; fileRef = 4EF75F36180881940058DA37 /* Person.m */; };
+		4EF75F39180888780058DA37 /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4EF75F38180888780058DA37 /* libsqlite3.0.dylib */; };
+		4EF75F3C180889660058DA37 /* App.m in Sources */ = {isa = PBXBuildFile; fileRef = 4EF75F3B180889660058DA37 /* App.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +81,11 @@
 		4E2936DD17BBD0340088B96B /* RCCriteria.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCCriteria.m; sourceTree = "<group>"; };
 		4EF75F311807A6CF0058DA37 /* RCActiveRecordResultSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCActiveRecordResultSet.h; sourceTree = "<group>"; };
 		4EF75F321807A6CF0058DA37 /* RCActiveRecordResultSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCActiveRecordResultSet.m; sourceTree = "<group>"; };
+		4EF75F35180881940058DA37 /* Person.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Person.h; path = "../Test Models/Person.h"; sourceTree = "<group>"; };
+		4EF75F36180881940058DA37 /* Person.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Person.m; path = "../Test Models/Person.m"; sourceTree = "<group>"; };
+		4EF75F38180888780058DA37 /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = usr/lib/libsqlite3.0.dylib; sourceTree = SDKROOT; };
+		4EF75F3A180889660058DA37 /* App.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = App.h; sourceTree = "<group>"; };
+		4EF75F3B180889660058DA37 /* App.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = App.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +93,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4EF75F39180888780058DA37 /* libsqlite3.0.dylib in Frameworks */,
 				4E29368C17BB3CDF0088B96B /* UIKit.framework in Frameworks */,
 				4E29368E17BB3CDF0088B96B /* Foundation.framework in Frameworks */,
 				4E29369017BB3CDF0088B96B /* CoreGraphics.framework in Frameworks */,
@@ -108,6 +116,7 @@
 		4E29367F17BB3CDF0088B96B = {
 			isa = PBXGroup;
 			children = (
+				4EF75F38180888780058DA37 /* libsqlite3.0.dylib */,
 				4E29369117BB3CDF0088B96B /* RCActiveRecord */,
 				4E2936C017BB3CF20088B96B /* fmdb */,
 				4E29369217BB3CDF0088B96B /* Supporting Files */,
@@ -140,6 +149,7 @@
 		4E29369117BB3CDF0088B96B /* RCActiveRecord */ = {
 			isa = PBXGroup;
 			children = (
+				4EF75F34180881750058DA37 /* Test Models */,
 				4E2936D817BBD0250088B96B /* Classes */,
 			);
 			path = RCActiveRecord;
@@ -212,6 +222,18 @@
 			name = Classes;
 			path = ../Classes;
 			sourceTree = SOURCE_ROOT;
+		};
+		4EF75F34180881750058DA37 /* Test Models */ = {
+			isa = PBXGroup;
+			children = (
+				4EF75F35180881940058DA37 /* Person.h */,
+				4EF75F36180881940058DA37 /* Person.m */,
+				4EF75F3A180889660058DA37 /* App.h */,
+				4EF75F3B180889660058DA37 /* App.m */,
+			);
+			name = "Test Models";
+			path = ../../Classes;
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
@@ -329,11 +351,12 @@
 				4E2936CD17BB3D070088B96B /* FMDatabaseAdditions.m in Sources */,
 				4E2936CE17BB3D070088B96B /* FMDatabasePool.m in Sources */,
 				4E2936CF17BB3D070088B96B /* FMDatabaseQueue.m in Sources */,
-				4E2936D017BB3D070088B96B /* fmdb.m in Sources */,
 				4E2936D117BB3D070088B96B /* FMResultSet.m in Sources */,
 				4E2936DB17BBD0250088B96B /* RCActiveRecord.m in Sources */,
 				4E2936DE17BBD0340088B96B /* RCCriteria.m in Sources */,
 				4EF75F331807A6CF0058DA37 /* RCActiveRecordResultSet.m in Sources */,
+				4EF75F37180881940058DA37 /* Person.m in Sources */,
+				4EF75F3C180889660058DA37 /* App.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

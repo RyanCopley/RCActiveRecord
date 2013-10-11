@@ -7,6 +7,8 @@
 //
 
 #import "RCAppDelegate.h"
+#import "Person.h"
+#import "App.h"
 
 @implementation RCAppDelegate
 
@@ -16,6 +18,28 @@
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
+    Person* p = [Person model];
+    p.name = @"Ryan";
+    p.address = @"Elm St";
+    p.age = @(21);
+    [p saveRecord];
+    
+    
+    App* a = [App model];
+    a.name2 = @"Ryan3";
+    a.address2 = @"Elm St3";
+    a.age2 = @(22);
+    [a saveRecord];
+    
+    [Person generateSchema:YES];
+    
+    /*
+    [[[Person model] allRecords] execute:^(Person* record){
+        NSLog(@"Got a record!");
+    } finished:^ (BOOL error){
+        NSLog(@"Finished!");
+    }];*/
+    
     return YES;
 }
 

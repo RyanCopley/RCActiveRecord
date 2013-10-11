@@ -14,20 +14,21 @@
 
 
 @interface RCActiveRecord : NSObject{
+    
+    NSNumber* _id;
+    
     BOOL isNewRecord;
     BOOL isSavedRecord;
     
     NSArray* errors;
     
-    NSString* pkName;
-    NSMutableDictionary* schemaData;
-    
     RCCriteria* criteria;
+    
 }
 
 @property (nonatomic) BOOL isNewRecord;
 @property (nonatomic) BOOL isSavedRecord;
-
+@property (nonatomic, retain) NSNumber* _id;
 
 +(id) model;
 
@@ -53,7 +54,7 @@
 
 -(NSString*) primaryKey;
 -(NSString*) tableName;
--(NSArray*) columns;
++(NSArray*) columns;
 
 -(NSArray*) getErrors;
 
