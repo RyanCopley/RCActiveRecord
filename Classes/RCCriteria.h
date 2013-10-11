@@ -11,7 +11,7 @@
 
 typedef enum  {
     /* Typical operators */
-    RCGreaterThan,
+    RCGreaterThan = 0,
     RCGreaterThanOrEqualTo,
     RCEqualTo,
     RCLessThan,
@@ -27,22 +27,23 @@ typedef enum  {
 
 typedef enum {
     RCAscend,
-    RCDescend
+    RCDescend,
+    RCNoOrder
 } RCActiveRecordOrder;
 #endif
 
 
 @interface RCCriteria : NSObject{
     int limit;
-    NSArray* conditions;
+    NSMutableArray* conditions;
     RCActiveRecordOrder order;
-    NSString* ordercolumn;
+    NSString* orderColumn;
 }
 
--(id) limit:(int) count;
--(id) addCondition:(NSString*) columnName is:(RCActiveRecordComparisonOperator) comparer to:(id) value;
--(id) orderByAsc:(NSString*) columnName;
--(id) orderByDesc:(NSString*) columnName;
+-(void) limit:(int) count;
+-(void) addCondition:(NSString*) columnName is:(RCActiveRecordComparisonOperator) comparer to:(id) value;
+-(void) orderByAsc:(NSString*) columnName;
+-(void) orderByDesc:(NSString*) columnName;
 
 -(NSString*) generateWhereClause;
 @end
