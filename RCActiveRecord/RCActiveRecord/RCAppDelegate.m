@@ -39,13 +39,13 @@
     int i = testSize;
     a.name2 = [NSString stringWithFormat:@"Ryan-%i",arc4random()%10000];
     a.address2 = @"Elm St3";
-    a.age2 = @(22);
     
     
     __block NSTimeInterval writeStart = [NSDate timeIntervalSinceReferenceDate];
     [a beginTransaction];
     [a beginTransaction];//Whoops! Started a transaction twice!
     do {
+        a.age2 = @(arc4random()%50 + 18);
         [a insertRecord];
     } while (i-->0);
     
@@ -62,6 +62,7 @@
     __block int recordCount = 0;
     __block NSTimeInterval readStart = [NSDate timeIntervalSinceReferenceDate];
     [[[App model] allRecords] execute:^(App* record){
+        NSLog(@"Age: %@",record.age2);
         recordCount++;
     } finished:^ (BOOL error){
         NSTimeInterval readDuration = [NSDate timeIntervalSinceReferenceDate] - readStart;

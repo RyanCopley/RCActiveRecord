@@ -37,7 +37,6 @@
                 [(RCActiveRecord*)AR setIsSavedRecord:YES];
                 
                 for (int i=0; i < [s columnCount]; i++){
-                    //Some type checking for some basic classes...
                     
                     NSString* varName = [s columnNameForIndex: i];
                     NSString* dataType = NSStringFromClass([[AR performSelector:NSSelectorFromString(varName)] class]);

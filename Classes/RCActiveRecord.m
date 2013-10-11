@@ -8,7 +8,7 @@
 
 #import "RCActiveRecord.h"
 
-#define RCACTIVERECORDLOGGING 1
+#define RCACTIVERECORDLOGGING 0
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
