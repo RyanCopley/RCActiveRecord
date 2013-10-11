@@ -10,4 +10,22 @@
 
 @implementation RCActiveRecordResultSet
 
+-(void) execute: (void (^) (id recordResult)) resultCallback{
+    
+}
+
+-(void) execute: (void (^) (id recordResult)) resultCallback finished: (void (^) ()) finishedCallback{
+    
+}
+
+
+//Internal
+-(void) initWithFMDatabaseQueue:(FMDatabaseQueue*) _queue andQuery:(NSString*) query andActiveRecordClass:(Class*) _ARClass{
+    queue = _queue;
+    ARClass = _ARClass;
+    
+}
+
+
+
 @end

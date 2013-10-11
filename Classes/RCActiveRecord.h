@@ -26,6 +26,8 @@
 @property (nonatomic) BOOL isNewRecord;
 
 
++(id) model;
+
 -(void) setCriteria:(RCCriteria*) criteria;
 
 -(RCActiveRecordResultSet*) recordByPK:(NSNumber*) pk;
@@ -56,3 +58,9 @@
 
 
 @end
+
+/*
+ 
+    [[[Image model] allRecords] execute: ^(Image* img){ ...img... }];
+ 
+ */
