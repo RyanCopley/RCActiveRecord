@@ -52,36 +52,24 @@
 -(BOOL) deleteRecord;
 -(BOOL) isNewRecord;
 
-+(BOOL) generateSchema: (BOOL)force;
-+(BOOL) isSchemaUptoDate;
-+(BOOL) dropTable;
-+(BOOL) updateSchema;
-+(BOOL) emptyTable;
-
 +(BOOL) hasSchemaDeclared;
 +(BOOL) registerPrimaryKey:(NSString*) columnName;
 +(BOOL) registerColumn:(NSString*) columnName;
 +(BOOL) registerForeignKey:(Class*) activeRecord forColumn:(NSString*) column;
 
+
++(BOOL) generateSchema: (BOOL)force;
++(BOOL) updateSchema;
++(BOOL) trunctuate;
++(BOOL) dropTable;
+
 -(NSString*) primaryKey;
 -(NSNumber*) primaryKeyValue;
 -(NSString*) tableName;
-+(NSArray*) columns;
 
 -(NSArray*) getErrors;
 
 -(FMDatabaseQueue*) getFMDBQueue;
 
 
--(NSString*) objCDataTypeToSQLiteDataType:(NSString*)dataTypeStrRepresentation;
-
-
 @end
-
-/*
- 
-    [[[Image model] allRecords] execute: ^(Image* img){ 
-        ...img... 
-    }];
- 
- */

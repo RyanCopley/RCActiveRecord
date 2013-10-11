@@ -7,7 +7,6 @@
 //
 
 #import "RCActiveRecord.h"
-#import <objc/runtime.h>
 
 #define RCACTIVERECORDLOGGING 1
 #pragma clang diagnostic push
@@ -321,6 +320,10 @@ static BOOL inTransaction;
     return YES;
 }
 
++(BOOL)trunctuate{
+    [[self class] generateSchema:YES];
+}
+
 +(BOOL)dropTable{
     
     id obj = [[self class] alloc];
@@ -356,7 +359,7 @@ static BOOL inTransaction;
 }
 
 
-
+//Internal
 -(NSString*) objCDataTypeToSQLiteDataType:(NSString*)dataTypeStrRepresentation {
     if ([dataTypeStrRepresentation isEqualToString:@"__NSCFConstantString"]){
         return @"TEXT";
