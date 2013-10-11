@@ -25,15 +25,13 @@ static NSMutableDictionary* schemas;
     if (self){
         isNewRecord = YES;
         
-        recordData = [[NSMutableArray alloc] init];
-        //[ActiveRecord checkFolder];
         if (!queue){
             NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
             NSString *documentsDirectory = [paths objectAtIndex:0];
             NSString* dbPath =  [NSString stringWithFormat:@"%@/RCActiveRecord/db.sqlite",documentsDirectory];
             queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
             
-            schemaData = [[NSMutbaleDictionary alloc] init];
+            schemaData = [[NSMutableDictionary alloc] init];
             schemas = [[NSMutableDictionary alloc] init];
             
             

@@ -16,11 +16,13 @@
         conditions = [[NSMutableArray alloc] init];
         limit = -1;
         order = RCNoOrder;
+        overrideSQL = @"";
+        sqlOverride = NO;
     }
     return self;
 }
 
--(id) limit:(int) count{
+-(void) limit:(int) count{
     limit = count;
 }
 
@@ -93,16 +95,25 @@
 }
 
 -(NSString*) generateWhereClause{
+    
+    if (sqlOverride){
+        return overrideSQL;
+    }
+    
     NSMutableString * whereClause = [[NSMutableString alloc] init];
     
     //Conditions...
-    for (NSObject * condition in conditions) {
-        [whereClause appendFormat: @"%@ AND",condition];
+    if ([conditions count] > 0){
+        for (NSObject * condition in conditions) {
+            [whereClause appendFormat: @"%@ AND",condition];
+        }
+        whereClause = [[whereClause substringToIndex:whereClause.length - 4] mutableCopy];
     }
-    whereClause = [[whereClause substringToIndex:whereClause.length - 4] mutableCopy];
     
     //Limit...
-    [whereClause appendFormat: @" LIMIT %i ", limit];
+    if (limit > 0){
+        [whereClause appendFormat: @" LIMIT %i ", limit];
+    }
     
     //Order...
     if (order != RCNoOrder){
@@ -121,5 +132,9 @@
     return whereClause;
 }
 
+-(void) where:(NSString*) sqlWhere {
+    overrideSQL = sqlWhere;
+    sqlOverride = YES;
+}
 
 @end

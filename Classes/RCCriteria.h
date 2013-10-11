@@ -38,12 +38,17 @@ typedef enum {
     NSMutableArray* conditions;
     RCActiveRecordOrder order;
     NSString* orderColumn;
+    NSString* overrideSQL;
+    bool sqlOverride;
 }
 
 -(void) limit:(int) count;
 -(void) addCondition:(NSString*) columnName is:(RCActiveRecordComparisonOperator) comparer to:(id) value;
 -(void) orderByAsc:(NSString*) columnName;
 -(void) orderByDesc:(NSString*) columnName;
+
+//Note: The [RCCriteria where: ...] function will override ANY and ALL conditions provided. It is one or the other, not both.
+-(void) where:(NSString*) sqlWhere;
 
 -(NSString*) generateWhereClause;
 @end
