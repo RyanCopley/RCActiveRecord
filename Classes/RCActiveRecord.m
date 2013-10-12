@@ -38,9 +38,11 @@ static BOOL inTransaction;
         _id = @(-1);
         
         NSString *key = NSStringFromClass( [self class] );
-        [pkName setObject:@"_id" forKey:key]; /* default */
-        [schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
-        [foreignKeyData setObject: [@{} mutableCopy] forKey:key]; /* empty */
+        if ([pkName objectForKey:key] == nil ){
+            [pkName setObject:@"_id" forKey:key]; /* default */
+            [schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
+            [foreignKeyData setObject: [@{} mutableCopy] forKey:key]; /* empty */
+        }
         
         isNewRecord = YES;
         isSavedRecord = NO;
@@ -130,7 +132,6 @@ static BOOL inTransaction;
     NSMutableString* data = [[NSMutableString alloc] init];
     
     for (NSString* columnName in schema){
-        
         [columns appendFormat:@"%@, ", columnName];
         [data appendFormat:@"\"%@\", ", [self performSelector: NSSelectorFromString(columnName)] ];
     }
@@ -321,9 +322,10 @@ static BOOL inTransaction;
 }
 
 +(BOOL)trunctuate{
+    [[self class] dropTable];
+    
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wunused-value"
-        [[self class] dropTable];
         [[[self class] alloc] initModel];
     #pragma clang diagnostic pop
     return YES;
@@ -346,6 +348,7 @@ static BOOL inTransaction;
 
 -(NSString*) primaryKey{
     NSString *key = NSStringFromClass( [self class] );
+    NSLog(@"PKs: %@",pkName);
     return [pkName valueForKey:key];
 }
 

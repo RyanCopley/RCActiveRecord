@@ -9,12 +9,14 @@
 #import "RCActiveRecord.h"
 
 @interface App : RCActiveRecord{
+    NSNumber* appPK;
     NSString* name2;
     NSString* address2;
     NSNumber* age2;
 }
 
 
+@property (nonatomic, retain) NSNumber* appPK;
 @property (nonatomic, retain) NSString* name2;
 @property (nonatomic, retain) NSString* address2;
 @property (nonatomic, retain) NSNumber* age2;

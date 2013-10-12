@@ -9,7 +9,7 @@
 #import "App.h"
 
 @implementation App
-@synthesize name2,age2,address2;
+@synthesize name2,age2,address2,appPK;
 
 -(id)initModelValues{
     self = [super init];
@@ -17,7 +17,6 @@
     name2 = @"";
     address2 = @"";
     age2 = @(0);
-    
     return self;
 }
 
