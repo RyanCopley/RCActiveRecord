@@ -7,8 +7,7 @@
 //
 
 #import "RCAppDelegate.h"
-#import "Person.h"
-#import "App.h"
+#import "RCExampleCode.h"
 
 @implementation RCAppDelegate
 
@@ -19,61 +18,7 @@
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     
-    
-    Person* p = [Person model];
-    p.name = @"Ryana";
-    p.address = [@"Elm St" mutableCopy];
-    p.age = @(21);
-    p.ip = @"DAWEF";
-    NSLog(@"ID (Before insert): %@",p._id);
-    [p saveRecord];
-    NSLog(@"ID (After insert): %@",p._id);
-    [p saveRecord];
-    p.address = [@"Elm2222 St" mutableCopy];
-    [p saveRecord];
-    p.address = [@"Elm4444 St" mutableCopy];
-    [p saveRecord];
-    NSLog(@"ID (After 4 duplicate saves (Shouldn't change)): %@",p._id);
-    
-    [App trunctuate];
-    
-    App* a = [App model];
-    
-    int testSize = 1000;
-    int i = testSize;
-    a.name2 = [NSString stringWithFormat:@"Ryan-%i",arc4random()%10000];
-    a.address2 = @"Elm St3";
-    
-    
-    __block NSTimeInterval writeStart = [NSDate timeIntervalSinceReferenceDate];
-    [a beginTransaction];
-    [a beginTransaction];//Whoops! Started a transaction twice!
-    do {
-        a.age2 = @(arc4random()%50 + 18);
-        [a insertRecord];
-    } while (i-->0);
-    
-    [a commit];
-    
-    //Delete the latest
-    [a deleteRecord];
-    
-    
-    NSTimeInterval writeDuration = [NSDate timeIntervalSinceReferenceDate] - writeStart;
-    NSLog(@"(WRITE) Duration: %f, count: %i, seconds per record: %f", writeDuration, testSize, (writeDuration/testSize));
-    
-    
-    __block int recordCount = 0;
-    __block NSTimeInterval readStart = [NSDate timeIntervalSinceReferenceDate];
-    [[[App model] allRecords] execute:^(App* record){
-        NSLog(@"Age: %@",record.age2);
-        recordCount++;
-    } finished:^ (BOOL error){
-        NSTimeInterval readDuration = [NSDate timeIntervalSinceReferenceDate] - readStart;
-        NSLog(@"(READ) Duration: %f, count: %i, seconds per record: %f", readDuration, recordCount, (readDuration/recordCount));
-    }];
-    
-    
+    [[RCExampleCode alloc] runExample];
     return YES;
 }
 
