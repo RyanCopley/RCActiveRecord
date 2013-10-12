@@ -20,3 +20,5 @@ Features Coming Soon
 * Foreign Keys between other RCActiveRecords
 * Create models via JSON, and export models to JSON (By dictionary and array)
 * Auto Timestamps
+* Multiple database support
+* A "open" function (It defaults to db.sqlite currently)
