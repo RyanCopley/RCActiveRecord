@@ -33,6 +33,8 @@
     [p saveRecord];
     NSLog(@"ID (After 4 inserts): %@",p._id);
     
+    [App trunctuate];
+    
     App* a = [App model];
     
     int testSize = 1000;

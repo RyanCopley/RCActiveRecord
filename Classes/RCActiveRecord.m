@@ -8,7 +8,7 @@
 
 #import "RCActiveRecord.h"
 
-#define RCACTIVERECORDLOGGING 0
+#define RCACTIVERECORDLOGGING 1
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
@@ -321,7 +321,9 @@ static BOOL inTransaction;
 }
 
 +(BOOL)trunctuate{
-    [[self class] generateSchema:YES];
+    
+    [[self class] dropTable];
+    [[[self class] alloc] initModel];
 }
 
 +(BOOL)dropTable{
