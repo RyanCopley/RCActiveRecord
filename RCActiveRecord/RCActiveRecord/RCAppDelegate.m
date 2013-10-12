@@ -18,6 +18,8 @@
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
+    
+    
     Person* p = [Person model];
     p.name = @"Ryana";
     p.address = [@"Elm St" mutableCopy];
@@ -31,7 +33,7 @@
     [p saveRecord];
     p.address = [@"Elm4444 St" mutableCopy];
     [p saveRecord];
-    NSLog(@"ID (After 4 inserts): %@",p._id);
+    NSLog(@"ID (After 4 duplicate saves (Shouldn't change)): %@",p._id);
     
     [App trunctuate];
     

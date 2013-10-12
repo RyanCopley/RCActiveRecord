@@ -321,9 +321,12 @@ static BOOL inTransaction;
 }
 
 +(BOOL)trunctuate{
-    
-    [[self class] dropTable];
-    [[[self class] alloc] initModel];
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wunused-value"
+        [[self class] dropTable];
+        [[[self class] alloc] initModel];
+    #pragma clang diagnostic pop
+    return YES;
 }
 
 +(BOOL)dropTable{
