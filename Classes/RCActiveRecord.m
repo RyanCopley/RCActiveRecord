@@ -13,7 +13,7 @@
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
 @implementation RCActiveRecord
-@synthesize isNewRecord, isSavedRecord, _id;
+@synthesize isNewRecord, isSavedRecord, _id, creationDate, updatedDate, savedDate;
 
 
 static FMDatabaseQueue* RCActiveRecordQueue;
@@ -35,6 +35,7 @@ static BOOL inTransaction;
             inTransaction = NO;
         }
         
+        
         _id = @(-1);
         
         NSString *key = NSStringFromClass( [self class] );
@@ -42,8 +43,16 @@ static BOOL inTransaction;
             [pkName setObject:@"_id" forKey:key]; /* default */
             [schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
             [foreignKeyData setObject: [@{} mutableCopy] forKey:key]; /* empty */
+            [[self class] registerColumn:@"creationDate"];
+            [[self class] registerColumn:@"savedDate"];
+            [[self class] registerColumn:@"updatedDate"];
         }
         
+        
+        creationDate = [[NSDate alloc] init];
+        savedDate = [[NSDate alloc] initWithTimeIntervalSince1970:0];
+        updatedDate = [[NSDate alloc] initWithTimeIntervalSince1970:0];
+
         isNewRecord = YES;
         isSavedRecord = NO;
         
@@ -136,7 +145,15 @@ static BOOL inTransaction;
         NSLog(@"STR: %@", str);
         return [self sanitize:str];
     }
-
+    if ([value isKindOfClass:[NSDate class]]){
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        [formatter setFormatterBehavior:NSDateFormatterBehaviorDefault];
+        [formatter setDateStyle:NSDateFormatterShortStyle];
+        [formatter setTimeStyle:NSDateFormatterShortStyle];
+        return [self sanitize: [formatter stringFromDate: value]];
+        
+    }
+    
     //Most other data types work well enough not to bother with any conversion.
     return [self sanitize:value];
 }
@@ -145,7 +162,8 @@ static BOOL inTransaction;
     isNewRecord = NO;
     isSavedRecord = YES;
     
-    id obj = [[self class] alloc];
+    self.savedDate = [NSDate date];
+    id obj = self;
     
     NSString *key = NSStringFromClass( [self class] );
     NSDictionary* schema = [schemaData objectForKey:key];
@@ -188,7 +206,8 @@ static BOOL inTransaction;
     isNewRecord = NO;
     isSavedRecord = YES;
     
-    id obj = [[self class] alloc];
+    id obj = self;
+    self.updatedDate = [NSDate date];
     
     NSString *key = NSStringFromClass( [self class] );
     NSDictionary* schema = [schemaData objectForKey:key];
@@ -257,7 +276,7 @@ static BOOL inTransaction;
 
 +(BOOL) hasSchemaDeclared{
     NSString *key = NSStringFromClass( [self class] );
-    return [[schemaData objectForKey:key] count] > 0;
+    return [[schemaData objectForKey:key] count] > 3;
 }
 
 
@@ -274,14 +293,14 @@ static BOOL inTransaction;
     
     NSMutableDictionary* columnData = [schemaData objectForKey:key];
     
-    id obj = [[self alloc] initModelValues];
+    id obj = [[[self alloc] init] initModelValues];
     
     [columnData setObject:@{
                             @"columnName" : columnName,
                             @"type" : NSStringFromClass([[obj performSelector:NSSelectorFromString(columnName)] class])
                             }
                    forKey: columnName];
-    
+    NSLog(@"column: %@",columnData);
     [schemaData setObject:columnData forKey:key];
     return YES;
 }

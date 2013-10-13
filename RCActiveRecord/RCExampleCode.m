@@ -66,7 +66,9 @@
     __block NSTimeInterval readStart = [NSDate timeIntervalSinceReferenceDate];
     
     [[[App model] allRecords] execute: ^(App* record){
-        NSLog(@"Age: %@ is %@ years old with objs: %@, dict: %@", record.name2,record.age2, record.array, record.dict);
+        NSDate* d = record.creationDate;
+        
+        NSLog(@"Age: %@ is %@ years old with objs: %@, dict: %@ insertedDate: %@", record.name2,record.age2, record.array, record.dict, record.creationDate);
         recordCount++;
     } finished: ^(BOOL error){
         //Once we run out of models from SQLite, this block is called. It is optional, so you don't have to have it.

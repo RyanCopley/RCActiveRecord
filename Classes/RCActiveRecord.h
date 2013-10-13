@@ -21,6 +21,9 @@
     BOOL isSavedRecord;
     
     NSArray* errors;
+    NSDate* creationDate;
+    NSDate* savedDate;
+    NSDate* updatedDate;
     
     RCCriteria* criteria;
     
@@ -29,6 +32,9 @@
 @property (nonatomic) BOOL isNewRecord;
 @property (nonatomic) BOOL isSavedRecord;
 @property (nonatomic, retain) NSNumber* _id;
+@property (nonatomic, retain) NSDate* creationDate;
+@property (nonatomic, retain) NSDate* savedDate;
+@property (nonatomic, retain) NSDate* updatedDate;
 
 -(id) initModelValues; // Protocol method
 -(id) initModel; // Protocol Method

@@ -39,6 +39,18 @@
         return [f numberFromString:stringRepresentation];
     }
     
+    if ([class isSubclassOfClass:[NSDate class]]){
+        
+        
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        [formatter setFormatterBehavior:NSDateFormatterBehaviorDefault];
+        [formatter setDateStyle:NSDateFormatterShortStyle];
+        [formatter setTimeStyle:NSDateFormatterShortStyle];
+        return [formatter dateFromString: stringRepresentation];
+        
+    }
+    
+    
     return stringRepresentation;
 }
 
@@ -114,35 +126,6 @@
     }
     return self;
 }
-
-
-/*
- 
- -(id) rowToModel:(FMResultSet*)resultSet{
- id AR = [[[self class] alloc] init];
- [(RCActiveRecord*)AR setIsNewRecord:NO];
- 
- for (int i=0; i < [resultSet columnCount]; i++){
- //Some type checking for some basic classes...
- 
- NSString* varName = [resultSet columnNameForIndex: i];
- 
- id value = [NSString stringWithFormat:@"%s",[resultSet UTF8StringForColumnIndex:i]];
- 
- 
- NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[varName substringToIndex:1] uppercaseString],[varName substringFromIndex:1]];
- @try {
- [AR performSelector: NSSelectorFromString(setConversion) withObject: value];
- }
- @catch (NSException* e){
- NSLog(@"[RCActiveRecord] Error thrown! This object is not properly synthesized. Unable to set: %@", varName);
- }
- }
- return AR;
- }
- 
- */
-
 @end
 
 #pragma clang diagnostic pop
