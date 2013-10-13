@@ -12,13 +12,14 @@ Features
 * Transactioning for exceptionally fast queries
 * A powerful conditions mechanism making writing queries a breeze (If you even call it writing queries!)
 * Based on SQLite (Thanks to FMDB, https://github.com/ccgus/fmdb/)
+* Storing NSArrays and NSDictionaries (Although you lose conditional support-- coming soon!)
+* SQL Injection Proof
 
 Features Coming Soon
 ==========
-* SQL Injection Proofing (Low priority, since it is a client side app)
-* Storing NSArrays and NSDictionaries
 * Foreign Keys between other RCActiveRecords
 * Create models via JSON, and export models to JSON (By dictionary and array)
 * Auto Timestamps
 * Multiple database support
 * A "open" function (It defaults to db.sqlite currently)
+* NSArray / NSDictionary Conditional Support
