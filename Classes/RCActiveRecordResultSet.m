@@ -22,6 +22,26 @@
     [self execute:recordCallback finished:^(BOOL error){}];
 }
 
+-(id) decodeDataFromSQLITE: (NSString*)stringRepresentation expectedType: (Class) class{
+    NSError* err;
+    
+    if ([class isSubclassOfClass:[NSArray class]] || [class isSubclassOfClass:[NSDictionary class]]){
+        return [NSJSONSerialization JSONObjectWithData: [stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
+    }
+    
+    if ([class isSubclassOfClass:[NSString class]]){
+        return stringRepresentation;
+    }
+    
+    if ([class isSubclassOfClass:[NSNumber class]]){
+        NSNumberFormatter * f = [[NSNumberFormatter alloc] init];
+        [f setNumberStyle:NSNumberFormatterNoStyle];
+        return [f numberFromString:stringRepresentation];
+    }
+    
+    return stringRepresentation;
+}
+
 -(void) execute: (void (^) (id recordResult)) recordCallback finished: (void (^) (BOOL error)) finishedCallback{
     error = NO;
     
@@ -32,23 +52,27 @@
             FMResultSet* s = [db executeQuery: internalQuery];
             while ([s next]){
                 recordTally++;
-                id AR = [[ARClass alloc] init];
+                id AR = [[ARClass alloc] initModelValues];
                 [(RCActiveRecord*)AR setIsNewRecord:NO];
                 [(RCActiveRecord*)AR setIsSavedRecord:YES];
                 
                 for (int i=0; i < [s columnCount]; i++){
                     
                     NSString* varName = [s columnNameForIndex: i];
+                   // NSLog(@"Warr: %@",[AR performSelector:NSSelectorFromString(varName)]);
+                    
                     NSString* dataType = NSStringFromClass([[AR performSelector:NSSelectorFromString(varName)] class]);
+                    //NSLog(@"Data type: %@", dataType);
                     //^ Is showing up as NULL.
                     
                     // TODO: Data type comparison would be nice here
                     
                     NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[varName substringToIndex:1] uppercaseString],[varName substringFromIndex:1]];
-                    id value = [NSString stringWithFormat:@"%s",[s UTF8StringForColumnIndex:i]];
+                    NSString* value = [NSString stringWithFormat:@"%s",[s UTF8StringForColumnIndex:i]];
                     
+                    id convertedValue = [self decodeDataFromSQLITE:value expectedType: [[AR performSelector:NSSelectorFromString(varName)] class]];
                     @try {
-                        [AR performSelector: NSSelectorFromString(setConversion) withObject: value];
+                        [AR performSelector: NSSelectorFromString(setConversion) withObject: convertedValue];
                     }
                     @catch (NSException* e){
                         error = YES;

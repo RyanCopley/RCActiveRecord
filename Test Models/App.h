@@ -13,6 +13,9 @@
     NSString* name2;
     NSString* address2;
     NSNumber* age2;
+    NSArray* array;
+    NSDictionary* dict;
+    
 }
 
 
@@ -20,5 +23,7 @@
 @property (nonatomic, retain) NSString* name2;
 @property (nonatomic, retain) NSString* address2;
 @property (nonatomic, retain) NSNumber* age2;
+@property (nonatomic, retain) NSArray* array;
+@property (nonatomic, retain) NSDictionary* dict;
 
 @end

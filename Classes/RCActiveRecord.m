@@ -8,7 +8,7 @@
 
 #import "RCActiveRecord.h"
 
-#define RCACTIVERECORDLOGGING 0
+#define RCACTIVERECORDLOGGING 1
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
@@ -119,6 +119,28 @@ static BOOL inTransaction;
     }];
 }
 
+-(NSString*) sanitize: (NSString*) value{
+    value = [NSString stringWithFormat:@"%@",value];
+    value = [value stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""];
+    value = [value stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
+    return value;
+}
+
+-(NSString*) encodeValueForSQLITE:(id) value {
+    
+    NSError* err;
+    
+    if ([value isKindOfClass:[NSArray class]] || [value isKindOfClass:[NSDictionary class]]){
+        NSData* data = [NSJSONSerialization dataWithJSONObject:value options:kNilOptions error:&err];
+        NSString* str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        NSLog(@"STR: %@", str);
+        return [self sanitize:str];
+    }
+
+    //Most other data types work well enough not to bother with any conversion.
+    return [self sanitize:value];
+}
+
 -(BOOL) insertRecord{
     isNewRecord = NO;
     isSavedRecord = YES;
@@ -133,7 +155,7 @@ static BOOL inTransaction;
     
     for (NSString* columnName in schema){
         [columns appendFormat:@"%@, ", columnName];
-        [data appendFormat:@"\"%@\", ", [self performSelector: NSSelectorFromString(columnName)] ];
+        [data appendFormat:@"\"%@\", ", [self encodeValueForSQLITE: [self performSelector: NSSelectorFromString(columnName)]] ];
     }
     
     if ([columns isEqualToString:@""] == FALSE && [data isEqualToString:@""] == FALSE){
@@ -175,7 +197,7 @@ static BOOL inTransaction;
     
     for (NSString* columnName in schema){
         
-        [updateData appendFormat:@"`%@`=\"%@\", ", columnName,[self performSelector: NSSelectorFromString(columnName)]];
+        [updateData appendFormat:@"`%@`=\"%@\", ", columnName,[self encodeValueForSQLITE: [self performSelector: NSSelectorFromString(columnName)]] ];
     }
     
     if ([updateData isEqualToString:@""] == FALSE){
@@ -348,7 +370,7 @@ static BOOL inTransaction;
 
 -(NSString*) primaryKey{
     NSString *key = NSStringFromClass( [self class] );
-    NSLog(@"PKs: %@",pkName);
+    
     return [pkName valueForKey:key];
 }
 

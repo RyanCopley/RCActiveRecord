@@ -45,6 +45,8 @@
     do {
         a.name2 = [NSString stringWithFormat:@"Ryan-%i",arc4random()%10000];
         a.age2 = @(arc4random()%50 + 18);
+        a.array = @[@(arc4random()%50),@(arc4random()%50),@(arc4random()%50),@(arc4random()%50),@(arc4random()%50)];
+        a.dict = @{@"Key":@(arc4random()%10000)};
         [a insertRecord];
     } while (i-->0);
     
@@ -64,7 +66,7 @@
     __block NSTimeInterval readStart = [NSDate timeIntervalSinceReferenceDate];
     
     [[[App model] allRecords] execute: ^(App* record){
-        NSLog(@"Age: %@ is %@ years old", record.name2,record.age2);
+        NSLog(@"Age: %@ is %@ years old with objs: %@, dict: %@", record.name2,record.age2, record.array, record.dict);
         recordCount++;
     } finished: ^(BOOL error){
         //Once we run out of models from SQLite, this block is called. It is optional, so you don't have to have it.
