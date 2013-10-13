@@ -15,6 +15,8 @@
     NSString* internalQuery;
     Class ARClass;
     BOOL error;
+    NSDateFormatter* formatter;
+    
 }
 
 

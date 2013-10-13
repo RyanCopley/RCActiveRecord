@@ -18,6 +18,9 @@
 
 @implementation RCActiveRecordResultSet
 
+static NSDateFormatter *formatter;
+
+
 -(void) execute: (void (^) (id recordResult)) recordCallback{
     [self execute:recordCallback finished:^(BOOL error){}];
 }
@@ -40,14 +43,7 @@
     }
     
     if ([class isSubclassOfClass:[NSDate class]]){
-        
-        
-        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-        [formatter setFormatterBehavior:NSDateFormatterBehaviorDefault];
-        [formatter setDateStyle:NSDateFormatterShortStyle];
-        [formatter setTimeStyle:NSDateFormatterShortStyle];
         return [formatter dateFromString: stringRepresentation];
-        
     }
     
     
@@ -120,6 +116,8 @@
 -(RCActiveRecordResultSet*) initWithFMDatabaseQueue:(FMDatabaseQueue*) _queue andQuery:(NSString*) query andActiveRecordClass:(Class) _ARClass{
     self = [super init];
     if (self){
+        formatter = [[NSDateFormatter alloc] init];
+        [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
         internalQuery = query;
         queue = _queue;
         ARClass = _ARClass;

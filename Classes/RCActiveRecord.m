@@ -8,7 +8,7 @@
 
 #import "RCActiveRecord.h"
 
-#define RCACTIVERECORDLOGGING 1
+#define RCACTIVERECORDLOGGING 0
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
@@ -22,6 +22,8 @@ static NSMutableDictionary* RCActiveRecordSchemas;
 static NSMutableDictionary* pkName;
 static NSMutableDictionary* schemaData;
 static NSMutableDictionary* foreignKeyData;
+static NSDateFormatter *formatter;
+
 static BOOL inTransaction;
 
 #pragma mark Active Record functions
@@ -33,6 +35,8 @@ static BOOL inTransaction;
             schemaData = [[NSMutableDictionary alloc] init];
             foreignKeyData = [[NSMutableDictionary alloc] init];
             inTransaction = NO;
+            formatter = [[NSDateFormatter alloc] init];
+            [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
         }
         
         
@@ -128,6 +132,14 @@ static BOOL inTransaction;
     }];
 }
 
+-(void)rollback{
+    [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
+        [db rollback];
+        inTransaction = NO;
+    }];
+}
+
+
 -(NSString*) sanitize: (NSString*) value{
     value = [NSString stringWithFormat:@"%@",value];
     value = [value stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""];
@@ -142,16 +154,11 @@ static BOOL inTransaction;
     if ([value isKindOfClass:[NSArray class]] || [value isKindOfClass:[NSDictionary class]]){
         NSData* data = [NSJSONSerialization dataWithJSONObject:value options:kNilOptions error:&err];
         NSString* str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        NSLog(@"STR: %@", str);
+
         return [self sanitize:str];
     }
     if ([value isKindOfClass:[NSDate class]]){
-        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-        [formatter setFormatterBehavior:NSDateFormatterBehaviorDefault];
-        [formatter setDateStyle:NSDateFormatterShortStyle];
-        [formatter setTimeStyle:NSDateFormatterShortStyle];
         return [self sanitize: [formatter stringFromDate: value]];
-        
     }
     
     //Most other data types work well enough not to bother with any conversion.
@@ -300,7 +307,7 @@ static BOOL inTransaction;
                             @"type" : NSStringFromClass([[obj performSelector:NSSelectorFromString(columnName)] class])
                             }
                    forKey: columnName];
-    NSLog(@"column: %@",columnData);
+    
     [schemaData setObject:columnData forKey:key];
     return YES;
 }

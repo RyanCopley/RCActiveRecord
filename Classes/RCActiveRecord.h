@@ -51,6 +51,7 @@
 
 -(void)beginTransaction;
 -(void)commit;
+-(void)rollback;
 
 -(BOOL) insertRecord;
 -(BOOL) updateRecord;
