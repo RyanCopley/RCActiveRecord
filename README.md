@@ -15,10 +15,11 @@ Features
 * Storing NSArrays and NSDictionaries (Although you lose conditional support-- coming soon!)
 * SQL Injection Proof
 * Auto Timestamps (Created, Saved, Updated)
+* Foreign Keys between other RCActiveRecords
+* Foreign Key Auto Loading
 
 Features Coming Soon
 ==========
-* Foreign Keys between other RCActiveRecords
 * Create models via JSON, and export models to JSON (By dictionary and array)
 * Multiple database support
 * A "open" function (It defaults to db.sqlite currently)

@@ -9,16 +9,18 @@
 #import "App.h"
 
 @implementation App
-@synthesize name2,age2,address2,appPK, array, dict;
+@synthesize name2,age2,address2,appPK, array, dict, person;
 
 -(id)initModelValues{
     self = [super init];
     if (self){
+        appPK = @(-1);
         name2 = @"";
         address2 = @"";
         age2 = @(0);
         array = @[];
         dict = @{};
+        person = [[Person alloc] init]; // Ugh
     }
     return self;
 }
@@ -37,6 +39,7 @@
             [App registerColumn:@"age2"];
             [App registerColumn:@"array"];
             [App registerColumn:@"dict"];
+            [App registerColumn:@"person"];
             [App generateSchema:NO]; // If you use "YES" here, it will DROP the table and re-create the table in SQLite.
         }
     }

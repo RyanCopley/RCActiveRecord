@@ -19,13 +19,50 @@
 @implementation RCActiveRecordResultSet
 
 static NSDateFormatter *formatter;
+static NSNumberFormatter *numFormatter;
 
+
+-(NSArray*) executeSyncronouslyInternalUseOnly: (FMDatabase*)db{
+    __block NSMutableArray* returnObjs = [[NSMutableArray alloc] init];
+    
+        FMResultSet* s = [db executeQuery: internalQuery];
+        while ([s next]){
+            id AR = [[ARClass alloc] initModelValues];
+            [(RCActiveRecord*)AR setIsNewRecord:NO];
+            [(RCActiveRecord*)AR setIsSavedRecord:YES];
+            
+            for (int i=0; i < [s columnCount]; i++){
+                
+                NSString* varName = [s columnNameForIndex: i];
+                // NSLog(@"Warr: %@",[AR performSelector:NSSelectorFromString(varName)]);
+                
+                NSString* dataType = NSStringFromClass([[AR performSelector:NSSelectorFromString(varName)] class]);
+                
+                NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[varName substringToIndex:1] uppercaseString],[varName substringFromIndex:1]];
+                NSString* value = [NSString stringWithFormat:@"%s",[s UTF8StringForColumnIndex:i]];
+                
+                id convertedValue = [self decodeDataFromSQLITE:value expectedType: [[AR performSelector:NSSelectorFromString(varName)] class] fromDB:db];
+                @try {
+                    
+                    [AR performSelector: NSSelectorFromString(setConversion) withObject: convertedValue];
+                }
+                @catch (NSException* e){
+                    error = YES;
+                    NSLog(@"[Error in RCActiveRecord] This object (%@) is not properly synthesized (Invalid setter). Unable to set: %@", NSStringFromClass([AR class]), varName);
+                }
+                
+            }
+            [returnObjs addObject:AR];
+        }
+    
+    return returnObjs;
+}
 
 -(void) execute: (void (^) (id recordResult)) recordCallback{
     [self execute:recordCallback finished:^(BOOL error){}];
 }
 
--(id) decodeDataFromSQLITE: (NSString*)stringRepresentation expectedType: (Class) class{
+-(id) decodeDataFromSQLITE: (NSString*)stringRepresentation expectedType: (Class) class fromDB: (FMDatabase*) db{
     NSError* err;
     
     if ([class isSubclassOfClass:[NSArray class]] || [class isSubclassOfClass:[NSDictionary class]]){
@@ -37,15 +74,26 @@ static NSDateFormatter *formatter;
     }
     
     if ([class isSubclassOfClass:[NSNumber class]]){
-        NSNumberFormatter * f = [[NSNumberFormatter alloc] init];
-        [f setNumberStyle:NSNumberFormatterNoStyle];
-        return [f numberFromString:stringRepresentation];
+        return [numFormatter numberFromString:stringRepresentation];
     }
     
     if ([class isSubclassOfClass:[NSDate class]]){
         return [formatter dateFromString: stringRepresentation];
     }
     
+    
+    if ([class isSubclassOfClass:[RCActiveRecord class]]){
+        //To do this shit still D:
+        
+        __block RCActiveRecord* model = [class model];
+        NSNumber* pk = [numFormatter numberFromString:stringRepresentation];
+        
+        NSArray* models = [[model recordByPK: pk] executeSyncronouslyInternalUseOnly: db];
+        
+        if ([models count] > 0){
+            return [models objectAtIndex:0];
+        }
+    }
     
     return stringRepresentation;
 }
@@ -70,7 +118,7 @@ static NSDateFormatter *formatter;
                    // NSLog(@"Warr: %@",[AR performSelector:NSSelectorFromString(varName)]);
                     
                     NSString* dataType = NSStringFromClass([[AR performSelector:NSSelectorFromString(varName)] class]);
-                    //NSLog(@"Data type: %@", dataType);
+                    
                     //^ Is showing up as NULL.
                     
                     // TODO: Data type comparison would be nice here
@@ -78,8 +126,9 @@ static NSDateFormatter *formatter;
                     NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[varName substringToIndex:1] uppercaseString],[varName substringFromIndex:1]];
                     NSString* value = [NSString stringWithFormat:@"%s",[s UTF8StringForColumnIndex:i]];
                     
-                    id convertedValue = [self decodeDataFromSQLITE:value expectedType: [[AR performSelector:NSSelectorFromString(varName)] class]];
+                    id convertedValue = [self decodeDataFromSQLITE:value expectedType: [[AR performSelector:NSSelectorFromString(varName)] class] fromDB: db];
                     @try {
+                        
                         [AR performSelector: NSSelectorFromString(setConversion) withObject: convertedValue];
                     }
                     @catch (NSException* e){
@@ -118,6 +167,10 @@ static NSDateFormatter *formatter;
     if (self){
         formatter = [[NSDateFormatter alloc] init];
         [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
+        
+        numFormatter = [[NSNumberFormatter alloc] init];
+        [numFormatter setNumberStyle:NSNumberFormatterNoStyle];
+        
         internalQuery = query;
         queue = _queue;
         ARClass = _ARClass;

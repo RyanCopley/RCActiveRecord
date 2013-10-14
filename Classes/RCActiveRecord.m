@@ -161,6 +161,10 @@ static BOOL inTransaction;
         return [self sanitize: [formatter stringFromDate: value]];
     }
     
+    if ([value isKindOfClass:[RCActiveRecord class]]){
+        return [self sanitize: [NSString stringWithFormat:@"%@",[((RCActiveRecord*)value) primaryKeyValue]]];
+    }
+    
     //Most other data types work well enough not to bother with any conversion.
     return [self sanitize:value];
 }
@@ -309,11 +313,6 @@ static BOOL inTransaction;
                    forKey: columnName];
     
     [schemaData setObject:columnData forKey:key];
-    return YES;
-}
-
-//TODO: Foreign key
-+(BOOL) registerForeignKey:(Class*) activeRecord forColumn:(NSString*) column{
     return YES;
 }
 

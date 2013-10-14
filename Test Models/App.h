@@ -7,6 +7,7 @@
 //
 
 #import "RCActiveRecord.h"
+#import "Person.h"
 
 @interface App : RCActiveRecord{
     NSNumber* appPK;
@@ -15,7 +16,7 @@
     NSNumber* age2;
     NSArray* array;
     NSDictionary* dict;
-    
+    Person* person;
 }
 
 
@@ -25,5 +26,6 @@
 @property (nonatomic, retain) NSNumber* age2;
 @property (nonatomic, retain) NSArray* array;
 @property (nonatomic, retain) NSDictionary* dict;
+@property (nonatomic, retain) Person* person;
 
 @end

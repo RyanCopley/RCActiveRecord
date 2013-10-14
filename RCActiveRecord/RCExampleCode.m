@@ -38,7 +38,7 @@
     int i = testSize;
     a.address2 = @"Test St";
     
-    
+    a.person = p;
     __block NSTimeInterval writeStart = [NSDate timeIntervalSinceReferenceDate];
     [a beginTransaction];
     [a beginTransaction];//Whoops! Started a transaction twice! No worries, we safe guard against this.
@@ -55,7 +55,6 @@
     //Delete the latest entry (Since we INSERTED `testSize` times, `a` links to the MOST RECENT insertion.
     [a deleteRecord];
     
-    
     //Benchmark how long it took us to write `testSize` entries
     NSTimeInterval writeDuration = [NSDate timeIntervalSinceReferenceDate] - writeStart;
     NSLog(@"(WRITE) Duration: %f, count: %i, seconds per record: %f", writeDuration, testSize, (writeDuration/testSize));
@@ -66,9 +65,7 @@
     __block NSTimeInterval readStart = [NSDate timeIntervalSinceReferenceDate];
     
     [[[App model] allRecords] execute: ^(App* record){
-        NSDate* d = record.creationDate;
-        
-        //NSLog(@"Age: %@ is %@ years old with objs: %@, dict: %@ insertedDate: %@", record.name2,record.age2, record.array, record.dict, record.creationDate);
+        NSLog(@"Age: %@ is %@ years old with objs: %@, dict: %@ insertedDate: %@, person id: %@", record.name2,record.age2, record.array, record.dict, record.creationDate, record.person.name);
         recordCount++;
     } finished: ^(BOOL error){
         //Once we run out of models from SQLite, this block is called. It is optional, so you don't have to have it.

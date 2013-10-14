@@ -62,8 +62,6 @@
 +(BOOL) hasSchemaDeclared;
 +(BOOL) registerPrimaryKey:(NSString*) columnName;
 +(BOOL) registerColumn:(NSString*) columnName;
-+(BOOL) registerForeignKey:(Class*) activeRecord forColumn:(NSString*) column;
-
 
 +(BOOL) generateSchema: (BOOL)force;
 +(BOOL) updateSchema;
