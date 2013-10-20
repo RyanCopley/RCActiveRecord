@@ -120,6 +120,65 @@ static BOOL inTransaction;
 }
 
 
+-(NSDictionary*) toJSON{
+    NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
+    [dict setValue:[self primaryKeyValue] forKey:[self primaryKey]];
+    
+    NSString *key = NSStringFromClass( [self class] );
+    
+    NSMutableDictionary* columnData = [schemaData objectForKey:key];
+    
+    for (NSString* key in columnData) {
+        id value = [self performSelector:NSSelectorFromString(key)];
+        if ([value isKindOfClass:[RCActiveRecord class]] == NO){
+            [dict setValue: value forKey: key];
+        }else{
+            RCActiveRecord* tmp = value;
+            [dict setValue: [tmp primaryKeyValue] forKey: key];
+            
+        }
+    }
+    
+    return dict;
+}
+
+-(id) fromJSON:(id)json{
+    if ([json isKindOfClass:[NSArray class]]){
+        NSMutableArray* array = [[NSMutableArray alloc] init];
+        id tmp = nil;
+        for (NSDictionary* obj in json) {
+            tmp = [self fromJSON:obj];
+            if (tmp != nil){
+                [array addObject:tmp];
+            }
+        }
+        return [NSArray arrayWithArray:array];
+    }
+    
+    if ([json isKindOfClass:[NSDictionary class]]){
+        id model = [[[[self class] alloc] initModelValues] initModel];
+        
+        for( NSString *aKey in json ){
+            
+            NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[aKey substringToIndex:1] uppercaseString],[aKey substringFromIndex:1]];
+            id value = [json objectForKey:aKey];
+            @try {
+                [model performSelector: NSSelectorFromString(setConversion) withObject: value];
+            }
+            @catch (NSException* e){
+                NSLog(@"[Error in RCActiveRecord] This object (%@) is not properly synthesized for the JSON Dictionary provided (Invalid setter). Unable to set: %@. Dictionary provided: %@", NSStringFromClass([model class]), aKey, json);
+            }
+
+            
+        }
+        
+        return model;
+    }
+    
+    return nil;
+}
+
+
 -(void)beginTransaction{
     if (!inTransaction){
         inTransaction = YES;

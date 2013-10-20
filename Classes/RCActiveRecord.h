@@ -48,6 +48,8 @@
 -(RCActiveRecordResultSet*) recordsByAttribute:(NSString*) attributeName value:(id) value;
 -(RCActiveRecordResultSet*) allRecords;
 
+-(NSDictionary*) toJSON;
+-(id) fromJSON:(id)json;
 
 -(void)beginTransaction;
 -(void)commit;

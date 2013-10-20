@@ -36,7 +36,6 @@ static NSNumberFormatter *numFormatter;
                 NSString* varName = [s columnNameForIndex: i];
                 // NSLog(@"Warr: %@",[AR performSelector:NSSelectorFromString(varName)]);
                 
-                NSString* dataType = NSStringFromClass([[AR performSelector:NSSelectorFromString(varName)] class]);
                 
                 NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[varName substringToIndex:1] uppercaseString],[varName substringFromIndex:1]];
                 NSString* value = [NSString stringWithFormat:@"%s",[s UTF8StringForColumnIndex:i]];
@@ -116,8 +115,6 @@ static NSNumberFormatter *numFormatter;
                     
                     NSString* varName = [s columnNameForIndex: i];
                    // NSLog(@"Warr: %@",[AR performSelector:NSSelectorFromString(varName)]);
-                    
-                    NSString* dataType = NSStringFromClass([[AR performSelector:NSSelectorFromString(varName)] class]);
                     
                     //^ Is showing up as NULL.
                     

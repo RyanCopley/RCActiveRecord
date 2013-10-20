@@ -6,7 +6,7 @@ Inspired by the Yii CActiveRecord (PHP) and Mongoose ORM (Node.JS).
 
 Features
 ==========
-* Fully Asyncronous Reads
+* Fully Asyncronous Reads for top level queries. (Preloaded foreign keys are syncronous unfortunately.)
 * SQL-less queries
 * Creates database structure and schema for you
 * Transactioning for exceptionally fast queries
@@ -18,10 +18,10 @@ Features
 * Foreign Keys between other RCActiveRecords
 * Foreign Key Auto Loading
 * Full Transaction support (Starting, committing, and rolling back)
+* Create models via JSON, and export models to JSON (By dictionary and array)
 
 Features Coming Soon
 ==========
-* Create models via JSON, and export models to JSON (By dictionary and array)
 * Multiple database support
 * A "open" function (It defaults to db.sqlite currently)
 * NSArray / NSDictionary Conditional Support

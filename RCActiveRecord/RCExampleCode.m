@@ -61,11 +61,51 @@
         writtenCount++;
     } while (i-->0);
     [a commit]; //Commit (write) all changes to the database. This is the key to having exceptionally fast SQLite performance!
-    NSLog(@"Wrote %i models",writtenCount);
     
     //Delete the latest entry (Since we INSERTED `testSize` times, `a` links to the MOST RECENT insertion.
     [a deleteRecord]; //Since we are outside of a transaction, this will happen immediately!!
     NSLog(@"Deleted 1 record");
+    
+    
+    NSLog(@"JSON'd: %@", [a toJSON]);
+    
+    
+    a = [a fromJSON:
+         @{
+           @"name2" : @"test",
+           @"address2" : @"json",
+           @"age2" : @(22),
+           @"array" : @[@"1",@"2"],
+           @"dict" : @{@"a":@"s"}
+           }
+         ];
+    NSLog(@"From JSON Dictionary Name: %@ == test",a.name2);
+    
+    
+    NSArray* objs = [a fromJSON:
+         @[
+           @{
+              @"name2" : @"Array index 0 name",
+              @"address2" : @"json",
+              @"age2" : @(22),
+              @"array" : @[@"1",@"2"],
+              @"dict" : @{@"a":@"s"}
+              },
+         @{
+           @"name2" : @"Array index 1 name",
+           @"address2" : @"json",
+           @"age2" : @(22),
+           @"array" : @[@"1",@"2"],
+           @"dict" : @{@"a":@"s"}
+           }]
+    ];
+    
+    App* tmp = [objs objectAtIndex:0];
+    NSLog(@"From JSON array: %@ == Array index 0 name", tmp.name2);
+    App* tmp2 = [objs objectAtIndex:1];
+    NSLog(@"From JSON array: %@ == Array index 1 name", tmp2.name2);
+    
+    NSLog(@"Wrote %i models",writtenCount);
     
     
     //Benchmark how long it took us to write `testSize` entries
