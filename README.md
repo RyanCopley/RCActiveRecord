@@ -17,6 +17,7 @@ Features
 * Auto Timestamps (Created, Saved, Updated)
 * Foreign Keys between other RCActiveRecords
 * Foreign Key Auto Loading
+* Full Transaction support (Starting, committing, and rolling back)
 
 Features Coming Soon
 ==========
