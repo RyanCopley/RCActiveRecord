@@ -70,7 +70,7 @@
     NSLog(@"JSON'd: %@", [a toJSON]);
     
     
-    a = [a fromJSON:
+    a = [App fromJSON:
          @{
            @"name2" : @"test",
            @"address2" : @"json",
@@ -82,7 +82,7 @@
     NSLog(@"From JSON Dictionary Name: %@ == test",a.name2);
     
     
-    NSArray* objs = [a fromJSON:
+    NSArray* objs = [App fromJSON:
          @[
            @{
               @"name2" : @"Array index 0 name",

@@ -49,7 +49,7 @@
 -(RCActiveRecordResultSet*) allRecords;
 
 -(NSDictionary*) toJSON;
--(id) fromJSON:(id)json;
++(id) fromJSON:(id)json;
 
 -(void)beginTransaction;
 -(void)commit;

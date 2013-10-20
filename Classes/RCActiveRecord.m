@@ -142,12 +142,12 @@ static BOOL inTransaction;
     return dict;
 }
 
--(id) fromJSON:(id)json{
++(id) fromJSON:(id)json{
     if ([json isKindOfClass:[NSArray class]]){
         NSMutableArray* array = [[NSMutableArray alloc] init];
         id tmp = nil;
         for (NSDictionary* obj in json) {
-            tmp = [self fromJSON:obj];
+            tmp = [[self class] fromJSON:obj];
             if (tmp != nil){
                 [array addObject:tmp];
             }
