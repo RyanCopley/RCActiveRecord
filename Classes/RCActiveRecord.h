@@ -59,6 +59,9 @@
 -(BOOL) deleteRecord;
 -(BOOL) isNewRecord;
 
++(void) preloadModels:(BOOL)preload;
++(BOOL) preloadEnabled;
+
 +(BOOL) hasSchemaDeclared;
 +(BOOL) registerPrimaryKey:(NSString*) columnName;
 +(BOOL) registerColumn:(NSString*) columnName;

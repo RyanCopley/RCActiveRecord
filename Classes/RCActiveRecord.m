@@ -23,6 +23,8 @@ static NSMutableDictionary* pkName;
 static NSMutableDictionary* schemaData;
 static NSMutableDictionary* foreignKeyData;
 static NSDateFormatter *formatter;
+static NSMutableDictionary* RCActiveRecordPreload;
+
 
 static BOOL inTransaction;
 
@@ -34,6 +36,7 @@ static BOOL inTransaction;
             pkName = [[NSMutableDictionary alloc] init];
             schemaData = [[NSMutableDictionary alloc] init];
             foreignKeyData = [[NSMutableDictionary alloc] init];
+            RCActiveRecordPreload = [[NSMutableDictionary alloc] init];
             inTransaction = NO;
             formatter = [[NSDateFormatter alloc] init];
             [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
@@ -47,6 +50,7 @@ static BOOL inTransaction;
             [pkName setObject:@"_id" forKey:key]; /* default */
             [schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
             [foreignKeyData setObject: [@{} mutableCopy] forKey:key]; /* empty */
+            [RCActiveRecordPreload setObject: @(1) forKey:key]; /* preload */
             [[self class] registerColumn:@"creationDate"];
             [[self class] registerColumn:@"savedDate"];
             [[self class] registerColumn:@"updatedDate"];
@@ -214,38 +218,41 @@ static BOOL inTransaction;
 }
 
 -(BOOL) updateRecord{
-    isNewRecord = NO;
-    isSavedRecord = YES;
-    
-    id obj = self;
-    self.updatedDate = [NSDate date];
-    
-    NSString *key = NSStringFromClass( [self class] );
-    NSDictionary* schema = [schemaData objectForKey:key];
-    
-    NSMutableString* updateData = [[NSMutableString alloc] init];
-    
-    for (NSString* columnName in schema){
+    if (isNewRecord == NO){
+        isNewRecord = NO;
+        isSavedRecord = YES;
+        id obj = self;
+        self.updatedDate = [NSDate date];
         
-        [updateData appendFormat:@"`%@`=\"%@\", ", columnName,[self encodeValueForSQLITE: [self performSelector: NSSelectorFromString(columnName)]] ];
-    }
-    
-    if ([updateData isEqualToString:@""] == FALSE){
+        NSString *key = NSStringFromClass( [self class] );
+        NSDictionary* schema = [schemaData objectForKey:key];
         
-        updateData = [[updateData substringToIndex:updateData.length-2] mutableCopy];
+        NSMutableString* updateData = [[NSMutableString alloc] init];
         
-        __block NSString* query = [NSString stringWithFormat:@"UPDATE %@ SET %@;", [obj tableName], updateData];
-        if (RCACTIVERECORDLOGGING){
-            NSLog(@"Query: %@", query);
+        for (NSString* columnName in schema){
+            
+            [updateData appendFormat:@"`%@`=\"%@\", ", columnName,[self encodeValueForSQLITE: [self performSelector: NSSelectorFromString(columnName)]] ];
         }
         
-        [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
+        if ([updateData isEqualToString:@""] == FALSE){
             
-            [db executeUpdate: query];
+            updateData = [[updateData substringToIndex:updateData.length-2] mutableCopy];
             
-        }];
+            __block NSString* query = [NSString stringWithFormat:@"UPDATE %@ SET %@;", [obj tableName], updateData];
+            if (RCACTIVERECORDLOGGING){
+                NSLog(@"Query: %@", query);
+            }
+            
+            [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
+                
+                [db executeUpdate: query];
+                
+            }];
+        }
+        return YES;
     }
-    return YES;
+    
+    return NO;
 }
 
 
@@ -284,6 +291,15 @@ static BOOL inTransaction;
     return isNewRecord;
 }
 
++(void) preloadModels:(BOOL)preload{
+    NSString *key = NSStringFromClass( [self class] );
+    return [RCActiveRecordPreload setObject:@(preload) forKey:key];
+}
+
++(BOOL) preloadEnabled{
+    NSString *key = NSStringFromClass( [self class] );
+    return [[RCActiveRecordPreload objectForKey:key] boolValue];
+}
 
 +(BOOL) hasSchemaDeclared{
     NSString *key = NSStringFromClass( [self class] );
@@ -304,7 +320,7 @@ static BOOL inTransaction;
     
     NSMutableDictionary* columnData = [schemaData objectForKey:key];
     
-    id obj = [[[self alloc] init] initModelValues];
+    id obj = [[self alloc] initModelValues];
     
     [columnData setObject:@{
                             @"columnName" : columnName,
@@ -321,12 +337,12 @@ static BOOL inTransaction;
     
     NSString *key = NSStringFromClass( [self class] );
     if (RCACTIVERECORDLOGGING){
-        NSLog(@"Generating schema for table: %@",[[[self class] alloc] tableName]);
+        NSLog(@"Generating schema for table: %@",[[self alloc] tableName]);
     }
-    id obj = [[self class] alloc];
+    id obj = [[self alloc] initModelValues];
     
     NSDictionary* schema = [schemaData objectForKey:key];
-    if ([RCActiveRecordSchemas objectForKey: [[[self class] alloc] tableName]] == nil) {
+    if ([RCActiveRecordSchemas objectForKey: [obj tableName]] == nil) {
         
         [RCActiveRecordSchemas setObject: @"Defined" forKey: [obj tableName]];
         
@@ -380,7 +396,7 @@ static BOOL inTransaction;
 
 +(BOOL)dropTable{
     
-    id obj = [[self class] alloc];
+    id obj = [self alloc];
     
     [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
         NSString* dropQuery = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;", [obj tableName]];

@@ -29,7 +29,6 @@
 -(id)initModel{
     self = [super init];
     if (self){
-        NSLog(@"Initialized App");
         if (![App hasSchemaDeclared]){
             NSLog(@"Initialized App schema");
             

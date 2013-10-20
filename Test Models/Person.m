@@ -26,7 +26,6 @@
 -(id)initModel{
     self = [super init];
     if (self){
-        NSLog(@"Initialized person");
         if (![Person hasSchemaDeclared]){
             NSLog(@"Initialized person schema");
             [Person registerColumn:@"name"];

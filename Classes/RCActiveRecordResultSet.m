@@ -81,8 +81,8 @@ static NSNumberFormatter *numFormatter;
         return [formatter dateFromString: stringRepresentation];
     }
     
-    
-    if ([class isSubclassOfClass:[RCActiveRecord class]]){
+    BOOL preload = [ARClass preloadEnabled];
+    if (preload && [class isSubclassOfClass:[RCActiveRecord class]]){
         //To do this shit still D:
         
         __block RCActiveRecord* model = [class model];
