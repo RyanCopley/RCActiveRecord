@@ -158,6 +158,7 @@ static BOOL inTransaction;
     if ([json isKindOfClass:[NSDictionary class]]){
         id model = [[[[self class] alloc] initModelValues] initModel];
         
+
         for( NSString *aKey in json ){
             
             NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[aKey substringToIndex:1] uppercaseString],[aKey substringFromIndex:1]];
@@ -171,6 +172,22 @@ static BOOL inTransaction;
 
             
         }
+        
+        NSString* aKey = [model primaryKey];
+        NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[aKey substringToIndex:1] uppercaseString],[aKey substringFromIndex:1]];
+        NSString* value = [json objectForKey:aKey];
+        NSNumberFormatter * f = [[NSNumberFormatter alloc] init];
+        [f setNumberStyle:NSNumberFormatterDecimalStyle];
+        NSNumber * myNumber = [f numberFromString:value];
+        
+        @try {
+            [model performSelector: NSSelectorFromString(setConversion) withObject: myNumber];
+        }
+        @catch (NSException* e){
+            NSLog(@"[Error in RCActiveRecord] This object (%@) is not properly synthesized for the JSON Dictionary provided (Invalid setter). Unable to set: %@. Dictionary provided: %@", NSStringFromClass([model class]), aKey, json);
+        }
+        
+
         
         return model;
     }
@@ -255,7 +272,14 @@ static BOOL inTransaction;
         columns = [[columns substringToIndex:columns.length-2] mutableCopy];
         data = [[data substringToIndex:data.length-2] mutableCopy];
         
-        __block NSString* query = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)", [obj tableName], columns, data];
+        NSString* aux1=@"";
+        NSString* aux2=@"";
+        if ([[obj primaryKey] isEqualToString:@"_id"] == FALSE){
+            aux1=[NSString stringWithFormat:@",%@",[obj primaryKey]];
+            aux2=[NSString stringWithFormat:@",'%@'",[obj primaryKeyValue]];
+        }
+        
+        __block NSString* query = [NSString stringWithFormat:@"INSERT INTO %@ (%@%@) VALUES (%@%@)", [obj tableName], columns, aux1, data,aux2];
         if (RCACTIVERECORDLOGGING){
             NSLog(@"Query: %@", query);
         }
@@ -407,7 +431,7 @@ static BOOL inTransaction;
         
         
         NSMutableString* columnData = [[NSMutableString alloc] init];
-        [columnData appendFormat:@"%@ INTEGER PRIMARY KEY AUTOINCREMENT", [obj primaryKey]];
+        [columnData appendFormat:@"%@ INTEGER PRIMARY KEY %@", [obj primaryKey], ([[obj primaryKey] isEqualToString:@"_id"] ? @"AUTOINCREMENT" : @"")];
         
         
         for (NSString* columnName in schema){
@@ -456,6 +480,9 @@ static BOOL inTransaction;
 +(BOOL)dropTable{
     
     id obj = [self alloc];
+    
+    NSString *key = NSStringFromClass( [self class] );
+    [schemaData setObject: [@{} mutableCopy] forKey:key];
     
     [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
         NSString* dropQuery = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;", [obj tableName]];
