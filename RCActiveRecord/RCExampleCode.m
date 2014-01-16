@@ -43,7 +43,7 @@
     
     App* a = [App model];
     
-    int testSize = 1000;
+    int testSize = 10;
     int i = testSize;
     a.address2 = @"Test St";
     

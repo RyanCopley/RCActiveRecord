@@ -32,6 +32,7 @@ static BOOL inTransaction;
 -(id)init{
     self = [super init];
     if (self){
+        
         if (pkName == nil){
             pkName = [[NSMutableDictionary alloc] init];
             schemaData = [[NSMutableDictionary alloc] init];
@@ -44,23 +45,23 @@ static BOOL inTransaction;
         
         
         _id = @(-1);
-        
-        NSString *key = NSStringFromClass( [self class] );
-        if ([pkName objectForKey:key] == nil ){
-            [pkName setObject:@"_id" forKey:key]; /* default */
-            [schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
-            [foreignKeyData setObject: [@{} mutableCopy] forKey:key]; /* empty */
-            [RCActiveRecordPreload setObject: @(1) forKey:key]; /* preload */
-            [[self class] registerColumn:@"creationDate"];
-            [[self class] registerColumn:@"savedDate"];
-            [[self class] registerColumn:@"updatedDate"];
+        @synchronized (@"elementTypesSynchronization"){
+            NSString *key = NSStringFromClass( [self class] );
+            if ([pkName objectForKey:key] == nil ){
+                [pkName setObject:@"_id" forKey:key]; /* default */
+                [schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
+                [foreignKeyData setObject: [@{} mutableCopy] forKey:key]; /* empty */
+                [RCActiveRecordPreload setObject: @(1) forKey:key]; /* preload */
+                [[self class] registerColumn:@"creationDate"];
+                [[self class] registerColumn:@"savedDate"];
+                [[self class] registerColumn:@"updatedDate"];
+            }
         }
-        
         
         creationDate = [[NSDate alloc] init];
         savedDate = [[NSDate alloc] initWithTimeIntervalSince1970:0];
         updatedDate = [[NSDate alloc] initWithTimeIntervalSince1970:0];
-
+        
         isNewRecord = YES;
         isSavedRecord = NO;
         
@@ -91,7 +92,7 @@ static BOOL inTransaction;
         [criteria addCondition: [self primaryKey] is:RCEqualTo to: [NSString stringWithFormat:@"%@",pk]];
     }
     [criteria setLimit:1];
-
+    
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
     
     return [[RCActiveRecordResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
@@ -158,7 +159,7 @@ static BOOL inTransaction;
     if ([json isKindOfClass:[NSDictionary class]]){
         id model = [[[[self class] alloc] initModelValues] initModel];
         
-
+        
         for( NSString *aKey in json ){
             
             NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[aKey substringToIndex:1] uppercaseString],[aKey substringFromIndex:1]];
@@ -169,7 +170,7 @@ static BOOL inTransaction;
             @catch (NSException* e){
                 NSLog(@"[Error in RCActiveRecord] This object (%@) is not properly synthesized for the JSON Dictionary provided (Invalid setter). Unable to set: %@. Dictionary provided: %@", NSStringFromClass([model class]), aKey, json);
             }
-
+            
             
         }
         
@@ -187,7 +188,7 @@ static BOOL inTransaction;
             NSLog(@"[Error in RCActiveRecord] This object (%@) is not properly synthesized for the JSON Dictionary provided (Invalid setter). Unable to set: %@. Dictionary provided: %@", NSStringFromClass([model class]), aKey, json);
         }
         
-
+        
         
         return model;
     }
@@ -234,7 +235,7 @@ static BOOL inTransaction;
     if ([value isKindOfClass:[NSArray class]] || [value isKindOfClass:[NSDictionary class]]){
         NSData* data = [NSJSONSerialization dataWithJSONObject:value options:kNilOptions error:&err];
         NSString* str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-
+        
         return [self sanitize:str];
     }
     if ([value isKindOfClass:[NSDate class]]){
@@ -274,10 +275,10 @@ static BOOL inTransaction;
         
         NSString* aux1=@"";
         NSString* aux2=@"";
-        if ([[obj primaryKey] isEqualToString:@"_id"] == FALSE){
-            aux1=[NSString stringWithFormat:@",%@",[obj primaryKey]];
-            aux2=[NSString stringWithFormat:@",'%@'",[obj primaryKeyValue]];
-        }
+        //        if ([[obj primaryKey] isEqualToString:@"_id"] == FALSE){
+        //            aux1=[NSString stringWithFormat:@",%@",[obj primaryKey]];
+        //            aux2=[NSString stringWithFormat:@",'%@'",[obj primaryKeyValue]];
+        //        }
         
         __block NSString* query = [NSString stringWithFormat:@"INSERT INTO %@ (%@%@) VALUES (%@%@)", [obj tableName], columns, aux1, data,aux2];
         if (RCACTIVERECORDLOGGING){
@@ -321,7 +322,7 @@ static BOOL inTransaction;
             
             updateData = [[updateData substringToIndex:updateData.length-2] mutableCopy];
             
-            __block NSString* query = [NSString stringWithFormat:@"UPDATE %@ SET %@;", [obj tableName], updateData];
+            __block NSString* query = [NSString stringWithFormat:@"UPDATE %@ SET %@ WHERE `%@`=\"%@\";", [obj tableName], updateData,[self primaryKey], [self primaryKeyValue]];
             if (RCACTIVERECORDLOGGING){
                 NSLog(@"Query: %@", query);
             }
@@ -399,19 +400,21 @@ static BOOL inTransaction;
 
 +(BOOL) registerColumn:(NSString*) columnName{
     
-    NSString *key = NSStringFromClass( [self class] );
-    
-    NSMutableDictionary* columnData = [schemaData objectForKey:key];
-    
-    id obj = [[self alloc] initModelValues];
-    
-    [columnData setObject:@{
-                            @"columnName" : columnName,
-                            @"type" : NSStringFromClass([[obj performSelector:NSSelectorFromString(columnName)] class])
-                            }
-                   forKey: columnName];
-    
-    [schemaData setObject:columnData forKey:key];
+    @synchronized(@"elementTypesSynchronization"){
+        NSString *key = NSStringFromClass( [self class] );
+        
+        NSMutableDictionary* columnData = [schemaData objectForKey:key];
+        
+        id obj = [[self alloc] initModelValues];
+        
+        [columnData setObject:@{
+                                @"columnName" : columnName,
+                                @"type" : NSStringFromClass([[obj performSelector:NSSelectorFromString(columnName)] class])
+                                }
+                       forKey: columnName];
+        
+        [schemaData setObject:columnData forKey:key];
+    }
     return YES;
 }
 
@@ -470,10 +473,10 @@ static BOOL inTransaction;
 +(BOOL)trunctuate{
     [[self class] dropTable];
     
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wunused-value"
-        [[[self class] alloc] initModel];
-    #pragma clang diagnostic pop
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-value"
+    [[[self class] alloc] initModel];
+#pragma clang diagnostic pop
     return YES;
 }
 

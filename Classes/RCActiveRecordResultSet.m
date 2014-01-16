@@ -73,11 +73,19 @@ static NSNumberFormatter *numFormatter;
     }
     
     if ([class isSubclassOfClass:[NSNumber class]]){
-        return [numFormatter numberFromString:stringRepresentation];
+        __block NSNumber* tmp;
+        dispatch_sync(formatQueue, ^{
+            tmp = [numFormatter numberFromString:stringRepresentation];
+        });
+        return tmp;
     }
     
     if ([class isSubclassOfClass:[NSDate class]]){
-        return [formatter dateFromString: stringRepresentation];
+        __block NSDate* tmp;
+        dispatch_sync(formatQueue, ^{
+            tmp = [formatter dateFromString: stringRepresentation];
+        });
+        return tmp;
     }
     
     BOOL preload = [ARClass preloadEnabled];
@@ -162,11 +170,15 @@ static NSNumberFormatter *numFormatter;
 -(RCActiveRecordResultSet*) initWithFMDatabaseQueue:(FMDatabaseQueue*) _queue andQuery:(NSString*) query andActiveRecordClass:(Class) _ARClass{
     self = [super init];
     if (self){
-        formatter = [[NSDateFormatter alloc] init];
-        [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
         
-        numFormatter = [[NSNumberFormatter alloc] init];
-        [numFormatter setNumberStyle:NSNumberFormatterNoStyle];
+        formatQueue = dispatch_queue_create("NSNumberFormatter", NULL);
+        dispatch_async(formatQueue, ^{
+            formatter = [[NSDateFormatter alloc] init];
+            [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
+            numFormatter = [[NSNumberFormatter alloc] init];
+            [numFormatter setNumberStyle:NSNumberFormatterNoStyle];
+        
+        });
         
         internalQuery = query;
         queue = _queue;
