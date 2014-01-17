@@ -20,7 +20,7 @@
         age2 = @(0);
         array = @[];
         dict = @{};
-        person = [[Person alloc] init]; // Ugh
+        person = [[Person alloc] init]; // Ugh. This isn't very elegant but it isn't a huge deal. 
     }
     return self;
 }
@@ -38,7 +38,6 @@
             [App registerColumn:@"age2"];
             [App registerColumn:@"array"];
             [App registerColumn:@"dict"];
-            [App registerColumn:@"person"];
             [App generateSchema:NO]; // If you use "YES" here, it will DROP the table and re-create the table in SQLite.
         }
     }

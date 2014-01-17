@@ -22,46 +22,12 @@ static NSDateFormatter *formatter;
 static NSNumberFormatter *numFormatter;
 
 
--(NSArray*) executeSyncronouslyInternalUseOnly: (FMDatabase*)db{
-    __block NSMutableArray* returnObjs = [[NSMutableArray alloc] init];
-    
-        FMResultSet* s = [db executeQuery: internalQuery];
-        while ([s next]){
-            id AR = [[ARClass alloc] initModelValues];
-            [(RCActiveRecord*)AR setIsNewRecord:NO];
-            [(RCActiveRecord*)AR setIsSavedRecord:YES];
-            
-            for (int i=0; i < [s columnCount]; i++){
-                
-                NSString* varName = [s columnNameForIndex: i];
-                // NSLog(@"Warr: %@",[AR performSelector:NSSelectorFromString(varName)]);
-                
-                
-                NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[varName substringToIndex:1] uppercaseString],[varName substringFromIndex:1]];
-                NSString* value = [NSString stringWithFormat:@"%s",[s UTF8StringForColumnIndex:i]];
-                
-                id convertedValue = [self decodeDataFromSQLITE:value expectedType: [[AR performSelector:NSSelectorFromString(varName)] class] fromDB:db];
-                @try {
-                    
-                    [AR performSelector: NSSelectorFromString(setConversion) withObject: convertedValue];
-                }
-                @catch (NSException* e){
-                    error = YES;
-                    NSLog(@"[Error in RCActiveRecord] This object (%@) is not properly synthesized (Invalid setter). Unable to set: %@", NSStringFromClass([AR class]), varName);
-                }
-                
-            }
-            [returnObjs addObject:AR];
-        }
-    
-    return returnObjs;
-}
-
 -(void) execute: (void (^) (id recordResult)) recordCallback{
     [self execute:recordCallback finished:^(BOOL error){}];
 }
 
 -(id) decodeDataFromSQLITE: (NSString*)stringRepresentation expectedType: (Class) class fromDB: (FMDatabase*) db{
+    
     NSError* err;
     
     if ([class isSubclassOfClass:[NSArray class]] || [class isSubclassOfClass:[NSDictionary class]]){
@@ -73,19 +39,12 @@ static NSNumberFormatter *numFormatter;
     }
     
     if ([class isSubclassOfClass:[NSNumber class]]){
-        __block NSNumber* tmp;
-        dispatch_sync(formatQueue, ^{
-            tmp = [numFormatter numberFromString:stringRepresentation];
-        });
-        return tmp;
+        return [numFormatter numberFromString:stringRepresentation];
+        
     }
     
     if ([class isSubclassOfClass:[NSDate class]]){
-        __block NSDate* tmp;
-        dispatch_sync(formatQueue, ^{
-            tmp = [formatter dateFromString: stringRepresentation];
-        });
-        return tmp;
+        return [formatter dateFromString: stringRepresentation];
     }
     
     BOOL preload = [ARClass preloadEnabled];
@@ -93,77 +52,61 @@ static NSNumberFormatter *numFormatter;
         //To do this shit still D:
         
         __block RCActiveRecord* model = [class model];
+        
         NSNumber* pk = [numFormatter numberFromString:stringRepresentation];
+        __block id _record;
+        [[model recordByPK: pk] execute:^(id record){
+            _record = record;
+        }];
+        return _record;
         
-        NSArray* models = [[model recordByPK: pk] executeSyncronouslyInternalUseOnly: db];
-        
-        if ([models count] > 0){
-            return [models objectAtIndex:0];
-        }
     }
     
     return stringRepresentation;
 }
 
+
 -(void) execute: (void (^) (id recordResult)) recordCallback finished: (void (^) (BOOL error)) finishedCallback{
-    error = NO;
     
-    dispatch_queue_t fetchQ = dispatch_queue_create("__RCACTIVERECORDCALLBACK", NULL);
-    __block int recordTally = 1;
-    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [queue inDatabase:^(FMDatabase *db) {
-            FMResultSet* s = [db executeQuery: internalQuery];
-            while ([s next]){
-                recordTally++;
-                id AR = [[ARClass alloc] initModelValues];
-                [(RCActiveRecord*)AR setIsNewRecord:NO];
-                [(RCActiveRecord*)AR setIsSavedRecord:YES];
+    error = NO;
+    [queue inDatabase:^(FMDatabase *db) {
+        FMResultSet* s = [db executeQuery: internalQuery];
+        while ([s next]){
                 
-                for (int i=0; i < [s columnCount]; i++){
+            
+            id AR = [[ARClass alloc] initModelValues];
+            [(RCActiveRecord*)AR setIsNewRecord:NO];
+            [(RCActiveRecord*)AR setIsSavedRecord:YES];
+            
+            for (int i=0; i < [s columnCount]; i++){
+                
+                NSString* varName = [s columnNameForIndex: i];
+                
+                // TODO: Data type comparison would be nice here
+                
+                NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[varName substringToIndex:1] uppercaseString],[varName substringFromIndex:1]];
+                NSString* value = [NSString stringWithFormat:@"%s",[s UTF8StringForColumnIndex:i]];
+                
+                id convertedValue = [self decodeDataFromSQLITE:value expectedType: [[AR performSelector:NSSelectorFromString(varName)] class] fromDB: db];
+                @try {
                     
-                    NSString* varName = [s columnNameForIndex: i];
-                   // NSLog(@"Warr: %@",[AR performSelector:NSSelectorFromString(varName)]);
-                    
-                    //^ Is showing up as NULL.
-                    
-                    // TODO: Data type comparison would be nice here
-                    
-                    NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[varName substringToIndex:1] uppercaseString],[varName substringFromIndex:1]];
-                    NSString* value = [NSString stringWithFormat:@"%s",[s UTF8StringForColumnIndex:i]];
-                    
-                    id convertedValue = [self decodeDataFromSQLITE:value expectedType: [[AR performSelector:NSSelectorFromString(varName)] class] fromDB: db];
-                    @try {
-                        
-                        [AR performSelector: NSSelectorFromString(setConversion) withObject: convertedValue];
-                    }
-                    @catch (NSException* e){
-                        error = YES;
-                        NSLog(@"[Error in RCActiveRecord] This object (%@) is not properly synthesized (Invalid setter). Unable to set: %@", NSStringFromClass([AR class]), varName);
-                    }
-                    
+                    [AR performSelector: NSSelectorFromString(setConversion) withObject: convertedValue];
                 }
-                dispatch_async(fetchQ, ^{
-                    recordCallback(AR);
-                    recordTally--;
-                });
+                @catch (NSException* e){
+                    error = YES;
+                    NSLog(@"[Error in RCActiveRecord] This object (%@) is not properly synthesized (Invalid setter). Unable to set: %@", NSStringFromClass([AR class]), varName);
+                }
             }
             
-            recordTally--;
+            recordCallback(AR);
             
-            dispatch_queue_t finishQueue = dispatch_queue_create("__RCACTIVERECORDFINISHCALLBACK", NULL);
-            
-            dispatch_async(finishQueue, ^{
-                while (recordTally > 0){
-                    //Burn CPU... not finished...
-                }
-                //I do this because the finish callback is often used to update the UI, and as any competent iOS developer knows you shouldn't update the UI on any non-main thread.
-                dispatch_sync(dispatch_get_main_queue(), ^{
-                    finishedCallback(error);
-                });
-                
-            });
-        }];
-    });
+        }
+        dispatch_async(dispatch_queue_create("", NULL), ^{
+            finishedCallback(error);
+        });
+        
+    }];
+    
 }
 
 //Internal
@@ -171,14 +114,14 @@ static NSNumberFormatter *numFormatter;
     self = [super init];
     if (self){
         
-        formatQueue = dispatch_queue_create("NSNumberFormatter", NULL);
-        dispatch_async(formatQueue, ^{
-            formatter = [[NSDateFormatter alloc] init];
-            [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
-            numFormatter = [[NSNumberFormatter alloc] init];
-            [numFormatter setNumberStyle:NSNumberFormatterNoStyle];
         
-        });
+        
+        formatter = [[NSDateFormatter alloc] init];
+        [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
+        numFormatter = [[NSNumberFormatter alloc] init];
+        [numFormatter setNumberStyle:NSNumberFormatterNoStyle];
+        
+        
         
         internalQuery = query;
         queue = _queue;

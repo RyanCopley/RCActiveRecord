@@ -20,12 +20,12 @@
 }
 
 
-@property (nonatomic, retain) NSNumber* appPK;
-@property (nonatomic, retain) NSString* name2;
-@property (nonatomic, retain) NSString* address2;
-@property (nonatomic, retain) NSNumber* age2;
-@property (nonatomic, retain) NSArray* array;
-@property (nonatomic, retain) NSDictionary* dict;
-@property (nonatomic, retain) Person* person;
+@property (strong, nonatomic)NSNumber* appPK;
+@property (strong, nonatomic)NSString* name2;
+@property (strong, nonatomic)NSString* address2;
+@property (strong, nonatomic)NSNumber* age2;
+@property (strong, nonatomic)NSArray* array;
+@property (strong, nonatomic)NSDictionary* dict;
+@property (strong, nonatomic)Person* person;
 
 @end

@@ -254,7 +254,7 @@ static BOOL inTransaction;
     isNewRecord = NO;
     isSavedRecord = YES;
     
-    self.savedDate = [NSDate date];
+    self.savedDate = nil;[NSDate date];
     id obj = self;
     
     NSString *key = NSStringFromClass( [self class] );
@@ -275,10 +275,10 @@ static BOOL inTransaction;
         
         NSString* aux1=@"";
         NSString* aux2=@"";
-        //        if ([[obj primaryKey] isEqualToString:@"_id"] == FALSE){
-        //            aux1=[NSString stringWithFormat:@",%@",[obj primaryKey]];
-        //            aux2=[NSString stringWithFormat:@",'%@'",[obj primaryKeyValue]];
-        //        }
+//        if ([[obj primaryKey] isEqualToString:@"_id"] == FALSE){
+//            aux1=[NSString stringWithFormat:@",%@",[obj primaryKey]];
+//            aux2=[NSString stringWithFormat:@",'%@'",[obj primaryKeyValue]];
+//        }
         
         __block NSString* query = [NSString stringWithFormat:@"INSERT INTO %@ (%@%@) VALUES (%@%@)", [obj tableName], columns, aux1, data,aux2];
         if (RCACTIVERECORDLOGGING){
@@ -295,6 +295,7 @@ static BOOL inTransaction;
             @catch (NSException* e){
                 NSLog(@"[Email to ampachex@ryancopley.com please] Error thrown! This object is not properly synthesized. Unable to set: %@", [self primaryKey]);
             }
+            
             
         }];
     }
@@ -404,7 +405,9 @@ static BOOL inTransaction;
         NSString *key = NSStringFromClass( [self class] );
         
         NSMutableDictionary* columnData = [schemaData objectForKey:key];
-        
+        if (columnData == nil){
+            columnData = [[NSMutableDictionary alloc] init];
+        }
         id obj = [[self alloc] initModelValues];
         
         [columnData setObject:@{
@@ -484,9 +487,6 @@ static BOOL inTransaction;
     
     id obj = [self alloc];
     
-    NSString *key = NSStringFromClass( [self class] );
-    [schemaData setObject: [@{} mutableCopy] forKey:key];
-    
     [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
         NSString* dropQuery = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;", [obj tableName]];
         if (RCACTIVERECORDLOGGING){
@@ -505,7 +505,6 @@ static BOOL inTransaction;
 }
 
 -(NSNumber*) primaryKeyValue {
-    
     return [self performSelector:NSSelectorFromString([self primaryKey])];
 }
 

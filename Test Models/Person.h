@@ -15,9 +15,9 @@
     NSNumber* age;
 }
 
-@property (nonatomic, retain) NSString* name;
-@property (nonatomic, retain) NSString* ip;
-@property (nonatomic, retain) NSMutableString* address;
-@property (nonatomic, retain) NSNumber* age;
+@property (strong, nonatomic) NSString* name;
+@property (strong, nonatomic) NSString* ip;
+@property (strong, nonatomic) NSMutableString* address;
+@property (strong, nonatomic) NSNumber* age;
 
 @end

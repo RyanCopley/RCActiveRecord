@@ -16,7 +16,9 @@
     Class ARClass;
     BOOL error;
     NSDateFormatter* formatter;
-    dispatch_queue_t formatQueue;
+    dispatch_queue_t processQueue;
+    
+    dispatch_queue_t finishQueue;
     
 }
 
