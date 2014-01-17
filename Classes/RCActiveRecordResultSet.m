@@ -67,13 +67,13 @@ static NSNumberFormatter *numFormatter;
 
 
 -(void) execute: (void (^) (id recordResult)) recordCallback finished: (void (^) (BOOL error)) finishedCallback{
-    
-    error = NO;
-    [queue inDatabase:^(FMDatabase *db) {
-        
+    dispatch_async(processQueue, ^{
+        error = NO;
+        [queue inDatabase:^(FMDatabase *db) {
+            
             FMResultSet* s = [db executeQuery: internalQuery];
-        
-
+            
+            
             while ([s next]){
                 id AR = [[ARClass alloc] initModelValues];
                 [(RCActiveRecord*)AR setIsNewRecord:NO];
@@ -104,9 +104,9 @@ static NSNumberFormatter *numFormatter;
             dispatch_async(dispatch_queue_create("", NULL), ^{
                 finishedCallback(error);
             });
-        
-        
-    }];
+        }];
+    });
+
     
 }
 
@@ -123,6 +123,7 @@ static NSNumberFormatter *numFormatter;
         [numFormatter setNumberStyle:NSNumberFormatterNoStyle];
         
         
+        processQueue = dispatch_queue_create("", NULL);
         
         internalQuery = query;
         queue = _queue;

@@ -48,7 +48,6 @@
     
     [App trunctuate];
     App* a = [App model];
-@autoreleasepool {
     
         int testSize = 14000;
         i = testSize;
@@ -70,7 +69,7 @@
         //Delete the latest entry (Since we INSERTED `testSize` times, `a` links to the MOST RECENT insertion.
         [a deleteRecord]; //Since we are outside of a transaction, this will happen immediately!!
         NSLog(@"Deleted 1 record");
-}
+
 
     
     NSLog(@"JSON'd: %@", [a toJSON]);
@@ -133,7 +132,7 @@
 
     
     [[[App model] allRecords] execute: ^(App* record){
-        NSLog(@"Age: %@ is %@ years old with objs: %@, dict: %@ insertedDate: %@, person id: %@", record.name2,record.age2, record.array, record.dict, record.creationDate, record.person.name);
+        //NSLog(@"Age: %@ is %@ years old with objs: %@, dict: %@ insertedDate: %@, person id: %@", record.name2,record.age2, record.array, record.dict, record.creationDate, record.person.name);
         recordCount++;
     
     } finished: ^(BOOL error){
@@ -156,6 +155,7 @@
         }];
 
     }];
+    NSLog(@"After execution");
     
 
 }
