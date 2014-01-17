@@ -77,7 +77,6 @@
 -(NSNumber*) primaryKeyValue;
 -(NSString*) tableName;
 
--(NSArray*) getErrors;
 
 -(FMDatabaseQueue*) getFMDBQueue;
 

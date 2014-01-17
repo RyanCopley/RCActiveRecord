@@ -16,10 +16,9 @@
     Class ARClass;
     BOOL error;
     NSDateFormatter* formatter;
-    dispatch_queue_t processQueue;
+    NSMutableArray* processQueues;
     
-    dispatch_queue_t finishQueue;
-    
+    int queueCounter;
 }
 
 
@@ -29,5 +28,7 @@
 
 //Internal
 -(RCActiveRecordResultSet*) initWithFMDatabaseQueue:(FMDatabaseQueue*) _queue andQuery:(NSString*) query andActiveRecordClass:(Class) _ARClass;
+
+-(RCActiveRecordResultSet*) setProcessQueueCount: (int) count;
 
 @end
