@@ -41,33 +41,37 @@
     */
     
     //Empty the table `App`
-    //[App trunctuate];
     
-    App* a = [App model];
-    
-    int testSize = 100;
-    int i = testSize;
-    a.address2 = @"Test St";
-    
-    a.person = p;
-    __block NSTimeInterval writeStart = [NSDate timeIntervalSinceReferenceDate];
-    [a beginTransaction];
-    [a beginTransaction];//Whoops! Started a transaction twice! No worries, we safe guard against this.
     int writtenCount = 0;
-//    do {
-//        a.name2 = [NSString stringWithFormat:@"Ryan-%i",arc4random()%10000];
-//        a.age2 = @(arc4random()%50 + 18);
-//        a.array = @[@(arc4random()%50),@(arc4random()%50),@(arc4random()%50),@(arc4random()%50),@(arc4random()%50)];
-//        a.dict = @{@"Key":@(arc4random()%10000)};
-//        [a insertRecord];
-//        writtenCount++;
-//    } while (i-->0);
-    [a commit]; //Commit (write) all changes to the database. This is the key to having exceptionally fast SQLite performance!
+    __block NSTimeInterval writeStart = [NSDate timeIntervalSinceReferenceDate];
+    int i;
     
-    //Delete the latest entry (Since we INSERTED `testSize` times, `a` links to the MOST RECENT insertion.
-    [a deleteRecord]; //Since we are outside of a transaction, this will happen immediately!!
-    NSLog(@"Deleted 1 record");
+    [App trunctuate];
+    App* a = [App model];
+@autoreleasepool {
     
+        int testSize = 14000;
+        i = testSize;
+        a.address2 = @"Test St";
+        
+        a.person = p;
+        [a beginTransaction];
+        [a beginTransaction];//Whoops! Started a transaction twice! No worries, we safe guard against this.
+        do {
+            a.name2 = [NSString stringWithFormat:@"Ryan-%i",arc4random()%10000];
+            a.age2 = @(arc4random()%50 + 18);
+            a.array = @[@(arc4random()%50),@(arc4random()%50),@(arc4random()%50),@(arc4random()%50),@(arc4random()%50)];
+            a.dict = @{@"Key":@(arc4random()%10000)};
+            [a insertRecord];
+            writtenCount++;
+        } while (i-->0);
+        [a commit]; //Commit (write) all changes to the database. This is the key to having exceptionally fast SQLite performance!
+        
+        //Delete the latest entry (Since we INSERTED `testSize` times, `a` links to the MOST RECENT insertion.
+        [a deleteRecord]; //Since we are outside of a transaction, this will happen immediately!!
+        NSLog(@"Deleted 1 record");
+}
+
     
     NSLog(@"JSON'd: %@", [a toJSON]);
     
@@ -112,7 +116,7 @@
     
     //Benchmark how long it took us to write `testSize` entries
     NSTimeInterval writeDuration = [NSDate timeIntervalSinceReferenceDate] - writeStart;
-    NSLog(@"(WRITE) Duration: %f, count: %i, ms per record: %f", writeDuration, testSize, (writeDuration/testSize)*1000);
+    //NSLog(@"(WRITE) Duration: %f, count: %i, ms per record: %f", writeDuration, testSize, (writeDuration/testSize)*1000);
     
     
     //Now lets benchmark reading. As you see, this is a fully asyncronous read! Yay!
@@ -126,12 +130,14 @@
     
     
     NSLog(@"GOOOO");
+
     
     [[[App model] allRecords] execute: ^(App* record){
         NSLog(@"Age: %@ is %@ years old with objs: %@, dict: %@ insertedDate: %@, person id: %@", record.name2,record.age2, record.array, record.dict, record.creationDate, record.person.name);
         recordCount++;
     
     } finished: ^(BOOL error){
+        
         //Once we run out of models from SQLite, this block is called. It is optional, so you don't have to have it.
         NSTimeInterval readDuration = [NSDate timeIntervalSinceReferenceDate] - readStart;
         NSLog(@"(READ+Preloading) Duration: %f, count: %i, ms per record: %f", readDuration, recordCount, (readDuration/recordCount)*1000);

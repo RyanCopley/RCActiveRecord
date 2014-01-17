@@ -70,40 +70,41 @@ static NSNumberFormatter *numFormatter;
     
     error = NO;
     [queue inDatabase:^(FMDatabase *db) {
-        FMResultSet* s = [db executeQuery: internalQuery];
-        while ([s next]){
+        
+            FMResultSet* s = [db executeQuery: internalQuery];
+        
+
+            while ([s next]){
+                id AR = [[ARClass alloc] initModelValues];
+                [(RCActiveRecord*)AR setIsNewRecord:NO];
+                [(RCActiveRecord*)AR setIsSavedRecord:YES];
                 
-            
-            id AR = [[ARClass alloc] initModelValues];
-            [(RCActiveRecord*)AR setIsNewRecord:NO];
-            [(RCActiveRecord*)AR setIsSavedRecord:YES];
-            
-            for (int i=0; i < [s columnCount]; i++){
-                
-                NSString* varName = [s columnNameForIndex: i];
-                
-                // TODO: Data type comparison would be nice here
-                
-                NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[varName substringToIndex:1] uppercaseString],[varName substringFromIndex:1]];
-                NSString* value = [NSString stringWithFormat:@"%s",[s UTF8StringForColumnIndex:i]];
-                
-                id convertedValue = [self decodeDataFromSQLITE:value expectedType: [[AR performSelector:NSSelectorFromString(varName)] class] fromDB: db];
-                @try {
-                    
-                    [AR performSelector: NSSelectorFromString(setConversion) withObject: convertedValue];
+                @autoreleasepool {
+                    for (int i=0; i < [s columnCount]; i++){
+                        
+                        NSString* varName = [s columnNameForIndex: i];
+                        
+                        NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[varName substringToIndex:1] uppercaseString],[varName substringFromIndex:1]];
+                        NSString* value = [NSString stringWithFormat:@"%s",[s UTF8StringForColumnIndex:i]];
+                        
+                        id convertedValue = [self decodeDataFromSQLITE:value expectedType: [[AR performSelector:NSSelectorFromString(varName)] class] fromDB: db];
+                        @try {
+                            
+                            [AR performSelector: NSSelectorFromString(setConversion) withObject: convertedValue];
+                        }
+                        @catch (NSException* e){
+                            error = YES;
+                            NSLog(@"[Error in RCActiveRecord] This object (%@) is not properly synthesized (Invalid setter). Unable to set: %@", NSStringFromClass([AR class]), varName);
+                        }
+                    }
                 }
-                @catch (NSException* e){
-                    error = YES;
-                    NSLog(@"[Error in RCActiveRecord] This object (%@) is not properly synthesized (Invalid setter). Unable to set: %@", NSStringFromClass([AR class]), varName);
-                }
+                recordCallback(AR);
+                
             }
-            
-            recordCallback(AR);
-            
-        }
-        dispatch_async(dispatch_queue_create("", NULL), ^{
-            finishedCallback(error);
-        });
+            dispatch_async(dispatch_queue_create("", NULL), ^{
+                finishedCallback(error);
+            });
+        
         
     }];
     

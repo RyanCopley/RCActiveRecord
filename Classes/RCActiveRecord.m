@@ -45,18 +45,17 @@ static BOOL inTransaction;
         
         
         _id = @(-1);
-        @synchronized (@"elementTypesSynchronization"){
-            NSString *key = NSStringFromClass( [self class] );
-            if ([pkName objectForKey:key] == nil ){
-                [pkName setObject:@"_id" forKey:key]; /* default */
-                [schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
-                [foreignKeyData setObject: [@{} mutableCopy] forKey:key]; /* empty */
-                [RCActiveRecordPreload setObject: @(1) forKey:key]; /* preload */
-                [[self class] registerColumn:@"creationDate"];
-                [[self class] registerColumn:@"savedDate"];
-                [[self class] registerColumn:@"updatedDate"];
-            }
+        NSString *key = NSStringFromClass( [self class] );
+        if ([pkName objectForKey:key] == nil ){
+            [pkName setObject:@"_id" forKey:key]; /* default */
+            [schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
+            [foreignKeyData setObject: [@{} mutableCopy] forKey:key]; /* empty */
+            [RCActiveRecordPreload setObject: @(1) forKey:key]; /* preload */
+            [[self class] registerColumn:@"creationDate"];
+            [[self class] registerColumn:@"savedDate"];
+            [[self class] registerColumn:@"updatedDate"];
         }
+        
         
         creationDate = [[NSDate alloc] init];
         savedDate = [[NSDate alloc] initWithTimeIntervalSince1970:0];
@@ -251,79 +250,37 @@ static BOOL inTransaction;
 }
 
 -(BOOL) insertRecord{
-    isNewRecord = NO;
-    isSavedRecord = YES;
-    
-    self.savedDate = nil;[NSDate date];
-    id obj = self;
-    
-    NSString *key = NSStringFromClass( [self class] );
-    NSDictionary* schema = [schemaData objectForKey:key];
-    
-    NSMutableString* columns = [[NSMutableString alloc] init];
-    NSMutableString* data = [[NSMutableString alloc] init];
-    
-    for (NSString* columnName in schema){
-        [columns appendFormat:@"%@, ", columnName];
-        [data appendFormat:@"\"%@\", ", [self encodeValueForSQLITE: [self performSelector: NSSelectorFromString(columnName)]] ];
-    }
-    
-    if ([columns isEqualToString:@""] == FALSE && [data isEqualToString:@""] == FALSE){
+    @autoreleasepool {
         
-        columns = [[columns substringToIndex:columns.length-2] mutableCopy];
-        data = [[data substringToIndex:data.length-2] mutableCopy];
-        
-        NSString* aux1=@"";
-        NSString* aux2=@"";
-//        if ([[obj primaryKey] isEqualToString:@"_id"] == FALSE){
-//            aux1=[NSString stringWithFormat:@",%@",[obj primaryKey]];
-//            aux2=[NSString stringWithFormat:@",'%@'",[obj primaryKeyValue]];
-//        }
-        
-        __block NSString* query = [NSString stringWithFormat:@"INSERT INTO %@ (%@%@) VALUES (%@%@)", [obj tableName], columns, aux1, data,aux2];
-        if (RCACTIVERECORDLOGGING){
-            NSLog(@"Query: %@", query);
-        }
-        
-        [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
-            
-            [db executeUpdate: query];
-            NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[[self primaryKey] substringToIndex:1] uppercaseString],[[self primaryKey] substringFromIndex:1]];
-            @try {
-                [self performSelector: NSSelectorFromString(setConversion) withObject: @([db lastInsertRowId])];
-            }
-            @catch (NSException* e){
-                NSLog(@"[Email to ampachex@ryancopley.com please] Error thrown! This object is not properly synthesized. Unable to set: %@", [self primaryKey]);
-            }
-            
-            
-        }];
-    }
-    return YES;
-}
-
--(BOOL) updateRecord{
-    if (isNewRecord == NO){
         isNewRecord = NO;
         isSavedRecord = YES;
-        id obj = self;
-        self.updatedDate = [NSDate date];
+        
+        self.savedDate = [NSDate date];
         
         NSString *key = NSStringFromClass( [self class] );
         NSDictionary* schema = [schemaData objectForKey:key];
         
-        NSMutableString* updateData = [[NSMutableString alloc] init];
+        NSMutableString* columns = [[NSMutableString alloc] init];
+        NSMutableString* data = [[NSMutableString alloc] init];
         
         for (NSString* columnName in schema){
-            
-            [updateData appendFormat:@"`%@`=\"%@\", ", columnName,[self encodeValueForSQLITE: [self performSelector: NSSelectorFromString(columnName)]] ];
+            [columns appendFormat:@"%@, ", columnName];
+            [data appendFormat:@"\"%@\", ", [self encodeValueForSQLITE: [self performSelector: NSSelectorFromString(columnName)]] ];
         }
         
-        if ([updateData isEqualToString:@""] == FALSE){
+        if ([columns isEqualToString:@""] == FALSE && [data isEqualToString:@""] == FALSE){
             
-            updateData = [[updateData substringToIndex:updateData.length-2] mutableCopy];
+            columns = [[columns substringToIndex:columns.length-2] mutableCopy];
+            data = [[data substringToIndex:data.length-2] mutableCopy];
             
-            __block NSString* query = [NSString stringWithFormat:@"UPDATE %@ SET %@ WHERE `%@`=\"%@\";", [obj tableName], updateData,[self primaryKey], [self primaryKeyValue]];
+            NSString* aux1=@"";
+            NSString* aux2=@"";
+    //        if ([[obj primaryKey] isEqualToString:@"_id"] == FALSE){
+    //            aux1=[NSString stringWithFormat:@",%@",[obj primaryKey]];
+    //            aux2=[NSString stringWithFormat:@",'%@'",[obj primaryKeyValue]];
+    //        }
+            
+            __block NSString* query = [NSString stringWithFormat:@"INSERT INTO %@ (%@%@) VALUES (%@%@)", [self tableName], columns, aux1, data,aux2];
             if (RCACTIVERECORDLOGGING){
                 NSLog(@"Query: %@", query);
             }
@@ -331,12 +288,58 @@ static BOOL inTransaction;
             [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
                 
                 [db executeUpdate: query];
+                NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[[self primaryKey] substringToIndex:1] uppercaseString],[[self primaryKey] substringFromIndex:1]];
+                @try {
+                    [self performSelector: NSSelectorFromString(setConversion) withObject: @([db lastInsertRowId])];
+                }
+                @catch (NSException* e){
+                    NSLog(@"[Email to ampachex@ryancopley.com please] Error thrown! This object is not properly synthesized. Unable to set: %@", [self primaryKey]);
+                }
+                
                 
             }];
         }
-        return YES;
     }
-    
+    return YES;
+}
+
+-(BOOL) updateRecord{
+    @autoreleasepool {
+
+        if (isNewRecord == NO){
+            isNewRecord = NO;
+            isSavedRecord = YES;
+            id obj = self;
+            self.updatedDate = [NSDate date];
+            
+            NSString *key = NSStringFromClass( [self class] );
+            NSDictionary* schema = [schemaData objectForKey:key];
+            
+            NSMutableString* updateData = [[NSMutableString alloc] init];
+            
+            for (NSString* columnName in schema){
+                
+                [updateData appendFormat:@"`%@`=\"%@\", ", columnName,[self encodeValueForSQLITE: [self performSelector: NSSelectorFromString(columnName)]] ];
+            }
+            
+            if ([updateData isEqualToString:@""] == FALSE){
+                
+                updateData = [[updateData substringToIndex:updateData.length-2] mutableCopy];
+                
+                __block NSString* query = [NSString stringWithFormat:@"UPDATE %@ SET %@ WHERE `%@`=\"%@\";", [obj tableName], updateData,[self primaryKey], [self primaryKeyValue]];
+                if (RCACTIVERECORDLOGGING){
+                    NSLog(@"Query: %@", query);
+                }
+                
+                [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
+                    
+                    [db executeUpdate: query];
+                    
+                }];
+            }
+            return YES;
+        }
+    }
     return NO;
 }
 
@@ -400,14 +403,11 @@ static BOOL inTransaction;
 
 
 +(BOOL) registerColumn:(NSString*) columnName{
-    
-    @synchronized(@"elementTypesSynchronization"){
+    @autoreleasepool {
+        
         NSString *key = NSStringFromClass( [self class] );
         
         NSMutableDictionary* columnData = [schemaData objectForKey:key];
-        if (columnData == nil){
-            columnData = [[NSMutableDictionary alloc] init];
-        }
         id obj = [[self alloc] initModelValues];
         
         [columnData setObject:@{
@@ -423,7 +423,8 @@ static BOOL inTransaction;
 
 
 +(BOOL) generateSchema: (BOOL)force{
-    
+@autoreleasepool {
+        
     NSString *key = NSStringFromClass( [self class] );
     if (RCACTIVERECORDLOGGING){
         NSLog(@"Generating schema for table: %@",[[self alloc] tableName]);
@@ -465,6 +466,7 @@ static BOOL inTransaction;
         }];
         
     }
+}
     return YES;
 }
 
