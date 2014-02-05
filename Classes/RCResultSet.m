@@ -75,7 +75,7 @@ static NSNumberFormatter *numFormatter;
             
             
             while ([s next]){
-                id AR = [[ARClass alloc] initModelValues];
+                id AR = [[ARClass alloc] initDefaultValues];
                 [(RCActiveRecord*)AR setIsNewRecord:NO];
                 [(RCActiveRecord*)AR setIsSavedRecord:YES];
                 

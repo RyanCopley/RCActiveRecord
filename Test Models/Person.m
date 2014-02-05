@@ -11,7 +11,7 @@
 @implementation Person
 @synthesize name,address,age, ip;
 
--(id)initModelValues{
+-(id)initDefaultValues{
     self = [super init];
     
     name = @"";
@@ -24,7 +24,7 @@
 
 
 -(id)initModel{
-    self = [super init];
+    self = [super initModel];
     if (self){
         if (![Person hasSchemaDeclared]){
             NSLog(@"Initialized person schema");

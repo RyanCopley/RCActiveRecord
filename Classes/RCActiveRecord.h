@@ -29,7 +29,7 @@
 @property (nonatomic, retain) NSDate* savedDate;
 @property (nonatomic, retain) NSDate* updatedDate;
 
--(id) initModelValues;
+-(id) initDefaultValues;
 -(id) initModel;
 -(id) init;
 +(id) model;

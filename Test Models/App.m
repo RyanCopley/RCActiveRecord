@@ -9,24 +9,25 @@
 #import "App.h"
 
 @implementation App
-@synthesize name2,age2,address2, array, dict, person;
+@synthesize name, gitCommitHash, versionNumber, files, settings, owner;
 
--(id)initModelValues{
+
+-(id)initDefaultValues{
     self = [super init];
     if (self){
-        name2 = @"";
-        address2 = @"";
-        age2 = @(0);
-        array = @[];
-        dict = @{};
-        person = [[Person alloc] init]; // Ugh. This isn't very elegant but it isn't a huge deal. 
+        name = @"";
+        gitCommitHash = @"";
+        versionNumber = @(0);
+        files = [[NSArray alloc] init];
+        settings = @{};
+        owner = [[Person alloc] init];
     }
     return self;
 }
 
 
 -(id)initModel{
-    self = [super init];
+    self = [super initModel];
     if (self){
         if (![App hasSchemaDeclared]){
             NSLog(@"Initialized App schema");

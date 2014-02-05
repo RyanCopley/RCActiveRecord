@@ -30,8 +30,8 @@ static NSMutableDictionary* RCActiveRecordPreload;
 static BOOL inTransaction;
 
 #pragma mark Active Record functions
--(id) initModel{ return nil; }
--(id) initModelValues{ return nil; }
+-(id) initModel{ return self; }
+-(id) initDefaultValues{ return self; }
 
 -(id)init{
     self = [super init];
@@ -81,7 +81,7 @@ static BOOL inTransaction;
 }
 
 +(id) model{
-    return [[[[self class] alloc] initModelValues] initModel];
+    return [[[[self class] alloc] initDefaultValues] initModel];
 }
 
 -(int)recordCount{
@@ -184,7 +184,7 @@ static BOOL inTransaction;
     }
     
     if ([json isKindOfClass:[NSDictionary class]]){
-        id model = [[[[self class] alloc] initModelValues] initModel];
+        id model = [[[[self class] alloc] initDefaultValues] initModel];
         
         
         for( NSString *aKey in json ){
@@ -421,7 +421,7 @@ static BOOL inTransaction;
         NSString *key = NSStringFromClass( [self class] );
         
         NSMutableDictionary* columnData = [schemaData objectForKey:key];
-        id obj = [[self alloc] initModelValues];
+        id obj = [[self alloc] initDefaultValues];
         
         [columnData setObject:@{
                                 @"columnName" : columnName,
@@ -442,7 +442,7 @@ static BOOL inTransaction;
         if (RCACTIVERECORDLOGGING){
             NSLog(@"Generating schema for table: %@",[[self alloc] tableName]);
         }
-        id obj = [[self alloc] initModelValues];
+        id obj = [[self alloc] initDefaultValues];
         
         NSDictionary* schema = [schemaData objectForKey:key];
         if ([RCActiveRecordSchemas objectForKey: [obj tableName]] == nil) {

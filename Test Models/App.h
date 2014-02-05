@@ -12,11 +12,11 @@
 @interface App : RCActiveRecord
 
 
-@property (strong, nonatomic)NSString* name2;
-@property (strong, nonatomic)NSString* address2;
-@property (strong, nonatomic)NSNumber* age2;
-@property (strong, nonatomic)NSArray* array;
-@property (strong, nonatomic)NSDictionary* dict;
-@property (strong, nonatomic)Person* person;
+@property (strong, nonatomic) NSString* name;
+@property (strong, nonatomic) NSString* gitCommitHash;
+@property (strong, nonatomic) NSNumber* versionNumber;
+@property (strong, nonatomic) NSArray* files;
+@property (strong, nonatomic) NSDictionary* settings;
+@property (strong, nonatomic) Person* owner;
 
 @end
