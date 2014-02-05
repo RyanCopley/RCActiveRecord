@@ -66,21 +66,21 @@
         // TODO: Sanitize the array.
         NSString* arrayStr = [NSString stringWithFormat:@"\"%@\"", [((NSArray*)value) componentsJoinedByString:@"\",\""] ];
         [conditions addObject:
-            [NSString stringWithFormat:
-                @"%@ %@ (%@)",
-                columnName,
-                [self stringFromCompareOperator:comparer],
-                arrayStr
-             ]
+         [NSString stringWithFormat:
+          @"%@ %@ (%@)",
+          columnName,
+          [self stringFromCompareOperator:comparer],
+          arrayStr
+          ]
          ];
     }else{
         [conditions addObject:
-            [NSString stringWithFormat:
-                @"%@ %@ \"%@\"",
-                columnName,
-                [self stringFromCompareOperator:comparer],
-                [NSString stringWithFormat:@"%@",[self sanitize:value]]
-             ]
+         [NSString stringWithFormat:
+          @"%@ %@ \"%@\"",
+          columnName,
+          [self stringFromCompareOperator:comparer],
+          [NSString stringWithFormat:@"%@",[self sanitize:value]]
+          ]
          ];
     }
 }

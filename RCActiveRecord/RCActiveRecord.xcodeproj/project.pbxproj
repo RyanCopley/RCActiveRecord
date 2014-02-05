@@ -11,7 +11,6 @@
 		4E29368E17BB3CDF0088B96B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E29368D17BB3CDF0088B96B /* Foundation.framework */; };
 		4E29369017BB3CDF0088B96B /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E29368F17BB3CDF0088B96B /* CoreGraphics.framework */; };
 		4E29369617BB3CDF0088B96B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4E29369417BB3CDF0088B96B /* InfoPlist.strings */; };
-		4E29369817BB3CDF0088B96B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E29369717BB3CDF0088B96B /* main.m */; };
 		4E29369C17BB3CDF0088B96B /* RCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E29369B17BB3CDF0088B96B /* RCAppDelegate.m */; };
 		4E29369E17BB3CDF0088B96B /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 4E29369D17BB3CDF0088B96B /* Default.png */; };
 		4E2936A017BB3CDF0088B96B /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4E29369F17BB3CDF0088B96B /* Default@2x.png */; };
@@ -33,6 +32,18 @@
 		4EF75F37180881940058DA37 /* Person.m in Sources */ = {isa = PBXBuildFile; fileRef = 4EF75F36180881940058DA37 /* Person.m */; };
 		4EF75F39180888780058DA37 /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4EF75F38180888780058DA37 /* libsqlite3.0.dylib */; };
 		4EF75F3C180889660058DA37 /* App.m in Sources */ = {isa = PBXBuildFile; fileRef = 4EF75F3B180889660058DA37 /* App.m */; };
+		943C29AB18A200F700BEA7AF /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4EF75F38180888780058DA37 /* libsqlite3.0.dylib */; };
+		943C29AC18A2011100BEA7AF /* Person.m in Sources */ = {isa = PBXBuildFile; fileRef = 4EF75F36180881940058DA37 /* Person.m */; };
+		943C29AD18A2011700BEA7AF /* App.m in Sources */ = {isa = PBXBuildFile; fileRef = 4EF75F3B180889660058DA37 /* App.m */; };
+		943C29AE18A2012100BEA7AF /* RCActiveRecordResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4EF75F321807A6CF0058DA37 /* RCActiveRecordResultSet.m */; };
+		943C29AF18A2012300BEA7AF /* RCActiveRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936DA17BBD0250088B96B /* RCActiveRecord.m */; };
+		943C29B018A2012500BEA7AF /* RCCriteria.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936DD17BBD0340088B96B /* RCCriteria.m */; };
+		943C29B118A2012A00BEA7AF /* FMDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936C217BB3D070088B96B /* FMDatabase.m */; };
+		943C29B218A2012E00BEA7AF /* FMDatabaseAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936C417BB3D070088B96B /* FMDatabaseAdditions.m */; };
+		943C29B318A2013100BEA7AF /* FMDatabasePool.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936C617BB3D070088B96B /* FMDatabasePool.m */; };
+		943C29B418A2013800BEA7AF /* FMDatabaseQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936C817BB3D070088B96B /* FMDatabaseQueue.m */; };
+		943C29B518A2013B00BEA7AF /* FMResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E2936CB17BB3D070088B96B /* FMResultSet.m */; };
+		943C29B618A2016D00BEA7AF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E29369717BB3CDF0088B96B /* main.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -107,6 +118,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				943C29AB18A200F700BEA7AF /* libsqlite3.0.dylib in Frameworks */,
 				4E2936AA17BB3CE00088B96B /* SenTestingKit.framework in Frameworks */,
 				4E2936AB17BB3CE00088B96B /* UIKit.framework in Frameworks */,
 				4E2936AC17BB3CE00088B96B /* Foundation.framework in Frameworks */,
@@ -350,7 +362,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4E29369817BB3CDF0088B96B /* main.m in Sources */,
+				943C29B618A2016D00BEA7AF /* main.m in Sources */,
 				4E29369C17BB3CDF0088B96B /* RCAppDelegate.m in Sources */,
 				4E2936CC17BB3D070088B96B /* FMDatabase.m in Sources */,
 				4E9ABA931809016400D9582F /* RCExampleCode.m in Sources */,
@@ -370,7 +382,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				943C29AD18A2011700BEA7AF /* App.m in Sources */,
+				943C29AC18A2011100BEA7AF /* Person.m in Sources */,
+				943C29B018A2012500BEA7AF /* RCCriteria.m in Sources */,
+				943C29AE18A2012100BEA7AF /* RCActiveRecordResultSet.m in Sources */,
+				943C29AF18A2012300BEA7AF /* RCActiveRecord.m in Sources */,
 				4E2936B717BB3CE00088B96B /* RCActiveRecordTests.m in Sources */,
+				943C29B118A2012A00BEA7AF /* FMDatabase.m in Sources */,
+				943C29B218A2012E00BEA7AF /* FMDatabaseAdditions.m in Sources */,
+				943C29B318A2013100BEA7AF /* FMDatabasePool.m in Sources */,
+				943C29B418A2013800BEA7AF /* FMDatabaseQueue.m in Sources */,
+				943C29B518A2013B00BEA7AF /* FMResultSet.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

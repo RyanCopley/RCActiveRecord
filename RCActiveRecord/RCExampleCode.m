@@ -54,8 +54,8 @@
     a.address2 = @"Test St";
     
     a.person = p;
-    [a beginTransaction];
-    [a beginTransaction];//Whoops! Started a transaction twice! No worries, we safe guard against this.
+    [App beginTransaction];
+    [App beginTransaction];//Whoops! Started a transaction twice! No worries, we safe guard against this.
     __block NSTimeInterval writeStart = [NSDate timeIntervalSinceReferenceDate];
     do {
         a.name2 = [NSString stringWithFormat:@"Ryan-%i",arc4random()%10000];
@@ -65,7 +65,7 @@
         [a insertRecord];
         writtenCount++;
     } while (i-->0);
-    [a commit]; //Commit (write) all changes to the database. This is the key to having exceptionally fast SQLite performance!
+    [App commit]; //Commit (write) all changes to the database. This is the key to having exceptionally fast SQLite performance!
     
     //Delete the latest entry (Since we INSERTED `testSize` times, `a` links to the MOST RECENT insertion.
     [a deleteRecord]; //Since we are outside of a transaction, this will happen immediately!!

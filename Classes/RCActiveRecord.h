@@ -14,7 +14,7 @@
 
 
 @interface RCActiveRecord : NSObject{
-    @protected
+@protected
     NSNumber* _id;
     
     BOOL isNewRecord;
@@ -46,14 +46,18 @@
 
 -(RCActiveRecordResultSet*) recordByPK:(NSNumber*) pk;
 -(RCActiveRecordResultSet*) recordsByAttribute:(NSString*) attributeName value:(id) value;
--(RCActiveRecordResultSet*) allRecords;
++(RCActiveRecordResultSet*) allRecords;
++(RCActiveRecordResultSet*)allRecordsWithCriteria:(RCCriteria*)criteria;
+
+-(RCActiveRecordResultSet*)customQuery:(NSString*) query;
+-(int) recordCount;
 
 -(NSDictionary*) toJSON;
 +(id) fromJSON:(id)json;
 
--(void)beginTransaction;
--(void)commit;
--(void)rollback;
++(void)beginTransaction;
++(void)commit;
++(void)rollback;
 
 -(BOOL) insertRecord;
 -(BOOL) updateRecord;
@@ -76,7 +80,6 @@
 -(NSString*) primaryKey;
 -(NSNumber*) primaryKeyValue;
 -(NSString*) tableName;
-
 
 -(FMDatabaseQueue*) getFMDBQueue;
 
