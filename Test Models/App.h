@@ -9,18 +9,9 @@
 #import "RCActiveRecord.h"
 #import "Person.h"
 
-@interface App : RCActiveRecord{
-    NSNumber* appPK;
-    NSString* name2;
-    NSString* address2;
-    NSNumber* age2;
-    NSArray* array;
-    NSDictionary* dict;
-    Person* person;
-}
+@interface App : RCActiveRecord
 
 
-@property (strong, nonatomic)NSNumber* appPK;
 @property (strong, nonatomic)NSString* name2;
 @property (strong, nonatomic)NSString* address2;
 @property (strong, nonatomic)NSNumber* age2;

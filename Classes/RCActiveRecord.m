@@ -14,7 +14,7 @@
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
 @implementation RCActiveRecord
-@synthesize isNewRecord, isSavedRecord, _id, creationDate, updatedDate, savedDate;
+@synthesize isNewRecord, isSavedRecord, _id, creationDate, updatedDate, savedDate, criteria;
 
 
 static FMDatabaseQueue* RCActiveRecordQueue;
@@ -84,10 +84,6 @@ static BOOL inTransaction;
     return [[[[self class] alloc] initModelValues] initModel];
 }
 
--(void)setCriteria:(RCCriteria*) _criteria{
-    criteria = _criteria;
-}
-
 -(int)recordCount{
     
     if (!criteria){
@@ -105,26 +101,26 @@ static BOOL inTransaction;
 }
 
 
--(RCActiveRecordResultSet*)customQuery:(NSString*) query{
+-(RCResultSet*)customQuery:(NSString*) query{
     
-    return [[RCActiveRecordResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
+    return [[RCResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
 
--(RCActiveRecordResultSet*)recordByPK:(NSNumber*) pk{
+-(RCResultSet*)recordByPK:(NSNumber*) pk{
     
     if (!criteria){
         criteria = [[RCCriteria alloc] init];
-        [criteria addCondition: [self primaryKey] is:RCEqualTo to: [NSString stringWithFormat:@"%@",pk]];
+        [criteria addCondition: [self primaryKeyName] is:RCEqualTo to: [NSString stringWithFormat:@"%@",pk]];
     }
     [criteria setLimit:1];
     
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
     
-    return [[RCActiveRecordResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
+    return [[RCResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
--(RCActiveRecordResultSet*)recordsByAttribute:(NSString*) attributeName value:(id) value{
+-(RCResultSet*)recordsByAttribute:(NSString*) attributeName value:(id) value{
     if (!criteria){
         criteria = [[RCCriteria alloc] init];
         [criteria addCondition:attributeName is:RCEqualTo to: [NSString stringWithFormat:@"%@",value]];
@@ -132,29 +128,29 @@ static BOOL inTransaction;
     
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
     
-    return [[RCActiveRecordResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
+    return [[RCResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
 
-+(RCActiveRecordResultSet*)allRecords{
++(RCResultSet*)allRecords{
     
     
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@;", [[self model] tableName] ];
     
-    return [[RCActiveRecordResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
+    return [[RCResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
-+(RCActiveRecordResultSet*)allRecordsWithCriteria:(RCCriteria*)criteria{
++(RCResultSet*)allRecordsWithCriteria:(RCCriteria*)criteria{
     
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [[self model] tableName], [criteria generateWhereClause] ];
     
-    return [[RCActiveRecordResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
+    return [[RCResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
 
 -(NSDictionary*) toJSON{
     NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
-    [dict setValue:[self primaryKeyValue] forKey:[self primaryKey]];
+    [dict setValue:[self primaryKeyValue] forKey:[self primaryKeyName]];
     
     NSString *key = NSStringFromClass( [self class] );
     
@@ -205,7 +201,7 @@ static BOOL inTransaction;
             
         }
         
-        NSString* aKey = [model primaryKey];
+        NSString* aKey = [model primaryKeyName];
         NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[aKey substringToIndex:1] uppercaseString],[aKey substringFromIndex:1]];
         NSString* value = [json objectForKey:aKey];
         NSNumberFormatter * f = [[NSNumberFormatter alloc] init];
@@ -282,6 +278,7 @@ static BOOL inTransaction;
 }
 
 -(BOOL) insertRecord{
+    __block BOOL success = NO;
     @autoreleasepool {
         
         isNewRecord = NO;
@@ -312,23 +309,22 @@ static BOOL inTransaction;
             if (RCACTIVERECORDLOGGING){
                 NSLog(@"Query: %@", query);
             }
-            
             [RCActiveRecordQueue inDatabase:^(FMDatabase *db){
                 
-                [db executeUpdate: query];
-                NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[[self primaryKey] substringToIndex:1] uppercaseString],[[self primaryKey] substringFromIndex:1]];
+                success = [db executeUpdate: query];
+                NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[[self primaryKeyName] substringToIndex:1] uppercaseString],[[self primaryKeyName] substringFromIndex:1]];
                 @try {
                     [self performSelector: NSSelectorFromString(setConversion) withObject: @([db lastInsertRowId])];
                 }
                 @catch (NSException* e){
-                    NSLog(@"[Email to ampachex@ryancopley.com please] Error thrown! This object is not properly synthesized. Unable to set: %@", [self primaryKey]);
+                    NSLog(@"[Email to ampachex@ryancopley.com please] Error thrown! This object is not properly synthesized. Unable to set: %@", [self primaryKeyName]);
                 }
                 
                 
             }];
         }
     }
-    return YES;
+    return success;
 }
 
 -(BOOL) updateRecord{
@@ -354,7 +350,7 @@ static BOOL inTransaction;
                 
                 updateData = [[updateData substringToIndex:updateData.length-2] mutableCopy];
                 
-                __block NSString* query = [NSString stringWithFormat:@"UPDATE %@ SET %@ WHERE `%@`=\"%@\";", [obj tableName], updateData,[self primaryKey], [self primaryKeyValue]];
+                __block NSString* query = [NSString stringWithFormat:@"UPDATE %@ SET %@ WHERE `%@`=\"%@\";", [obj tableName], updateData,[self primaryKeyName], [self primaryKeyValue]];
                 if (RCACTIVERECORDLOGGING){
                     NSLog(@"Query: %@", query);
                 }
@@ -388,7 +384,7 @@ static BOOL inTransaction;
 
 -(BOOL)deleteRecord{
     if (!isNewRecord && isSavedRecord){
-        __block NSString* query = [NSString stringWithFormat:@"DELETE FROM %@ WHERE `%@`='%@';", [self tableName], [self primaryKey], [self primaryKeyValue]];
+        __block NSString* query = [NSString stringWithFormat:@"DELETE FROM %@ WHERE `%@`='%@';", [self tableName], [self primaryKeyName], [self primaryKeyValue]];
         if (RCACTIVERECORDLOGGING){
             NSLog(@"Query: %@", query);
         }
@@ -403,10 +399,6 @@ static BOOL inTransaction;
 }
 
 
--(BOOL)isNewRecord{
-    return isNewRecord;
-}
-
 +(void) preloadModels:(BOOL)preload{
     NSString *key = NSStringFromClass( [self class] );
     return [RCActiveRecordPreload setObject:@(preload) forKey:key];
@@ -420,13 +412,6 @@ static BOOL inTransaction;
 +(BOOL) hasSchemaDeclared{
     NSString *key = NSStringFromClass( [self class] );
     return [[schemaData objectForKey:key] count] > 3;
-}
-
-
-+(BOOL) registerPrimaryKey:(NSString*) columnName{
-    NSString *key = NSStringFromClass( [self class] );
-    [pkName setObject:columnName forKey:key];
-    return YES;
 }
 
 
@@ -466,7 +451,7 @@ static BOOL inTransaction;
             
             
             NSMutableString* columnData = [[NSMutableString alloc] init];
-            [columnData appendFormat:@"%@ INTEGER PRIMARY KEY %@", [obj primaryKey], ([[obj primaryKey] isEqualToString:@"_id"] ? @"AUTOINCREMENT" : @"")];
+            [columnData appendFormat:@"%@ INTEGER PRIMARY KEY %@", [obj primaryKeyName], ([[obj primaryKeyName] isEqualToString:@"_id"] ? @"AUTOINCREMENT" : @"")];
             
             
             for (NSString* columnName in schema){
@@ -528,14 +513,14 @@ static BOOL inTransaction;
 }
 
 
--(NSString*) primaryKey{
+-(NSString*) primaryKeyName{
     NSString *key = NSStringFromClass( [self class] );
     
     return [pkName valueForKey:key];
 }
 
 -(NSNumber*) primaryKeyValue {
-    return [self performSelector:NSSelectorFromString([self primaryKey])];
+    return [self performSelector:NSSelectorFromString([self primaryKeyName])];
 }
 
 

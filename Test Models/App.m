@@ -9,12 +9,11 @@
 #import "App.h"
 
 @implementation App
-@synthesize name2,age2,address2,appPK, array, dict, person;
+@synthesize name2,age2,address2, array, dict, person;
 
 -(id)initModelValues{
     self = [super init];
     if (self){
-        appPK = @(-1);
         name2 = @"";
         address2 = @"";
         age2 = @(0);
@@ -32,7 +31,6 @@
         if (![App hasSchemaDeclared]){
             NSLog(@"Initialized App schema");
             
-            [App registerPrimaryKey:@"appPK"];
             [App registerColumn:@"name2"];
             [App registerColumn:@"address2"];
             [App registerColumn:@"age2"];

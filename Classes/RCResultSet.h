@@ -9,7 +9,7 @@
 #import "FMDatabaseQueue.h"
 #import "FMResultSet.h"
 
-@interface RCActiveRecordResultSet : NSObject{
+@interface RCResultSet : NSObject{
     FMDatabaseQueue* queue;
     FMResultSet* resultSet;
     NSString* internalQuery;
@@ -28,6 +28,6 @@
 
 
 //Internal
--(RCActiveRecordResultSet*) initWithFMDatabaseQueue:(FMDatabaseQueue*) _queue andQuery:(NSString*) query andActiveRecordClass:(Class) _ARClass;
+-(RCResultSet*) initWithFMDatabaseQueue:(FMDatabaseQueue*) _queue andQuery:(NSString*) query andActiveRecordClass:(Class) _ARClass;
 
 @end

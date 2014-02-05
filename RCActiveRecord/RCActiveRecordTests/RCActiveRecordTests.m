@@ -32,6 +32,37 @@
     STAssertNotNil([Person model], @"Person Model failed to load");
 }
 
+- (void)testFreshFlags{
+    STAssertTrue([[Person model] isNewRecord], @"Fresh models should be marked as New");
+    STAssertFalse([[Person model] isSavedRecord], @"Fresh models should not be marked as saved");
+}
+
+- (void)testSavedFlag{
+    [Person trunctuate];
+    Person* p = [Person model];
+    p.name = @"Test";
+    [p saveRecord];
+    
+    STAssertFalse([p isNewRecord], @"Saved models should not be new");
+    STAssertTrue([p isSavedRecord], @"Saved models should be marked as saved");
+    
+}
+
+- (void)testTableName{
+    STAssertTrue([[[Person model] tableName] isEqualToString:@"person"], @"Table name should reflect class name in lowercase format");
+}
+
+- (void)testInsertRecord{
+    [Person trunctuate];
+    Person* p = [Person model];
+    p.name = @"Test";
+    STAssertTrue([[Person model] recordCount] == 0, @"There should be 0 person in the database.");
+    [p insertRecord]; // 1
+    [p insertRecord]; // 2
+    STAssertTrue([[Person model] recordCount] == 2, @"There should be 2 people in the database.");
+}
+
+
 - (void)testSaveRecord{
     [Person trunctuate];
     Person* p = [Person model];
@@ -94,6 +125,30 @@
     STAssertEquals([p recordCount], 1, @"Save did not work");
     [p deleteRecord]; // 0
     STAssertEquals([p recordCount], 0, @"Delete did not remove the record");
+}
+
+
+- (void)testRecordCount{
+    [Person trunctuate];
+    Person* p = [Person model];
+    p.name = @"Test";
+    STAssertEquals([p recordCount], 0, @"There should be 0 records at this point");
+    [p saveRecord]; // 1
+    STAssertEquals([p recordCount], 1, @"There should be 1 record at this point");
+    [p deleteRecord]; // 0
+    STAssertEquals([p recordCount], 0, @"There should be 0 records at this point");
+}
+
+
+
+
+- (void)testDropTable{
+    [Person generateSchema:YES];
+    STAssertTrue([[Person model] insertRecord], @"Person should insert");
+    [Person dropTable];
+    STAssertFalse([[Person model] insertRecord], @"Person should fail to update");
+    [Person generateSchema:YES];
+    STAssertTrue([[Person model] insertRecord], @"Person should insert");
 }
 
 
@@ -231,6 +286,25 @@
     STAssertNil(p._id, @"_id should be -1 from JSON");
     STAssertTrue([p.address isEqualToString:@"json"], @"address should be supplied from JSON");
     STAssertTrue([p.age isEqual: @(22)], @"age should be 100 from JSON");
+}
+
+
+- (void)testJSONArrayDecoding {
+    NSArray* people = [Person fromJSON:
+                 @[@{
+                       @"name" : @"test",
+                       @"address" : @"json",
+                       @"age" : @(21)
+                       },@{
+                       @"name" : @"test2",
+                       @"address" : @"json2",
+                       @"age" : @(22)
+                       }]
+                 ];
+    
+    STAssertTrue([people count] == 2, @"The supplied JSON should generate 2 records");
+    STAssertTrue([((Person*)people[0]).name isEqualToString:@"test"], @"The first record should have the name `test`");
+    STAssertTrue([((Person*)people[1]).address isEqualToString:@"json2"], @"The second record should have the address `json2`");
 }
 
 

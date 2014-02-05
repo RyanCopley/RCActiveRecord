@@ -9,14 +9,14 @@
 #import "RCActiveRecord.h"
 #import "FMDatabase.h"
 #import "FMDatabaseQueue.h"
-#import "RCActiveRecordResultSet.h"
+#import "RCResultSet.h"
 
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
 
-@implementation RCActiveRecordResultSet
+@implementation RCResultSet
 
 static NSDateFormatter *formatter;
 static NSNumberFormatter *numFormatter;
@@ -111,7 +111,7 @@ static NSNumberFormatter *numFormatter;
 }
 
 //Internal
--(RCActiveRecordResultSet*) initWithFMDatabaseQueue:(FMDatabaseQueue*) _queue andQuery:(NSString*) query andActiveRecordClass:(Class) _ARClass{
+-(RCResultSet*) initWithFMDatabaseQueue:(FMDatabaseQueue*) _queue andQuery:(NSString*) query andActiveRecordClass:(Class) _ARClass{
     self = [super init];
     if (self){
         

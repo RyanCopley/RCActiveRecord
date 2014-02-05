@@ -8,12 +8,7 @@
 
 #import "RCActiveRecord.h"
 
-@interface Person : RCActiveRecord{
-    NSString* name;
-    NSString* ip;
-    NSMutableString* address;
-    NSNumber* age;
-}
+@interface Person : RCActiveRecord
 
 @property (strong, nonatomic) NSString* name;
 @property (strong, nonatomic) NSString* ip;
