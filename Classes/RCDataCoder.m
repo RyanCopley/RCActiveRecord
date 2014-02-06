@@ -48,7 +48,8 @@ static RCDataCoder *sharedSingleton;
 }
 
 -(NSString*) encode:(id) obj{
-    NSString* (^encodeBlock)(id value) = [dataEncoders objectForKey:NSStringFromClass([obj class])];
+    NSString* classStr = [[[NSStringFromClass([obj class]) stringByReplacingOccurrencesOfString:@"__" withString:@""] stringByReplacingOccurrencesOfString:@"CF" withString:@""] stringByReplacingOccurrencesOfString:@"Constant" withString:@""];
+    NSString* (^encodeBlock)(id value) = [dataEncoders objectForKey:classStr];
     return encodeBlock(obj);
 }
 
@@ -83,8 +84,9 @@ static RCDataCoder *sharedSingleton;
         return [NSJSONSerialization JSONObjectWithData: [stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
     }];
     
+    __typeof__(self) __weak weakself = self;
     [self addDecoderForType:[NSString class] decoder:^id(NSString* stringRepresentation){
-        return stringRepresentation;
+        return [weakself sanitize: stringRepresentation];
     }];
     
     [self addDecoderForType:[NSNumber class] decoder:^id(NSString* stringRepresentation){
@@ -121,8 +123,9 @@ static RCDataCoder *sharedSingleton;
         return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
     }];
     
+    __typeof__(self) __weak weakself = self;
     [self addEncoderForType:[NSString class] encoder:^NSString*(NSString* obj){
-        return [NSString stringWithFormat:@"%@",obj]; //As a safety precaution
+        return [weakself sanitize:[NSString stringWithFormat:@"%@",obj] ]; //As a safety precaution
     }];
     
     [self addEncoderForType:[NSNumber class] encoder:^NSString*(NSNumber* obj){
@@ -135,6 +138,13 @@ static RCDataCoder *sharedSingleton;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
+
+-(NSString*) sanitize: (NSString*) value{
+    value = [NSString stringWithFormat:@"%@",value];
+    value = [value stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""];
+    value = [value stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
+    return value;
+}
 
 //This will need to be done in every model (Automatically)
 /*

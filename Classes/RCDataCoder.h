@@ -14,6 +14,6 @@
     
 }
 +(RCDataCoder*)sharedSingleton;
-
+-(NSString*) encode:(id) obj;
 -(id) decode:(NSString*) stringRepresentation toType:(Class)type;
 @end

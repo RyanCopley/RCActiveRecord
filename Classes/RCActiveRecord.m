@@ -8,6 +8,7 @@
 
 #import "RCActiveRecord.h"
 #import "FMDatabaseAdditions.h"
+#import "RCDataCoder.h"
 
 #define RCACTIVERECORDLOGGING 0
 #pragma clang diagnostic push
@@ -250,34 +251,7 @@ static BOOL inTransaction;
 }
 
 
--(NSString*) sanitize: (NSString*) value{
-    value = [NSString stringWithFormat:@"%@",value];
-    value = [value stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""];
-    value = [value stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
-    return value;
-}
 
--(NSString*) encodeValueForSQLITE:(id) value {
-    
-    NSError* err;
-    
-    if ([value isKindOfClass:[NSArray class]] || [value isKindOfClass:[NSDictionary class]]){
-        NSData* data = [NSJSONSerialization dataWithJSONObject:value options:kNilOptions error:&err];
-        NSString* str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        
-        return [self sanitize:str];
-    }
-    if ([value isKindOfClass:[NSDate class]]){
-        return [self sanitize: [formatter stringFromDate: value]];
-    }
-    
-    if ([value isKindOfClass:[RCActiveRecord class]]){
-        return [self sanitize: [NSString stringWithFormat:@"%@",[((RCActiveRecord*)value) primaryKeyValue]]];
-    }
-    
-    //Most other data types work well enough not to bother with any conversion.
-    return [self sanitize:value];
-}
 
 -(BOOL) insertRecord{
     __block BOOL success = NO;
@@ -293,10 +267,10 @@ static BOOL inTransaction;
         
         NSMutableString* columns = [[NSMutableString alloc] init];
         NSMutableString* data = [[NSMutableString alloc] init];
-         
+        RCDataCoder* coder = [RCDataCoder sharedSingleton];
         for (NSString* columnName in [schema copy]){
             [columns appendFormat:@"%@, ", columnName];
-            [data appendFormat:@"\"%@\", ", [self encodeValueForSQLITE: [self performSelector: NSSelectorFromString(columnName)]] ];
+            [data appendFormat:@"\"%@\", ", [coder encode: [self performSelector: NSSelectorFromString(columnName)]] ];
         }
         
         if ([columns isEqualToString:@""] == FALSE && [data isEqualToString:@""] == FALSE){
@@ -343,9 +317,10 @@ static BOOL inTransaction;
             
             NSMutableString* updateData = [[NSMutableString alloc] init];
             
+            RCDataCoder* coder = [RCDataCoder sharedSingleton];
             for (NSString* columnName in schema){
                 
-                [updateData appendFormat:@"`%@`=\"%@\", ", columnName,[self encodeValueForSQLITE: [self performSelector: NSSelectorFromString(columnName)]] ];
+                [updateData appendFormat:@"`%@`=\"%@\", ", columnName,[coder encode: [self performSelector: NSSelectorFromString(columnName)]] ];
             }
             
             if ([updateData isEqualToString:@""] == FALSE){
