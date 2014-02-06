@@ -9,16 +9,18 @@
 #import "Person.h"
 
 @implementation Person
-@synthesize name,address,age, ip;
+
+@synthesize name;
+@synthesize address;
+@synthesize age;
+@synthesize ip;
 
 -(id)initDefaultValues{
     self = [super init];
-    
     name = @"";
     address = [@"" mutableCopy];
     age = @(0);
     ip = @"";
-    
     return self;
 }
 

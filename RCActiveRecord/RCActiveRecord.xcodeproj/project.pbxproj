@@ -122,7 +122,6 @@
 		4E29367F17BB3CDF0088B96B = {
 			isa = PBXGroup;
 			children = (
-				4EF75F38180888780058DA37 /* libsqlite3.0.dylib */,
 				4E9ABA911809016400D9582F /* RCExampleCode.h */,
 				4E9ABA921809016400D9582F /* RCExampleCode.m */,
 				4E29369117BB3CDF0088B96B /* RCActiveRecord */,
@@ -146,6 +145,7 @@
 		4E29368A17BB3CDF0088B96B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4EF75F38180888780058DA37 /* libsqlite3.0.dylib */,
 				4E29368B17BB3CDF0088B96B /* UIKit.framework */,
 				4E29368D17BB3CDF0088B96B /* Foundation.framework */,
 				4E29368F17BB3CDF0088B96B /* CoreGraphics.framework */,

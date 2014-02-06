@@ -12,102 +12,48 @@
 #import "RCResultSet.h"
 #import "RCDataCoder.h"
 
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
-
 @implementation RCResultSet
-
 
 -(void) execute: (void (^) (id recordResult)) recordCallback{
     [self execute:recordCallback finished:^(BOOL error){}];
 }
-
--(id) decodeDataFromSQLITE: (NSString*)stringRepresentation expectedType: (Class) class{
-    
-    NSError* err;
-    
-    if ([class isSubclassOfClass:[NSArray class]] || [class isSubclassOfClass:[NSDictionary class]]){
-        return [NSJSONSerialization JSONObjectWithData: [stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
-    }
-    
-    if ([class isSubclassOfClass:[NSString class]]){
-        return stringRepresentation;
-    }
-    
-    if ([class isSubclassOfClass:[NSNumber class]]){
-        return [numFormatter numberFromString:stringRepresentation];
-        
-    }
-    
-    if ([class isSubclassOfClass:[NSDate class]]){
-        return [formatter dateFromString: stringRepresentation];
-    }
-    
-    BOOL preload = [ARClass preloadEnabled];
-    if (preload && [class isSubclassOfClass:[RCActiveRecord class]]){
-        //To do this shit still D:
-        
-        __block RCActiveRecord* model = [class model];
-        
-        NSNumber* pk = [numFormatter numberFromString:stringRepresentation];
-        __block id _record;
-        [[model recordByPK: pk] execute:^(id record){
-            _record = record;
-        }];
-        return _record;
-        
-    }
-    
-    return stringRepresentation;
-}
-
 
 -(void) execute: (void (^) (id recordResult)) recordCallback finished: (void (^) (BOOL error)) finishedCallback{
     dispatch_async(processQueue, ^{
         error = NO;
         [queue inDatabase:^(FMDatabase *db) {
             RCDataCoder* coder = [RCDataCoder sharedSingleton];
-            
             FMResultSet* s = [db executeQuery: internalQuery];
-            
-            
             while ([s next]){
                 id AR = [[ARClass alloc] initDefaultValues];
                 [(RCActiveRecord*)AR setIsNewRecord:NO];
                 [(RCActiveRecord*)AR setIsSavedRecord:YES];
-                
                 @autoreleasepool {
                     for (int i=0; i < [s columnCount]; i++){
-                        
                         NSString* varName = [s columnNameForIndex: i];
-                        
                         NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[varName substringToIndex:1] uppercaseString],[varName substringFromIndex:1]];
                         NSString* value = [NSString stringWithFormat:@"%s",[s UTF8StringForColumnIndex:i]];
-                        
                         id convertedValue = [coder decode:value toType:[[AR performSelector:NSSelectorFromString(varName)] class]];
-                        //id convertedValue = [self decodeDataFromSQLITE:value expectedType: [[AR performSelector:NSSelectorFromString(varName)] class]];
                         @try {
                             
                             [AR performSelector: NSSelectorFromString(setConversion) withObject: convertedValue];
                         }
                         @catch (NSException* e){
                             error = YES;
-                            NSLog(@"[Error in RCActiveRecord] This object (%@) is not properly synthesized (Invalid setter). Unable to set: %@", NSStringFromClass([AR class]), varName);
+                            NSLog(@"[Error in RCActiveRecord Execution] This object (%@) is not properly synthesized (Invalid setter). Unable to set: %@", NSStringFromClass([AR class]), varName);
                         }
                     }
                 }
                 recordCallback(AR);
-                
             }
             dispatch_async(dispatch_queue_create("", NULL), ^{
                 finishedCallback(error);
             });
         }];
     });
-
-    
 }
 
 //Internal
@@ -115,17 +61,9 @@
     self = [super init];
     if (self){
         processQueue = dispatch_queue_create("", NULL);
-        
         internalQuery = query;
         queue = _queue;
         ARClass = _ARClass;
-        
-        
-        formatter = [[NSDateFormatter alloc] init];
-        [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
-        
-        numFormatter = [[NSNumberFormatter alloc] init];
-        [numFormatter setNumberStyle:NSNumberFormatterNoStyle];
     }
     return self;
 }

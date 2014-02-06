@@ -14,8 +14,7 @@ static RCDataCoder *sharedSingleton;
 
 + (void)initialize {
     static BOOL initialized = NO;
-    if(!initialized)
-    {
+    if(!initialized) {
         initialized = YES;
         sharedSingleton = [[RCDataCoder alloc] init];
     }
@@ -23,10 +22,9 @@ static RCDataCoder *sharedSingleton;
 
 -(id) init{
     self = [super init];
-    if (self){
+    if (self) {
         dataEncoders = [[NSMutableDictionary alloc] init];
         dataDecoders = [[NSMutableDictionary alloc] init];
-        
         [self defaultDecoders];
         [self defaultEncoders];
     }
@@ -74,65 +72,59 @@ static RCDataCoder *sharedSingleton;
 
 -(void) defaultDecoders {
 
-    [self addDecoderForType:[NSArray class] decoder:^id(NSString* stringRepresentation){
+    [self addDecoderForType:[NSArray class] decoder:^id(NSString* stringRepresentation) {
         NSError* err = nil;
         return [NSJSONSerialization JSONObjectWithData: [stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
     }];
     
-    [self addDecoderForType:[NSDictionary class] decoder:^id(NSString* stringRepresentation){
+    [self addDecoderForType:[NSDictionary class] decoder:^id(NSString* stringRepresentation) {
         NSError* err = nil;
         return [NSJSONSerialization JSONObjectWithData: [stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
     }];
     
     __typeof__(self) __weak weakself = self;
-    [self addDecoderForType:[NSString class] decoder:^id(NSString* stringRepresentation){
+    [self addDecoderForType:[NSString class] decoder:^id(NSString* stringRepresentation) {
         return [weakself sanitize: stringRepresentation];
     }];
     
-    [self addDecoderForType:[NSNumber class] decoder:^id(NSString* stringRepresentation){
+    [self addDecoderForType:[NSNumber class] decoder:^id(NSString* stringRepresentation) {
         static NSNumberFormatter* numFormatter;
-        if (numFormatter == nil){
+        if (numFormatter == nil) {
             numFormatter = [[NSNumberFormatter alloc] init];
             [numFormatter setNumberStyle:NSNumberFormatterNoStyle];
         }
-        
         return [numFormatter numberFromString:stringRepresentation];
     }];
     
-    [self addDecoderForType:[NSDate class] decoder:^id(NSString* stringRepresentation){
+    [self addDecoderForType:[NSDate class] decoder:^id(NSString* stringRepresentation) {
         static NSDateFormatter* dateFormatter;
-        if (dateFormatter == nil){
+        if (dateFormatter == nil) {
             dateFormatter = [[NSDateFormatter alloc] init];
             [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
         }
-        
         return [dateFormatter dateFromString: stringRepresentation];
     }];
 }
 
 -(void)defaultEncoders {
-    [self addEncoderForType:[NSArray class] encoder:^NSString*(NSArray* obj){
+    [self addEncoderForType:[NSArray class] encoder:^NSString*(NSArray* obj) {
         NSError* err;
         NSData *jsonData = [NSJSONSerialization dataWithJSONObject:obj options:NSJSONWritingPrettyPrinted error:&err];
         return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
     }];
-    
-    [self addEncoderForType:[NSDictionary class] encoder:^NSString*(NSDictionary* obj){
+    [self addEncoderForType:[NSDictionary class] encoder:^NSString*(NSDictionary* obj) {
         NSError* err;
         NSData *jsonData = [NSJSONSerialization dataWithJSONObject:obj options:NSJSONWritingPrettyPrinted error:&err];
         return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
     }];
-    
     __typeof__(self) __weak weakself = self;
-    [self addEncoderForType:[NSString class] encoder:^NSString*(NSString* obj){
+    [self addEncoderForType:[NSString class] encoder:^NSString*(NSString* obj) {
         return [weakself sanitize:[NSString stringWithFormat:@"%@",obj] ]; //As a safety precaution
     }];
-    
-    [self addEncoderForType:[NSNumber class] encoder:^NSString*(NSNumber* obj){
+    [self addEncoderForType:[NSNumber class] encoder:^NSString*(NSNumber* obj) {
         return [NSString stringWithFormat:@"%@",obj]; //Works pretty well
     }];
-    
-    [self addEncoderForType:[NSDate class] encoder:^NSString*(NSDate* obj){
+    [self addEncoderForType:[NSDate class] encoder:^NSString*(NSDate* obj) {
         return [NSString stringWithFormat:@"%@", obj]; //You may want to override this.
     }];
 }
@@ -151,14 +143,14 @@ static RCDataCoder *sharedSingleton;
  NSError* err;
  
  BOOL preload = [ARClass preloadEnabled];
- if (preload && [class isSubclassOfClass:[RCActiveRecord class]]){
+ if (preload && [class isSubclassOfClass:[RCActiveRecord class]]) {
  //To do this shit still D:
  
  __block RCActiveRecord* model = [class model];
  
  NSNumber* pk = [numFormatter numberFromString:stringRepresentation];
  __block id _record;
- [[model recordByPK: pk] execute:^(id record){
+ [[model recordByPK: pk] execute:^(id record) {
  _record = record;
  }];
  return _record;

@@ -15,8 +15,6 @@ Features
 * Storing NSArrays and NSDictionaries
 * SQL Injection Proof
 * Auto Timestamps (Created, Saved, Updated)
-* Foreign Keys between other models
-* Foreign Key Auto Loading / Manual Loading
 * Create models via JSON, and export models to JSON (By dictionary and array)
 * Customizable data coders
 
@@ -28,3 +26,5 @@ Features Coming Soon
 * Migrations (Researching ideas of the best way to do this)
 * Full Test Suite (Half done-ish)
 * Subclassed models
+* Foreign Keys between other models
+* Foreign Key Auto Loading / Manual Loading

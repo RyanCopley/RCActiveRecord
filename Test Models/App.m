@@ -9,8 +9,13 @@
 #import "App.h"
 
 @implementation App
-@synthesize name, gitCommitHash, versionNumber, files, settings, owner;
 
+@synthesize name;
+@synthesize gitCommitHash;
+@synthesize versionNumber;
+@synthesize files;
+@synthesize settings;
+@synthesize owner;
 
 -(id)initDefaultValues{
     self = [super init];
@@ -25,18 +30,16 @@
     return self;
 }
 
-
 -(id)initModel{
     self = [super initModel];
     if (self){
         if (![App hasSchemaDeclared]){
-            NSLog(@"Initialized App schema");
-            
-            [App registerColumn:@"name2"];
-            [App registerColumn:@"address2"];
-            [App registerColumn:@"age2"];
-            [App registerColumn:@"array"];
-            [App registerColumn:@"dict"];
+            [App registerColumn:@"name"];
+            [App registerColumn:@"gitCommitHash"];
+            [App registerColumn:@"versionNumber"];
+            [App registerColumn:@"files"];
+            [App registerColumn:@"settings"];
+            [App registerColumn:@"owner"];
             [App generateSchema:NO]; // If you use "YES" here, it will DROP the table and re-create the table in SQLite.
         }
     }

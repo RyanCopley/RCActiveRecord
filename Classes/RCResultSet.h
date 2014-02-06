@@ -16,16 +16,10 @@
     Class ARClass;
     FMResultSet* resultSet;
     BOOL error;
-    
-    //Needs removed after IoC is implemented:
-    NSDateFormatter* formatter;
-    NSNumberFormatter *numFormatter;
 }
 
 -(void) execute: (void (^) (id recordResult)) recordCallback;
 -(void) execute: (void (^) (id recordResult)) recordCallback finished: (void (^) (BOOL error)) finishedCallback;
-
-//Internal
--(RCResultSet*) initWithFMDatabaseQueue:(FMDatabaseQueue*) _queue andQuery:(NSString*) query andActiveRecordClass:(Class) _ARClass;
+-(RCResultSet*) initWithFMDatabaseQueue:(FMDatabaseQueue*) _queue andQuery:(NSString*) query andActiveRecordClass:(Class) _ARClass; //Internal
 
 @end

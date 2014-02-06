@@ -13,7 +13,7 @@
 
 -(id) init{
     self = [super init];
-    if (self){
+    if (self) {
         conditions = [[NSMutableArray alloc] init];
         order = RCNoOrder;
         overrideSQL = nil;
@@ -22,7 +22,7 @@
 }
 
 -(NSString*) stringFromCompareOperator:(RCActiveRecordComparisonOperator) operator{
-    switch (operator){
+    switch (operator) {
         case RCGreaterThan:
             return @">";
             break;
@@ -55,9 +55,8 @@
 
 //Needs SQL injection proofing.
 -(void) addCondition:(NSString*) columnName is:(RCActiveRecordComparisonOperator) comparer to:(id) value{
-    
     // TODO: Should also check to ensure value is of type NSArray.
-    if (comparer == RCIn || comparer == RCNotIn){
+    if (comparer == RCIn || comparer == RCNotIn) {
         // TODO: Sanitize the array.
         NSString* arrayStr = [NSString stringWithFormat:@"\"%@\"", [((NSArray*)value) componentsJoinedByString:@"\",\""] ];
         [conditions addObject:
@@ -88,19 +87,15 @@
 -(void) orderByDesc:(NSString*) columnName{
     order = RCDescend;
     orderColumn = [self sanitize:columnName];
-    
 }
 
 -(NSString*) generateWhereClause{
-    
-    if (overrideSQL != nil){
+    if (overrideSQL != nil) {
         return overrideSQL;
     }
-    
     NSMutableString * whereClause = [[NSMutableString alloc] init];
-    
     //Conditions...
-    if ([conditions count] > 0){
+    if ([conditions count] > 0) {
         for (NSObject * condition in conditions) {
             [whereClause appendFormat: @"%@ AND",condition];
         }
@@ -108,36 +103,31 @@
     }else{
         whereClause = [@"1=1" mutableCopy];
     }
-    
     //Limit...
-    if (limit > 0){
+    if (limit > 0) {
         [whereClause appendFormat: @" LIMIT %i ", limit];
     }
-    if (limit > 0){
+    //Offset
+    if (offset > 0) {
         [whereClause appendFormat: @" OFFSET %i ", offset];
     }
-    
     //Order...
-    if (order != RCNoOrder){
+    if (order != RCNoOrder) {
         NSString* orderStr;
-        if (order == RCAscend){
+        if (order == RCAscend) {
             orderStr = @"ASC";
         }
-        
-        if (order == RCDescend){
+        if (order == RCDescend) {
             orderStr = @"DESC";
         }
-        
         [whereClause appendFormat: @" ORDER BY `%@` %@", orderColumn, orderStr];
     }
-    
     return whereClause;
 }
 
 -(void) where:(NSString*) sqlWhere {
     overrideSQL = sqlWhere;
 }
-
 
 -(NSString*)sanitize:(NSString*)string{
     string = [NSString stringWithFormat:@"%@",string];

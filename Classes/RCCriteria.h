@@ -17,9 +17,7 @@ typedef enum  {
     RCLessThan,
     RCLessThanOrEqualTo,
     RCNotEqualTo,
-    
     RCLike,
-    
     RCIn, // Arrays only
     RCNotIn, // Arrays only
     
@@ -38,7 +36,6 @@ typedef enum {
     RCActiveRecordOrder order;
     NSString* orderColumn;
     NSString* overrideSQL;
-    
 }
 
 @property (nonatomic, assign) int limit;
@@ -48,9 +45,7 @@ typedef enum {
 -(void) addCondition:(NSString*) columnName is:(RCActiveRecordComparisonOperator) comparer to:(id) value;
 -(void) orderByAsc:(NSString*) columnName;
 -(void) orderByDesc:(NSString*) columnName;
-
-//Note: The [RCCriteria where: ...] function will override ANY and ALL conditions provided. It is one or the other, not both.
--(void) where:(NSString*) sqlWhere;
-
+-(void) where:(NSString*) sqlWhere; //Note: The [RCCriteria where: ...] function will override ANY and ALL conditions provided. It is one or the other, not both.
 -(NSString*) generateWhereClause;
+
 @end

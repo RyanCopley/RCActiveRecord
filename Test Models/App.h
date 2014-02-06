@@ -11,7 +11,6 @@
 
 @interface App : RCActiveRecord
 
-
 @property (strong, nonatomic) NSString* name;
 @property (strong, nonatomic) NSString* gitCommitHash;
 @property (strong, nonatomic) NSNumber* versionNumber;
