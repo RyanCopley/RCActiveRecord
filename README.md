@@ -19,6 +19,7 @@ Features
 * Foreign Key Auto Loading
 * Full Transaction support (Starting, committing, and rolling back)
 * Create models via JSON, and export models to JSON (By dictionary and array)
+* Inversion of control for data formatters in RCResultSet and Models, so you can add coders
 
 Features Coming Soon
 ==========
@@ -28,4 +29,3 @@ Features Coming Soon
 * Migrations
 * Full Test Suite (Half done-ish)
 * Subclassed models
-* Inversion of control for data formatters in RCResultSet and Models
