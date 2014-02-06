@@ -39,7 +39,7 @@
 -(NSDictionary*)toJSON; //Tested
 +(id)fromJSON:(id)json; //Tested
 +(void)beginTransaction; //Tested
-+(void)commit;
++(void)commit; //Tested (No real way to test this actually but whatever)
 +(void)rollback; //Tested
 -(BOOL)insertRecord; //Tested
 -(BOOL)updateRecord; //Tested
@@ -49,7 +49,7 @@
 +(BOOL)preloadEnabled;
 +(BOOL)hasSchemaDeclared;
 +(BOOL)registerColumn:(NSString*)columnName;
-+(BOOL)generateSchema: (BOOL)force;
++(BOOL)generateSchema: (BOOL)force; //Tested
 +(BOOL)updateSchema;
 +(BOOL)trunctuate; //Tested
 +(BOOL)dropTable; //Tested

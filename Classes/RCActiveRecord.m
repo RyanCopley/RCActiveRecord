@@ -112,6 +112,9 @@ static BOOL inTransaction;
     }
     [criteria setLimit:1];
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
+    if (RCACTIVERECORDLOGGING) {
+        NSLog(@"Query: %@", query);
+    }
     return [[RCResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
@@ -121,16 +124,25 @@ static BOOL inTransaction;
         [criteria addCondition:attributeName is:RCEqualTo to: [NSString stringWithFormat:@"%@",value]];
     }
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
+    if (RCACTIVERECORDLOGGING) {
+        NSLog(@"Query: %@", query);
+    }
     return [[RCResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
 +(RCResultSet*)allRecords{
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@;", [[self model] tableName] ];
+    if (RCACTIVERECORDLOGGING) {
+        NSLog(@"Query: %@", query);
+    }
     return [[RCResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
 +(RCResultSet*)allRecordsWithCriteria:(RCCriteria*)criteria{
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [[self model] tableName], [criteria generateWhereClause] ];
+    if (RCACTIVERECORDLOGGING) {
+        NSLog(@"Query: %@", query);
+    }
     return [[RCResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
@@ -146,7 +158,6 @@ static BOOL inTransaction;
         }else{
             RCActiveRecord* tmp = value;
             [dict setValue: [tmp primaryKeyValue] forKey: key];
-            
         }
     }
     return dict;
