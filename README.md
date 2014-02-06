@@ -28,3 +28,4 @@ Features Coming Soon
 * Migrations
 * Full Test Suite (Half done-ish)
 * Subclassed models
+* Inversion of control for data formatters in RCResultSet and Models

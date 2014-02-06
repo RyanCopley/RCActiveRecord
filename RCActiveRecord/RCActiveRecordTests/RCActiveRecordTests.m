@@ -53,6 +53,7 @@
     p.name = @"Test";
     STAssertTrue([[Person model] recordCount] == 0, @"There should be 0 person in the database.");
     [p insertRecord]; // 1
+    STAssertTrue([[Person model] recordCount] == 1, @"There should be 1 people in the database.");
     [p insertRecord]; // 2
     STAssertTrue([[Person model] recordCount] == 2, @"There should be 2 people in the database.");
 }
@@ -165,7 +166,14 @@
     __block int foundRecords = 0;
     [[Person allRecords] execute: ^(Person* record){
         foundRecords++;
+        if (foundRecords == 1){
+            STAssertTrue([record.name isEqualToString:@"Test"], @"Loading the record did not render the correct name.");
+        }
+        if (foundRecords == 2){
+            STAssertTrue([record.name isEqualToString:@"Test2"], @"Loading the record did not render the correct name.");
+        }
     } finished: ^(BOOL error){
+        STAssertFalse(error, @"An error was flagged");
         waitingForBlock = NO;
     }];
     
@@ -198,6 +206,7 @@
     [criteria addCondition:@"name" is:RCEqualTo to:@"Test"];
     [[Person allRecordsWithCriteria:criteria] execute: ^(Person* record){
         foundRecords++;
+        
     } finished: ^(BOOL error){
         waitingForBlock = NO;
     }];

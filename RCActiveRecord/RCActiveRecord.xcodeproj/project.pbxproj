@@ -33,6 +33,7 @@
 		4EF75F37180881940058DA37 /* Person.m in Sources */ = {isa = PBXBuildFile; fileRef = 4EF75F36180881940058DA37 /* Person.m */; };
 		4EF75F39180888780058DA37 /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4EF75F38180888780058DA37 /* libsqlite3.0.dylib */; };
 		4EF75F3C180889660058DA37 /* App.m in Sources */ = {isa = PBXBuildFile; fileRef = 4EF75F3B180889660058DA37 /* App.m */; };
+		94D1F60C18A30981007EA4D6 /* RCDataCoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 94D1F60B18A30981007EA4D6 /* RCDataCoder.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -89,6 +90,8 @@
 		4EF75F38180888780058DA37 /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = usr/lib/libsqlite3.0.dylib; sourceTree = SDKROOT; };
 		4EF75F3A180889660058DA37 /* App.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = App.h; path = "../Test Models/App.h"; sourceTree = "<group>"; };
 		4EF75F3B180889660058DA37 /* App.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = App.m; path = "../Test Models/App.m"; sourceTree = "<group>"; };
+		94D1F60A18A30981007EA4D6 /* RCDataCoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCDataCoder.h; sourceTree = "<group>"; };
+		94D1F60B18A30981007EA4D6 /* RCDataCoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCDataCoder.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -223,6 +226,8 @@
 				4E2936DA17BBD0250088B96B /* RCActiveRecord.m */,
 				4EF75F311807A6CF0058DA37 /* RCResultSet.h */,
 				4EF75F321807A6CF0058DA37 /* RCResultSet.m */,
+				94D1F60A18A30981007EA4D6 /* RCDataCoder.h */,
+				94D1F60B18A30981007EA4D6 /* RCDataCoder.m */,
 			);
 			name = Classes;
 			path = ../Classes;
@@ -353,6 +358,7 @@
 				4E29369817BB3CDF0088B96B /* main.m in Sources */,
 				4E29369C17BB3CDF0088B96B /* RCAppDelegate.m in Sources */,
 				4E2936CC17BB3D070088B96B /* FMDatabase.m in Sources */,
+				94D1F60C18A30981007EA4D6 /* RCDataCoder.m in Sources */,
 				4E9ABA931809016400D9582F /* RCExampleCode.m in Sources */,
 				4E2936CD17BB3D070088B96B /* FMDatabaseAdditions.m in Sources */,
 				4E2936CE17BB3D070088B96B /* FMDatabasePool.m in Sources */,

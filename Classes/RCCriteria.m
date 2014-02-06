@@ -9,21 +9,16 @@
 #import "RCCriteria.h"
 
 @implementation RCCriteria
+@synthesize limit, offset;
 
 -(id) init{
     self = [super init];
     if (self){
         conditions = [[NSMutableArray alloc] init];
-        limit = -1;
         order = RCNoOrder;
-        overrideSQL = @"";
-        sqlOverride = NO;
+        overrideSQL = nil;
     }
     return self;
-}
-
--(void) setLimit:(int) count{
-    limit = count;
 }
 
 -(NSString*) stringFromCompareOperator:(RCActiveRecordComparisonOperator) operator{
@@ -98,7 +93,7 @@
 
 -(NSString*) generateWhereClause{
     
-    if (sqlOverride){
+    if (overrideSQL != nil){
         return overrideSQL;
     }
     
@@ -117,6 +112,9 @@
     //Limit...
     if (limit > 0){
         [whereClause appendFormat: @" LIMIT %i ", limit];
+    }
+    if (limit > 0){
+        [whereClause appendFormat: @" OFFSET %i ", offset];
     }
     
     //Order...
@@ -138,7 +136,6 @@
 
 -(void) where:(NSString*) sqlWhere {
     overrideSQL = sqlWhere;
-    sqlOverride = YES;
 }
 
 

@@ -19,7 +19,6 @@
     self.window.rootViewController = [[UINavigationController alloc] init];
     [self.window makeKeyAndVisible];
     
-    //[[RCExampleCode alloc] runExample];
     return YES;
 }
 

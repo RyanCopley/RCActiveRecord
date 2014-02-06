@@ -10,22 +10,20 @@
 #import "FMResultSet.h"
 
 @interface RCResultSet : NSObject{
-    FMDatabaseQueue* queue;
-    FMResultSet* resultSet;
-    NSString* internalQuery;
-    Class ARClass;
-    BOOL error;
-    NSDateFormatter* formatter;
     dispatch_queue_t processQueue;
+    NSString* internalQuery;
+    FMDatabaseQueue* queue;
+    Class ARClass;
+    FMResultSet* resultSet;
+    BOOL error;
     
-    dispatch_queue_t finishQueue;
-    
+    //Needs removed after IoC is implemented:
+    NSDateFormatter* formatter;
+    NSNumberFormatter *numFormatter;
 }
-
 
 -(void) execute: (void (^) (id recordResult)) recordCallback;
 -(void) execute: (void (^) (id recordResult)) recordCallback finished: (void (^) (BOOL error)) finishedCallback;
-
 
 //Internal
 -(RCResultSet*) initWithFMDatabaseQueue:(FMDatabaseQueue*) _queue andQuery:(NSString*) query andActiveRecordClass:(Class) _ARClass;

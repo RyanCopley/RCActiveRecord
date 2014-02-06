@@ -91,7 +91,9 @@ static BOOL inTransaction;
     }
     
     NSString* query = [NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
-    
+    if (RCACTIVERECORDLOGGING){
+        NSLog(@"Query: %@", query);
+    }
     __block int recordCount;
     [RCActiveRecordQueue inDatabase:^(FMDatabase *db) {
         recordCount = [db intForQuery:query];
@@ -291,7 +293,7 @@ static BOOL inTransaction;
         
         NSMutableString* columns = [[NSMutableString alloc] init];
         NSMutableString* data = [[NSMutableString alloc] init];
-        
+         
         for (NSString* columnName in [schema copy]){
             [columns appendFormat:@"%@, ", columnName];
             [data appendFormat:@"\"%@\", ", [self encodeValueForSQLITE: [self performSelector: NSSelectorFromString(columnName)]] ];

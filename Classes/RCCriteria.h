@@ -34,13 +34,15 @@ typedef enum {
 
 
 @interface RCCriteria : NSObject{
-    int limit;
     NSMutableArray* conditions;
     RCActiveRecordOrder order;
     NSString* orderColumn;
     NSString* overrideSQL;
-    bool sqlOverride;
+    
 }
+
+@property (nonatomic, assign) int limit;
+@property (nonatomic, assign) int offset;
 
 -(void) setLimit:(int) count;
 -(void) addCondition:(NSString*) columnName is:(RCActiveRecordComparisonOperator) comparer to:(id) value;

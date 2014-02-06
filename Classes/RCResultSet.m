@@ -10,6 +10,7 @@
 #import "FMDatabase.h"
 #import "FMDatabaseQueue.h"
 #import "RCResultSet.h"
+#import "RCDataCoder.h"
 
 
 #pragma clang diagnostic push
@@ -18,15 +19,12 @@
 
 @implementation RCResultSet
 
-static NSDateFormatter *formatter;
-static NSNumberFormatter *numFormatter;
-
 
 -(void) execute: (void (^) (id recordResult)) recordCallback{
     [self execute:recordCallback finished:^(BOOL error){}];
 }
 
--(id) decodeDataFromSQLITE: (NSString*)stringRepresentation expectedType: (Class) class fromDB: (FMDatabase*) db{
+-(id) decodeDataFromSQLITE: (NSString*)stringRepresentation expectedType: (Class) class{
     
     NSError* err;
     
@@ -70,6 +68,7 @@ static NSNumberFormatter *numFormatter;
     dispatch_async(processQueue, ^{
         error = NO;
         [queue inDatabase:^(FMDatabase *db) {
+            RCDataCoder* coder = [RCDataCoder sharedSingleton];
             
             FMResultSet* s = [db executeQuery: internalQuery];
             
@@ -87,7 +86,8 @@ static NSNumberFormatter *numFormatter;
                         NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[varName substringToIndex:1] uppercaseString],[varName substringFromIndex:1]];
                         NSString* value = [NSString stringWithFormat:@"%s",[s UTF8StringForColumnIndex:i]];
                         
-                        id convertedValue = [self decodeDataFromSQLITE:value expectedType: [[AR performSelector:NSSelectorFromString(varName)] class] fromDB: db];
+                        id convertedValue = [coder decode:value toType:[[AR performSelector:NSSelectorFromString(varName)] class]];
+                        //id convertedValue = [self decodeDataFromSQLITE:value expectedType: [[AR performSelector:NSSelectorFromString(varName)] class]];
                         @try {
                             
                             [AR performSelector: NSSelectorFromString(setConversion) withObject: convertedValue];
@@ -114,20 +114,18 @@ static NSNumberFormatter *numFormatter;
 -(RCResultSet*) initWithFMDatabaseQueue:(FMDatabaseQueue*) _queue andQuery:(NSString*) query andActiveRecordClass:(Class) _ARClass{
     self = [super init];
     if (self){
-        
-        
-        
-        formatter = [[NSDateFormatter alloc] init];
-        [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
-        numFormatter = [[NSNumberFormatter alloc] init];
-        [numFormatter setNumberStyle:NSNumberFormatterNoStyle];
-        
-        
         processQueue = dispatch_queue_create("", NULL);
         
         internalQuery = query;
         queue = _queue;
         ARClass = _ARClass;
+        
+        
+        formatter = [[NSDateFormatter alloc] init];
+        [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
+        
+        numFormatter = [[NSNumberFormatter alloc] init];
+        [numFormatter setNumberStyle:NSNumberFormatterNoStyle];
     }
     return self;
 }
