@@ -3,7 +3,7 @@
 //  RCActiveRecord
 //
 //  Created by Ryan Copley on 8/14/13.
-//  Copyright (c) 2013 Ryan Copley. All rights reserved.
+//  Copyright (c)2013 Ryan Copley. All rights reserved.
 //
 
 #ifndef __RCActiveRecordComparisonOperators__
@@ -38,14 +38,14 @@ typedef enum {
     NSString* overrideSQL;
 }
 
-@property (nonatomic, assign) int limit;
-@property (nonatomic, assign) int offset;
+@property (nonatomic, assign)int limit;
+@property (nonatomic, assign)int offset;
 
--(void) setLimit:(int) count;
--(void) addCondition:(NSString*) columnName is:(RCActiveRecordComparisonOperator) comparer to:(id) value;
--(void) orderByAsc:(NSString*) columnName;
--(void) orderByDesc:(NSString*) columnName;
--(void) where:(NSString*) sqlWhere; //Note: The [RCCriteria where: ...] function will override ANY and ALL conditions provided. It is one or the other, not both.
--(NSString*) generateWhereClause;
+-(void)setLimit:(int)count;
+-(void)addCondition:(NSString*)columnName is:(RCActiveRecordComparisonOperator)comparer to:(id)value;
+-(void)orderByAsc:(NSString*)columnName;
+-(void)orderByDesc:(NSString*)columnName;
+-(void)where:(NSString*)sqlWhere; //Note: The [RCCriteria where: ...] function will override ANY and ALL conditions provided. It is one or the other, not both.
+-(NSString*)generateWhereClause;
 
 @end

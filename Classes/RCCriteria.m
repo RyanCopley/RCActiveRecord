@@ -3,7 +3,7 @@
 //  RCActiveRecord
 //
 //  Created by Ryan Copley on 8/14/13.
-//  Copyright (c) 2013 Ryan Copley. All rights reserved.
+//  Copyright (c)2013 Ryan Copley. All rights reserved.
 //
 
 #import "RCCriteria.h"
@@ -11,7 +11,7 @@
 @implementation RCCriteria
 @synthesize limit, offset;
 
--(id) init{
+-(id)init{
     self = [super init];
     if (self) {
         conditions = [[NSMutableArray alloc] init];
@@ -21,7 +21,7 @@
     return self;
 }
 
--(NSString*) stringFromCompareOperator:(RCActiveRecordComparisonOperator) operator{
+-(NSString*)stringFromCompareOperator:(RCActiveRecordComparisonOperator)operator{
     switch (operator) {
         case RCGreaterThan:
             return @">";
@@ -54,11 +54,11 @@
 }
 
 //Needs SQL injection proofing.
--(void) addCondition:(NSString*) columnName is:(RCActiveRecordComparisonOperator) comparer to:(id) value{
+-(void)addCondition:(NSString*)columnName is:(RCActiveRecordComparisonOperator)comparer to:(id)value{
     // TODO: Should also check to ensure value is of type NSArray.
     if (comparer == RCIn || comparer == RCNotIn) {
         // TODO: Sanitize the array.
-        NSString* arrayStr = [NSString stringWithFormat:@"\"%@\"", [((NSArray*)value) componentsJoinedByString:@"\",\""] ];
+        NSString* arrayStr = [NSString stringWithFormat:@"\"%@\"", [((NSArray*)value)componentsJoinedByString:@"\",\""] ];
         [conditions addObject:
             [NSString stringWithFormat:
                 @"%@ %@ (%@)",
@@ -79,17 +79,17 @@
     }
 }
 
--(void) orderByAsc:(NSString*) columnName{
+-(void)orderByAsc:(NSString*)columnName{
     order = RCAscend;
     orderColumn = [self sanitize:columnName];
 }
 
--(void) orderByDesc:(NSString*) columnName{
+-(void)orderByDesc:(NSString*)columnName{
     order = RCDescend;
     orderColumn = [self sanitize:columnName];
 }
 
--(NSString*) generateWhereClause{
+-(NSString*)generateWhereClause{
     if (overrideSQL != nil) {
         return overrideSQL;
     }
@@ -125,7 +125,7 @@
     return whereClause;
 }
 
--(void) where:(NSString*) sqlWhere {
+-(void)where:(NSString*)sqlWhere {
     overrideSQL = sqlWhere;
 }
 

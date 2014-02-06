@@ -17,6 +17,8 @@ Features
 * Auto Timestamps (Created, Saved, Updated)
 * Create models via JSON, and export models to JSON (By dictionary and array)
 * Customizable data coders
+* Foreign Keys between models
+* Foreign Key Auto Loading / Manual Loading Modes
 
 Features Coming Soon
 ==========
@@ -26,5 +28,3 @@ Features Coming Soon
 * Migrations (Researching ideas of the best way to do this)
 * Full Test Suite (Half done-ish)
 * Subclassed models
-* Foreign Keys between other models
-* Foreign Key Auto Loading / Manual Loading

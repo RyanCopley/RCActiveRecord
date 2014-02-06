@@ -41,11 +41,7 @@ static RCDataCoder *sharedSingleton;
     [dataEncoders setObject:encodeBlock forKey:NSStringFromClass(type)];
 }
 
--(void)removeEncoderForType:(Class) type{
-    [dataEncoders removeObjectForKey:NSStringFromClass(type)];
-}
-
--(NSString*) encode:(id) obj{
+-(NSString*)encode:(id) obj{
     NSString* classStr = [[[NSStringFromClass([obj class]) stringByReplacingOccurrencesOfString:@"__" withString:@""] stringByReplacingOccurrencesOfString:@"CF" withString:@""] stringByReplacingOccurrencesOfString:@"Constant" withString:@""];
     NSString* (^encodeBlock)(id value) = [dataEncoders objectForKey:classStr];
     return encodeBlock(obj);
@@ -53,41 +49,37 @@ static RCDataCoder *sharedSingleton;
 
 ////////////////////////////////////////////////////////////////////////////////////
 
--(void)addDecoderForType:(Class)type decoder: (id (^)(NSString* value))decodeBlock{
+-(void)addDecoderForType:(Class)type decoder: (id (^)(NSString* value, Class type))decodeBlock{
     [dataDecoders setObject:decodeBlock forKey:NSStringFromClass(type)];
 }
 
--(void)removeDecoderForType:(Class) type{
-    [dataDecoders removeObjectForKey:NSStringFromClass(type)];
-}
-
--(id) decode:(NSString*) stringRepresentation toType:(Class)type{
+-(id)decode:(NSString*) stringRepresentation toType:(Class)type{
     //You have no idea how much this irks me. 
     NSString* classStr = [[[NSStringFromClass(type) stringByReplacingOccurrencesOfString:@"__" withString:@""] stringByReplacingOccurrencesOfString:@"CF" withString:@""] stringByReplacingOccurrencesOfString:@"Constant" withString:@""];
-    id (^decodeBlock)(NSString* value) = [dataDecoders objectForKey:classStr];
-    return decodeBlock(stringRepresentation);
+    id (^decodeBlock)(NSString* value, Class type) = [dataDecoders objectForKey:classStr];
+    return decodeBlock(stringRepresentation, type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 
--(void) defaultDecoders {
+-(void)defaultDecoders {
 
-    [self addDecoderForType:[NSArray class] decoder:^id(NSString* stringRepresentation) {
+    [self addDecoderForType:[NSArray class] decoder:^id(NSString* stringRepresentation, Class type) {
         NSError* err = nil;
         return [NSJSONSerialization JSONObjectWithData: [stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
     }];
     
-    [self addDecoderForType:[NSDictionary class] decoder:^id(NSString* stringRepresentation) {
+    [self addDecoderForType:[NSDictionary class] decoder:^id(NSString* stringRepresentation, Class type) {
         NSError* err = nil;
         return [NSJSONSerialization JSONObjectWithData: [stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
     }];
     
     __typeof__(self) __weak weakself = self;
-    [self addDecoderForType:[NSString class] decoder:^id(NSString* stringRepresentation) {
+    [self addDecoderForType:[NSString class] decoder:^id(NSString* stringRepresentation, Class type) {
         return [weakself sanitize: stringRepresentation];
     }];
     
-    [self addDecoderForType:[NSNumber class] decoder:^id(NSString* stringRepresentation) {
+    [self addDecoderForType:[NSNumber class] decoder:^id(NSString* stringRepresentation, Class type) {
         static NSNumberFormatter* numFormatter;
         if (numFormatter == nil) {
             numFormatter = [[NSNumberFormatter alloc] init];
@@ -96,7 +88,7 @@ static RCDataCoder *sharedSingleton;
         return [numFormatter numberFromString:stringRepresentation];
     }];
     
-    [self addDecoderForType:[NSDate class] decoder:^id(NSString* stringRepresentation) {
+    [self addDecoderForType:[NSDate class] decoder:^id(NSString* stringRepresentation, Class type) {
         static NSDateFormatter* dateFormatter;
         if (dateFormatter == nil) {
             dateFormatter = [[NSDateFormatter alloc] init];
@@ -137,27 +129,5 @@ static RCDataCoder *sharedSingleton;
     value = [value stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
     return value;
 }
-
-//This will need to be done in every model (Automatically)
-/*
- NSError* err;
- 
- BOOL preload = [ARClass preloadEnabled];
- if (preload && [class isSubclassOfClass:[RCActiveRecord class]]) {
- //To do this shit still D:
- 
- __block RCActiveRecord* model = [class model];
- 
- NSNumber* pk = [numFormatter numberFromString:stringRepresentation];
- __block id _record;
- [[model recordByPK: pk] execute:^(id record) {
- _record = record;
- }];
- return _record;
- 
- }
- 
- return stringRepresentation;
- */
 
 @end

@@ -3,7 +3,7 @@
 //  ObjCActiveRecord
 //
 //  Created by Ryan Copley on 8/13/13.
-//  Copyright (c) 2013 Ryan Copley. All rights reserved.
+//  Copyright (c)2013 Ryan Copley. All rights reserved.
 //
 
 #import "RCActiveRecord.h"
@@ -28,11 +28,11 @@ static BOOL inTransaction;
 
 #pragma mark Active Record functions
 
--(id) initModel{
+-(id)initModel{
     return self;
 }
 
--(id) initDefaultValues{
+-(id)initDefaultValues{
     return self;
 }
 
@@ -54,7 +54,7 @@ static BOOL inTransaction;
             [pkName setObject:@"_id" forKey:key]; /* default */
             [schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
             [foreignKeyData setObject: [@{} mutableCopy] forKey:key]; /* empty */
-            [RCActiveRecordPreload setObject: @(1) forKey:key]; /* preload */
+            [RCActiveRecordPreload setObject: @(1)forKey:key]; /* preload */
             [[self class] registerColumn:@"creationDate"];
             [[self class] registerColumn:@"savedDate"];
             [[self class] registerColumn:@"updatedDate"];
@@ -75,7 +75,7 @@ static BOOL inTransaction;
     return self;
 }
 
-+(id) model{
++(id)model{
     return [[[[self class] alloc] initDefaultValues] initModel];
 }
 
@@ -83,7 +83,7 @@ static BOOL inTransaction;
     if (!criteria) {
         criteria = [[RCCriteria alloc] init];
     }
-    NSString* query = [NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
+    NSString* query = [NSString stringWithFormat:@"SELECT COUNT(*)FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
     if (RCACTIVERECORDLOGGING) {
         NSLog(@"Query: %@", query);
     }
@@ -94,11 +94,11 @@ static BOOL inTransaction;
     return recordCount;
 }
 
--(RCResultSet*)customQuery:(NSString*) query{    
+-(RCResultSet*)customQuery:(NSString*)query{    
     return [[RCResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
--(RCResultSet*)recordByPK:(NSNumber*) pk{
+-(RCResultSet*)recordByPK:(NSNumber*)pk{
     if (!criteria) {
         criteria = [[RCCriteria alloc] init];
         [criteria addCondition: [self primaryKeyName] is:RCEqualTo to: [NSString stringWithFormat:@"%@",pk]];
@@ -108,7 +108,7 @@ static BOOL inTransaction;
     return [[RCResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
--(RCResultSet*)recordsByAttribute:(NSString*) attributeName value:(id) value{
+-(RCResultSet*)recordsByAttribute:(NSString*)attributeName value:(id)value{
     if (!criteria) {
         criteria = [[RCCriteria alloc] init];
         [criteria addCondition:attributeName is:RCEqualTo to: [NSString stringWithFormat:@"%@",value]];
@@ -127,7 +127,7 @@ static BOOL inTransaction;
     return [[RCResultSet alloc] initWithFMDatabaseQueue:RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
--(NSDictionary*) toJSON{
+-(NSDictionary*)toJSON{
     NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
     [dict setValue:[self primaryKeyValue] forKey:[self primaryKeyName]];
     NSString *key = NSStringFromClass( [self class] );
@@ -145,7 +145,7 @@ static BOOL inTransaction;
     return dict;
 }
 
-+(id) fromJSON:(id)json{
++(id)fromJSON:(id)json{
     if ([json isKindOfClass:[NSArray class]]) {
         NSMutableArray* array = [[NSMutableArray alloc] init];
         id tmp = nil;
@@ -163,10 +163,10 @@ static BOOL inTransaction;
             NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[aKey substringToIndex:1] uppercaseString],[aKey substringFromIndex:1]];
             id value = [json objectForKey:aKey];
             @try {
-                [model performSelector: NSSelectorFromString(setConversion) withObject: value];
+                [model performSelector: NSSelectorFromString(setConversion)withObject: value];
             }
             @catch (NSException* e) {
-                NSLog(@"[Error in RCActiveRecord] This object (%@) is not properly synthesized for the JSON Dictionary provided (Invalid setter). Unable to set: %@. Dictionary provided: %@", NSStringFromClass([model class]), aKey, json);
+                NSLog(@"[Error in RCActiveRecord] This object (%@)is not properly synthesized for the JSON Dictionary provided (Invalid setter). Unable to set: %@. Dictionary provided: %@", NSStringFromClass([model class]), aKey, json);
             }
         }
         NSString* aKey = [model primaryKeyName];
@@ -176,10 +176,10 @@ static BOOL inTransaction;
         [f setNumberStyle:NSNumberFormatterDecimalStyle];
         NSNumber * myNumber = [f numberFromString:value];
         @try {
-            [model performSelector: NSSelectorFromString(setConversion) withObject: myNumber];
+            [model performSelector: NSSelectorFromString(setConversion)withObject: myNumber];
         }
         @catch (NSException* e) {
-            NSLog(@"[Error in RCActiveRecord] This object (%@) is not properly synthesized for the JSON Dictionary provided (Invalid setter). Unable to set: %@. Dictionary provided: %@", NSStringFromClass([model class]), aKey, json);
+            NSLog(@"[Error in RCActiveRecord] This object (%@)is not properly synthesized for the JSON Dictionary provided (Invalid setter). Unable to set: %@. Dictionary provided: %@", NSStringFromClass([model class]), aKey, json);
         }
         return model;
     }
@@ -209,7 +209,7 @@ static BOOL inTransaction;
     }];
 }
 
--(BOOL) insertRecord{
+-(BOOL)insertRecord{
     __block BOOL success = NO;
     @autoreleasepool {
         isNewRecord = NO;
@@ -227,7 +227,7 @@ static BOOL inTransaction;
         if ([columns isEqualToString:@""] == FALSE && [data isEqualToString:@""] == FALSE) {
             columns = [[columns substringToIndex:columns.length-2] mutableCopy];
             data = [[data substringToIndex:data.length-2] mutableCopy];
-            __block NSString* query = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)", [self tableName], columns, data];
+            __block NSString* query = [NSString stringWithFormat:@"INSERT INTO %@ (%@)VALUES (%@)", [self tableName], columns, data];
             if (RCACTIVERECORDLOGGING) {
                 NSLog(@"Query: %@", query);
             }
@@ -235,7 +235,7 @@ static BOOL inTransaction;
                 success = [db executeUpdate: query];
                 NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[[self primaryKeyName] substringToIndex:1] uppercaseString],[[self primaryKeyName] substringFromIndex:1]];
                 @try {
-                    [self performSelector: NSSelectorFromString(setConversion) withObject: @([db lastInsertRowId])];
+                    [self performSelector: NSSelectorFromString(setConversion)withObject: @([db lastInsertRowId])];
                 }
                 @catch (NSException* e) {
                     NSLog(@"[Email to ampachex@ryancopley.com please] Error thrown! This object is not properly synthesized. Unable to set: %@", [self primaryKeyName]);
@@ -246,7 +246,7 @@ static BOOL inTransaction;
     return success;
 }
 
--(BOOL) updateRecord{
+-(BOOL)updateRecord{
     @autoreleasepool {
         if (isNewRecord == NO) {
             isNewRecord = NO;
@@ -276,7 +276,6 @@ static BOOL inTransaction;
     return NO;
 }
 
-
 -(BOOL)saveRecord{
     if (RCACTIVERECORDLOGGING) {
         NSLog(@"Saving record...");
@@ -302,8 +301,34 @@ static BOOL inTransaction;
     return YES;
 }
 
-+(BOOL) generateSchema: (BOOL)force{
++(BOOL)generateSchema: (BOOL)force{
     @autoreleasepool {
+        RCDataCoder* coder = [RCDataCoder sharedSingleton];
+        [coder addEncoderForType:[self class] encoder:^NSString*(RCActiveRecord* obj) {
+            return [NSString stringWithFormat:@"%@", [obj primaryKeyValue]];
+        }];
+        [coder addDecoderForType:[self class] decoder:^id(NSString* stringRepresentation, Class type) {
+            if ([type preloadEnabled]){
+                __block BOOL waitingForBlock = YES;
+                static NSNumberFormatter* numFormatter;
+                if (numFormatter == nil) {
+                    numFormatter = [[NSNumberFormatter alloc] init];
+                    [numFormatter setNumberStyle:NSNumberFormatterNoStyle];
+                }
+                __block id _record = nil;
+                [[[type model] recordByPK: [numFormatter numberFromString:stringRepresentation]] execute:^(id record){
+                    _record = record;
+                } finished:^(BOOL error){
+                    waitingForBlock = NO;
+                }];
+                while(waitingForBlock) {
+                    [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+                }
+                return _record;
+            }else{
+                return stringRepresentation;
+            }
+        }];
         NSString *key = NSStringFromClass( [self class] );
         if (RCACTIVERECORDLOGGING) {
             NSLog(@"Generating schema for table: %@",[[self alloc] tableName]);
@@ -362,7 +387,7 @@ static BOOL inTransaction;
     return YES;
 }
 
-+(BOOL) registerColumn:(NSString*) columnName{
++(BOOL)registerColumn:(NSString*)columnName{
     @autoreleasepool {
         NSString *key = NSStringFromClass( [self class] );
         NSMutableDictionary* columnData = [schemaData objectForKey:key];
@@ -377,41 +402,41 @@ static BOOL inTransaction;
     return YES;
 }
 
-+(void) preloadModels:(BOOL)preload{
++(void)preloadModels:(BOOL)preload{
     NSString *key = NSStringFromClass( [self class] );
-    return [RCActiveRecordPreload setObject:@(preload) forKey:key];
+    return [RCActiveRecordPreload setObject:@(preload)forKey:key];
 }
 
-+(BOOL) preloadEnabled{
++(BOOL)preloadEnabled{
     NSString *key = NSStringFromClass( [self class] );
     return [[RCActiveRecordPreload objectForKey:key] boolValue];
 }
 
-+(BOOL) hasSchemaDeclared{
++(BOOL)hasSchemaDeclared{
     NSString *key = NSStringFromClass( [self class] );
     return [[schemaData objectForKey:key] count] > 3;
 }
 
--(NSString*) primaryKeyName{
+-(NSString*)primaryKeyName{
     NSString *key = NSStringFromClass( [self class] );
     return [pkName valueForKey:key];
 }
 
--(NSNumber*) primaryKeyValue {
+-(NSNumber*)primaryKeyValue {
     return [self performSelector:NSSelectorFromString([self primaryKeyName])];
 }
 
--(NSString*) tableName{
-    return [NSStringFromClass([self class]) lowercaseString];
+-(NSString*)tableName{
+    return [NSStringFromClass([self class])lowercaseString];
 }
 
--(FMDatabaseQueue*) getFMDBQueue{
+-(FMDatabaseQueue*)getFMDBQueue{
     return RCActiveRecordQueue;
 }
 
 //Internal
 // TODO: Rewrite this, it's ugly.
--(NSString*) objCDataTypeToSQLiteDataType:(NSString*)dataTypeStrRepresentation {
+-(NSString*)objCDataTypeToSQLiteDataType:(NSString*)dataTypeStrRepresentation {
     if ([dataTypeStrRepresentation isEqualToString:@"__NSCFConstantString"]) {
         return @"TEXT";
     }else if ([dataTypeStrRepresentation isEqualToString:@"__NSCFString"]) {
