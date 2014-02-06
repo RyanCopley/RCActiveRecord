@@ -218,6 +218,42 @@
 }
 
 
+- (void)testFetchingAllRecordsWithComplexCriteria {
+    __block BOOL waitingForBlock = YES;
+    [Person trunctuate];
+    Person* p = [Person model];
+    p.age = @(21);
+    [p saveRecord];
+    
+    Person* p2 = [Person model];
+    p2.age = @(30);
+    [p2 insertRecord];
+    p2.age = @(31);
+    [p2 insertRecord];
+    p2.age = @(32);
+    [p2 insertRecord];
+    p2.age = @(33);
+    [p2 insertRecord];
+    p2.age = @(34);
+    [p2 insertRecord];
+    
+    
+    __block int foundRecords = 0;
+    RCCriteria* criteria = [[RCCriteria alloc] init];
+    [criteria addCondition:@"age" is:RCLessThan to: @(33)];
+    [criteria addCondition:@"age" is:RCGreaterThan to: @(25)];
+    [[Person allRecordsWithCriteria:criteria] execute: ^(Person* record){
+        foundRecords++;
+    } finished: ^(BOOL error){
+        waitingForBlock = NO;
+    }];
+    while(waitingForBlock) {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+    }
+    STAssertTrue(foundRecords==3, @"All records w/ criteria did not return a valid amount of objects");
+}
+
+
 - (void)testSettingPrimaryKey{
     Person* p = [Person model];
     p.name = @"Test";

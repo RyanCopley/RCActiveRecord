@@ -15,7 +15,14 @@
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
 @implementation RCActiveRecord
-@synthesize isNewRecord, isSavedRecord, _id, creationDate, updatedDate, savedDate, criteria;
+
+@synthesize isNewRecord;
+@synthesize isSavedRecord;
+@synthesize _id;
+@synthesize creationDate;
+@synthesize updatedDate;
+@synthesize savedDate;
+@synthesize criteria;
 
 static FMDatabaseQueue* RCActiveRecordQueue;
 static NSMutableDictionary* RCActiveRecordSchemas;
@@ -163,7 +170,7 @@ static BOOL inTransaction;
             NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[aKey substringToIndex:1] uppercaseString],[aKey substringFromIndex:1]];
             id value = [json objectForKey:aKey];
             @try {
-                [model performSelector: NSSelectorFromString(setConversion)withObject: value];
+                [model performSelector: NSSelectorFromString(setConversion) withObject: value];
             }
             @catch (NSException* e) {
                 NSLog(@"[Error in RCActiveRecord] This object (%@)is not properly synthesized for the JSON Dictionary provided (Invalid setter). Unable to set: %@. Dictionary provided: %@", NSStringFromClass([model class]), aKey, json);

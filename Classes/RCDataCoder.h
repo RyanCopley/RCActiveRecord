@@ -15,9 +15,8 @@
 }
 
 +(RCDataCoder*)sharedSingleton;
--(NSString*)encode:(id)obj;
 -(id)decode:(NSString*)stringRepresentation toType:(Class)type;
-
+-(NSString*)encode:(id)obj;
 -(void)addDecoderForType:(Class)type decoder: (id (^)(NSString* value, Class type))decodeBlock;
 -(void)addEncoderForType:(Class)type encoder: (NSString* (^)(id value))encodeBlock;
 @end

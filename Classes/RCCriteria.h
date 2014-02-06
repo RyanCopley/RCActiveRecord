@@ -10,7 +10,6 @@
 #define __RCActiveRecordComparisonOperators__
 
 typedef enum  {
-    /* Typical operators */
     RCGreaterThan = 0,
     RCGreaterThanOrEqualTo,
     RCEqualTo,
@@ -28,6 +27,7 @@ typedef enum {
     RCDescend,
     RCNoOrder
 } RCActiveRecordOrder;
+
 #endif
 
 

@@ -9,7 +9,8 @@
 #import "RCCriteria.h"
 
 @implementation RCCriteria
-@synthesize limit, offset;
+@synthesize limit;
+@synthesize offset;
 
 -(id)init{
     self = [super init];
@@ -97,7 +98,7 @@
     //Conditions...
     if ([conditions count] > 0) {
         for (NSObject * condition in conditions) {
-            [whereClause appendFormat: @"%@ AND",condition];
+            [whereClause appendFormat: @"%@ AND ",condition];
         }
         whereClause = [[whereClause substringToIndex:whereClause.length - 4] mutableCopy];
     }else{

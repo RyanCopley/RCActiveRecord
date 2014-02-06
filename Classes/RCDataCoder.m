@@ -63,22 +63,18 @@ static RCDataCoder *sharedSingleton;
 ////////////////////////////////////////////////////////////////////////////////////
 
 -(void)defaultDecoders {
-
     [self addDecoderForType:[NSArray class] decoder:^id(NSString* stringRepresentation, Class type) {
         NSError* err = nil;
         return [NSJSONSerialization JSONObjectWithData: [stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
     }];
-    
     [self addDecoderForType:[NSDictionary class] decoder:^id(NSString* stringRepresentation, Class type) {
         NSError* err = nil;
         return [NSJSONSerialization JSONObjectWithData: [stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
     }];
-    
     __typeof__(self) __weak weakself = self;
     [self addDecoderForType:[NSString class] decoder:^id(NSString* stringRepresentation, Class type) {
         return [weakself sanitize: stringRepresentation];
     }];
-    
     [self addDecoderForType:[NSNumber class] decoder:^id(NSString* stringRepresentation, Class type) {
         static NSNumberFormatter* numFormatter;
         if (numFormatter == nil) {
@@ -87,7 +83,6 @@ static RCDataCoder *sharedSingleton;
         }
         return [numFormatter numberFromString:stringRepresentation];
     }];
-    
     [self addDecoderForType:[NSDate class] decoder:^id(NSString* stringRepresentation, Class type) {
         static NSDateFormatter* dateFormatter;
         if (dateFormatter == nil) {
