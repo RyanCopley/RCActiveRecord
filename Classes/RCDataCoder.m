@@ -43,8 +43,11 @@ static RCDataCoder *sharedSingleton;
 
 -(NSString*)encode:(id) obj{
     NSString* classStr = [[[NSStringFromClass([obj class]) stringByReplacingOccurrencesOfString:@"__" withString:@""] stringByReplacingOccurrencesOfString:@"CF" withString:@""] stringByReplacingOccurrencesOfString:@"Constant" withString:@""];
+    classStr = [classStr stringByReplacingOccurrencesOfString:@"NSArrayI" withString:@"NSArray"];
+    classStr = [classStr stringByReplacingOccurrencesOfString:@"NSArrayM" withString:@"NSMutableArray"];
+    
     NSString* (^encodeBlock)(id value) = [dataEncoders objectForKey:classStr];
-    return encodeBlock(obj);
+    return [self sanitize: encodeBlock(obj)];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -54,8 +57,10 @@ static RCDataCoder *sharedSingleton;
 }
 
 -(id)decode:(NSString*) stringRepresentation toType:(Class)type{
-    //You have no idea how much this irks me. 
+    //You have no idea how much this irks me.
     NSString* classStr = [[[NSStringFromClass(type) stringByReplacingOccurrencesOfString:@"__" withString:@""] stringByReplacingOccurrencesOfString:@"CF" withString:@""] stringByReplacingOccurrencesOfString:@"Constant" withString:@""];
+    classStr = [classStr stringByReplacingOccurrencesOfString:@"NSArrayI" withString:@"NSArray"];
+    classStr = [classStr stringByReplacingOccurrencesOfString:@"NSArrayM" withString:@"NSMutableArray"];
     id (^decodeBlock)(NSString* value, Class type) = [dataDecoders objectForKey:classStr];
     return decodeBlock(stringRepresentation, type);
 }
@@ -64,6 +69,12 @@ static RCDataCoder *sharedSingleton;
 
 -(void)defaultDecoders {
     [self addDecoderForType:[NSArray class] decoder:^id(NSString* stringRepresentation, Class type) {
+        NSError* err = nil;
+        return [NSJSONSerialization JSONObjectWithData: [stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
+    }];
+    
+    
+    [self addDecoderForType:[NSMutableArray class] decoder:^id(NSString* stringRepresentation, Class type) {
         NSError* err = nil;
         return [NSJSONSerialization JSONObjectWithData: [stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
     }];
@@ -95,6 +106,11 @@ static RCDataCoder *sharedSingleton;
 
 -(void)defaultEncoders {
     [self addEncoderForType:[NSArray class] encoder:^NSString*(NSArray* obj) {
+        NSError* err;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:obj options:NSJSONWritingPrettyPrinted error:&err];
+        return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    }];
+    [self addEncoderForType:[NSMutableArray class] encoder:^NSString*(NSArray* obj) {
         NSError* err;
         NSData *jsonData = [NSJSONSerialization dataWithJSONObject:obj options:NSJSONWritingPrettyPrinted error:&err];
         return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
