@@ -28,15 +28,15 @@ static RCDataCoder *sharedSingleton;
         typeAliases = [[NSMutableDictionary alloc] init];
         [self defaultDecoders];
         [self defaultEncoders];
-        [self addAlias:@"NSArrayI" forType:[NSArray class]];
-        [self addAlias:@"NSArrayM" forType:[NSMutableArray class]];
+
+        [self addAlias:@"__NSArrayI" forType:[NSArray class]];
+        [self addAlias:@"__NSArrayM" forType:[NSMutableArray class]];
+        [self addAlias:@"__NSCFArray" forType:[NSArray class]];
         [self addAlias:@"__NSCFString" forType:[NSString class]];
-        [self addAlias:@"CFString" forType:[NSString class]];
         [self addAlias:@"__NSDate" forType:[NSDate class]];
         [self addAlias:@"__NSCFConstantString" forType:[NSString class]];
         [self addAlias:@"__NSCFNumber" forType:[NSNumber class]];
-        
-        
+                
     }
     return self;
 }
