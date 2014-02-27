@@ -25,14 +25,25 @@ static RCDataCoder *sharedSingleton;
     if (self) {
         dataEncoders = [[NSMutableDictionary alloc] init];
         dataDecoders = [[NSMutableDictionary alloc] init];
+        typeAliases = [[NSMutableDictionary alloc] init];
         [self defaultDecoders];
         [self defaultEncoders];
+        [self addAlias:@"NSArrayI" forType:[NSArray class]];
+        [self addAlias:@"NSArrayM" forType:[NSMutableArray class]];
+        [self addAlias:@"__NSCFString" forType:[NSString class]];
+        [self addAlias:@"CFString" forType:[NSString class]];
+        
+        
     }
     return self;
 }
 
 +(RCDataCoder*)sharedSingleton{
     return sharedSingleton;
+}
+
+-(void) addAlias:(NSString*)alias forType: (Class) class{
+    [typeAliases setObject:NSStringFromClass(class) forKey:alias];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -42,11 +53,14 @@ static RCDataCoder *sharedSingleton;
 }
 
 -(NSString*)encode:(id) obj{
-    NSString* classStr = [[[NSStringFromClass([obj class]) stringByReplacingOccurrencesOfString:@"__" withString:@""] stringByReplacingOccurrencesOfString:@"CF" withString:@""] stringByReplacingOccurrencesOfString:@"Constant" withString:@""];
-    classStr = [classStr stringByReplacingOccurrencesOfString:@"NSArrayI" withString:@"NSArray"];
-    classStr = [classStr stringByReplacingOccurrencesOfString:@"NSArrayM" withString:@"NSMutableArray"];
+    NSString* classStr = NSStringFromClass([obj class]);
     
     NSString* (^encodeBlock)(id value) = [dataEncoders objectForKey:classStr];
+    if (encodeBlock == NULL){
+        //Fetch aliases if needed
+        encodeBlock = [dataEncoders objectForKey:[typeAliases objectForKey: classStr]];
+    }
+    
     return [self sanitize: encodeBlock(obj)];
 }
 
@@ -58,34 +72,34 @@ static RCDataCoder *sharedSingleton;
 
 -(id)decode:(NSString*) stringRepresentation toType:(Class)type{
     //You have no idea how much this irks me.
-    NSString* classStr = [[[NSStringFromClass(type) stringByReplacingOccurrencesOfString:@"__" withString:@""] stringByReplacingOccurrencesOfString:@"CF" withString:@""] stringByReplacingOccurrencesOfString:@"Constant" withString:@""];
-    classStr = [classStr stringByReplacingOccurrencesOfString:@"NSArrayI" withString:@"NSArray"];
-    classStr = [classStr stringByReplacingOccurrencesOfString:@"NSArrayM" withString:@"NSMutableArray"];
+    NSString* classStr = NSStringFromClass(type);
     id (^decodeBlock)(NSString* value, Class type) = [dataDecoders objectForKey:classStr];
+    if (decodeBlock == NULL){
+        //Fetch aliases if needed
+        decodeBlock = [dataDecoders objectForKey:[typeAliases objectForKey: classStr]];
+    }
     return decodeBlock(stringRepresentation, type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 -(void)defaultDecoders {
+    __typeof__(self) __weak weakself = self;
+    
     [self addDecoderForType:[NSArray class] decoder:^id(NSString* stringRepresentation, Class type) {
         NSError* err = nil;
         return [NSJSONSerialization JSONObjectWithData: [stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
     }];
     
-    
-    [self addDecoderForType:[NSMutableArray class] decoder:^id(NSString* stringRepresentation, Class type) {
-        NSError* err = nil;
-        return [NSJSONSerialization JSONObjectWithData: [stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
-    }];
     [self addDecoderForType:[NSDictionary class] decoder:^id(NSString* stringRepresentation, Class type) {
         NSError* err = nil;
         return [NSJSONSerialization JSONObjectWithData: [stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
     }];
-    __typeof__(self) __weak weakself = self;
+    
     [self addDecoderForType:[NSString class] decoder:^id(NSString* stringRepresentation, Class type) {
         return [weakself sanitize: stringRepresentation];
     }];
+    
     [self addDecoderForType:[NSNumber class] decoder:^id(NSString* stringRepresentation, Class type) {
         static NSNumberFormatter* numFormatter;
         if (numFormatter == nil) {
@@ -94,6 +108,7 @@ static RCDataCoder *sharedSingleton;
         }
         return [numFormatter numberFromString:stringRepresentation];
     }];
+    
     [self addDecoderForType:[NSDate class] decoder:^id(NSString* stringRepresentation, Class type) {
         static NSDateFormatter* dateFormatter;
         if (dateFormatter == nil) {

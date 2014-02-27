@@ -67,6 +67,7 @@
     }
     return self;
 }
+
 @end
 
 #pragma clang diagnostic pop

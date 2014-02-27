@@ -11,6 +11,7 @@
 @interface RCDataCoder : NSObject{
     NSMutableDictionary* dataEncoders;
     NSMutableDictionary* dataDecoders;
+    NSMutableDictionary* typeAliases;
     
 }
 
