@@ -10,6 +10,6 @@
 
 @interface RCExampleCode : NSObject
 
--(void) runExample;
+-(void)runExample;
 
 @end

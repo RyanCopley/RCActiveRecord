@@ -14,27 +14,27 @@
 
 @implementation RCActiveRecordTests
 
-- (void)setUp{
+-(void)setUp {
     [super setUp];
     [Person model];
 }
 
-- (void)tearDown{
+-(void)tearDown {
     [super tearDown];
 }
 
-- (void)testNewModel{
+-(void)testNewModel {
     STAssertNotNil([Person model], @"Person Model failed to load");
 }
 
-- (void)testFreshFlags{
+-(void)testFreshFlags {
     STAssertTrue([[Person model] isNewRecord], @"Fresh models should be marked as New");
     STAssertFalse([[Person model] isSavedRecord], @"Fresh models should not be marked as saved");
 }
 
-- (void)testSavedFlag{
+-(void)testSavedFlag {
     [Person trunctuate];
-    Person* p = [Person model];
+    Person *p = [Person model];
     p.name = @"Test";
     [p saveRecord];
     
@@ -43,13 +43,13 @@
     
 }
 
-- (void)testTableName{
+-(void)testTableName {
     STAssertTrue([[[Person model] tableName] isEqualToString:@"person"], @"Table name should reflect class name in lowercase format");
 }
 
-- (void)testInsertRecord{
+-(void)testInsertRecord {
     [Person trunctuate];
-    Person* p = [Person model];
+    Person *p = [Person model];
     p.name = @"Test";
     STAssertTrue([[Person model] recordCount] == 0, @"There should be 0 person in the database.");
     [p insertRecord]; // 1
@@ -58,9 +58,9 @@
     STAssertTrue([[Person model] recordCount] == 2, @"There should be 2 people in the database.");
 }
 
-- (void)testSaveRecord{
+-(void)testSaveRecord {
     [Person trunctuate];
-    Person* p = [Person model];
+    Person *p = [Person model];
     p.name = @"Test";
     p.address = [@"Address" mutableCopy];
     p.age = @(21);
@@ -74,11 +74,11 @@
     STAssertTrue([[Person model] recordCount] == 3, @"There should be 3 people in the database.");
 }
 
-- (void)testUpdateRecord{
+-(void)testUpdateRecord {
     [Person trunctuate];
     __block BOOL waitingForBlock = YES;
     
-    Person* p = [Person model];
+    Person *p = [Person model];
     p.name = @"Test-update";
     p.address = [@"Address-update" mutableCopy];
     [p saveRecord]; // Create a record to  update
@@ -86,28 +86,29 @@
     p.name = @"UpdatedName";
     [p updateRecord]; // Update it
     
-    __block Person* tmp;
-    [[[Person model] recordsByAttribute:@"address" value:@"Address-update"] execute:^(Person* record){
+    __block Person *tmp;
+    [[[Person model] recordsByAttribute:@"address" value:@"Address-update"] execute:^(Person *record) {
         tmp = record;
-    } finished:^(BOOL error){
+    } finished:^(BOOL error) {
         waitingForBlock = NO;
     }];
     
-    while(waitingForBlock) {
+    while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
     
-    if (tmp == nil){
+    if (tmp == nil) {
         STAssertTrue(false, @"Did not find any records");
-    }else{
+    } else {
+        NSLog(@"Name: %@", tmp.name);
         STAssertTrue([tmp.name isEqualToString:@"UpdatedName"], @"Update did not update the database");
     }
     
 }
 
-- (void)testDeleteRecord{
+-(void)testDeleteRecord {
     [Person trunctuate];
-    Person* p = [Person model];
+    Person *p = [Person model];
     p.name = @"Test";
     p.address = [@"Address" mutableCopy];
     p.age = @(21);
@@ -120,9 +121,9 @@
     STAssertEquals([p recordCount], 0, @"Delete did not remove the record");
 }
 
-- (void)testRecordCount{
+-(void)testRecordCount {
     [Person trunctuate];
-    Person* p = [Person model];
+    Person *p = [Person model];
     p.name = @"Test";
     STAssertEquals([p recordCount], 0, @"There should be 0 records at this point");
     [p saveRecord]; // 1
@@ -131,7 +132,7 @@
     STAssertEquals([p recordCount], 0, @"There should be 0 records at this point");
 }
 
-- (void)testDropTable{
+-(void)testDropTable {
     [Person generateSchema:YES];
     STAssertTrue([[Person model] insertRecord], @"Person should insert");
     [Person dropTable];
@@ -140,17 +141,17 @@
     STAssertTrue([[Person model] insertRecord], @"Person should insert");
 }
 
-- (void)testFetchingAllRecords {
+-(void)testFetchingAllRecords {
     __block BOOL waitingForBlock = YES;
     [Person trunctuate];
-    Person* p = [Person model];
+    Person *p = [Person model];
     p.name = @"Test";
     p.address = [@"Address" mutableCopy];
     p.age = @(21);
     p.ip = @"localhost";
     [p saveRecord];
     
-    Person* p2 = [Person model];
+    Person *p2 = [Person model];
     p2.name = @"Test2";
     p2.address = [@"Address2" mutableCopy];
     p2.age = @(22);
@@ -158,37 +159,39 @@
     [p2 saveRecord];
     
     __block int foundRecords = 0;
-    [[Person allRecords] execute: ^(Person* record){
+    [[Person allRecords] execute:^(Person *record) {
         foundRecords++;
-        if (foundRecords == 1){
+        
+        if (foundRecords == 1) {
             STAssertTrue([record.name isEqualToString:@"Test"], @"Loading the record did not render the correct name.");
         }
-        if (foundRecords == 2){
+        
+        if (foundRecords == 2) {
             STAssertTrue([record.name isEqualToString:@"Test2"], @"Loading the record did not render the correct name.");
         }
-    } finished: ^(BOOL error){
+    } finished:^(BOOL error) {
         STAssertFalse(error, @"An error was flagged");
         waitingForBlock = NO;
     }];
     
-    while(waitingForBlock) {
+    while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
     
     STAssertTrue(foundRecords==2, @"All records did not return a valid amount of objects");
 }
 
-- (void)testFetchingAllRecordsWithCriteria {
+-(void)testFetchingAllRecordsWithCriteria {
     __block BOOL waitingForBlock = YES;
     [Person trunctuate];
-    Person* p = [Person model];
+    Person *p = [Person model];
     p.name = @"Test";
     p.address = [@"Address" mutableCopy];
     p.age = @(21);
     p.ip = @"localhost";
     [p saveRecord];
     
-    Person* p2 = [Person model];
+    Person *p2 = [Person model];
     p2.name = @"Test2";
     p2.address = [@"Address2" mutableCopy];
     p2.age = @(22);
@@ -196,29 +199,29 @@
     [p2 saveRecord];
     
     __block int foundRecords = 0;
-    RCCriteria* criteria = [[RCCriteria alloc] init];
+    RCCriteria *criteria = [[RCCriteria alloc] init];
     [criteria addCondition:@"name" is:RCEqualTo to:@"Test"];
-    [[Person allRecordsWithCriteria:criteria] execute: ^(Person* record){
+    [[Person allRecordsWithCriteria:criteria] execute:^(Person *record) {
         foundRecords++;
         
-    } finished: ^(BOOL error){
+    } finished:^(BOOL error) {
         waitingForBlock = NO;
     }];
     
-    while(waitingForBlock) {
+    while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
     STAssertTrue(foundRecords==1, @"All records w/ criteria did not return a valid amount of objects");
 }
 
-- (void)testFetchingAllRecordsWithComplexCriteria {
+-(void)testFetchingAllRecordsWithComplexCriteria {
     __block BOOL waitingForBlock = YES;
     [Person trunctuate];
-    Person* p = [Person model];
+    Person *p = [Person model];
     p.age = @(21);
     [p saveRecord];
     
-    Person* p2 = [Person model];
+    Person *p2 = [Person model];
     p2.age = @(30);
     [p2 insertRecord];
     p2.age = @(31);
@@ -232,24 +235,25 @@
     
     
     __block int foundRecords = 0;
-    RCCriteria* criteria = [[RCCriteria alloc] init];
-    [criteria addCondition:@"age" is:RCLessThan to: @(33)];
-    [criteria addCondition:@"age" is:RCGreaterThan to: @(25)];
-    [[Person allRecordsWithCriteria:criteria] execute: ^(Person* record){
+    RCCriteria *criteria = [[RCCriteria alloc] init];
+    [criteria addCondition:@"age" is:RCLessThan to:@(33)];
+    [criteria addCondition:@"age" is:RCGreaterThan to:@(25)];
+    [[Person allRecordsWithCriteria:criteria] execute:^(Person *record) {
         foundRecords++;
-    } finished: ^(BOOL error){
+    } finished:^(BOOL error) {
         waitingForBlock = NO;
     }];
-    while(waitingForBlock) {
+    
+    while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
     STAssertTrue(foundRecords==3, @"All records w/ complex criteria did not return a valid amount of objects");
 }
 
-- (void)testFetchingAllRecordsWithLimitCriteria {
+-(void)testFetchingAllRecordsWithLimitCriteria {
     __block BOOL waitingForBlock = YES;
     [Person trunctuate];
-    Person* p = [Person model];
+    Person *p = [Person model];
     p.age = @(21);
     [p insertRecord];
     [p insertRecord];
@@ -264,25 +268,26 @@
     [p insertRecord];
     
     __block int foundRecords = 0;
-    RCCriteria* criteria = [[RCCriteria alloc] init];
-    [criteria addCondition:@"age" is:RCLessThan to: @(33)];
-    [criteria addCondition:@"age" is:RCGreaterThan to: @(19)];
+    RCCriteria *criteria = [[RCCriteria alloc] init];
+    [criteria addCondition:@"age" is:RCLessThan to:@(33)];
+    [criteria addCondition:@"age" is:RCGreaterThan to:@(19)];
     [criteria setLimit:2];
-    [[Person allRecordsWithCriteria:criteria] execute: ^(Person* record){
+    [[Person allRecordsWithCriteria:criteria] execute:^(Person *record) {
         foundRecords++;
-    } finished: ^(BOOL error){
+    } finished:^(BOOL error) {
         waitingForBlock = NO;
     }];
-    while(waitingForBlock) {
+    
+    while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
     STAssertTrue(foundRecords==2, @"All records w/ complex + limit criteria did not return a valid amount of objects");
 }
 
-- (void)testFetchingAllRecordsWithLimitAndOffset {
+-(void)testFetchingAllRecordsWithLimitAndOffset {
     __block BOOL waitingForBlock = YES;
     [Person trunctuate];
-    Person* p = [Person model];
+    Person *p = [Person model];
     p.age = @(80);
     [p insertRecord];
     p.age = @(70);
@@ -303,40 +308,46 @@
     [p insertRecord];
     
     __block int recordCount = 0;
-    RCCriteria* criteria = [[RCCriteria alloc] init];
+    RCCriteria *criteria = [[RCCriteria alloc] init];
     [criteria setOffset:2];
     [criteria setLimit:5];
     
-    [[Person allRecordsWithCriteria:criteria] execute: ^(Person* record){
+    [[Person allRecordsWithCriteria:criteria] execute:^(Person *record) {
         recordCount++;
-        if (recordCount == 1){
+        
+        if (recordCount == 1) {
             STAssertTrue([record.age isEqual:@(60)], @"This age should be 60.");
         }
-        if (recordCount == 2){
+        
+        if (recordCount == 2) {
             STAssertTrue([record.age isEqual:@(50)], @"This age should be 50.");
         }
-        if (recordCount == 3){
+        
+        if (recordCount == 3) {
             STAssertTrue([record.age isEqual:@(30)], @"This age should be 30.");
         }
-        if (recordCount == 4){
+        
+        if (recordCount == 4) {
             STAssertTrue([record.age isEqual:@(40)], @"This age should be 40.");
         }
-        if (recordCount == 5){
+        
+        if (recordCount == 5) {
             STAssertTrue([record.age isEqual:@(20)], @"This age should be 20.");
         }
-    } finished: ^(BOOL error){
+    } finished:^(BOOL error) {
         waitingForBlock = NO;
     }];
-    while(waitingForBlock) {
+    
+    while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
     STAssertTrue(recordCount = 5, @"Results were not ordered correctly.");
 }
 
-- (void)testFetchingAllRecordsWithAscOrderCriteria {
+-(void)testFetchingAllRecordsWithAscOrderCriteria {
     __block BOOL waitingForBlock = YES;
     [Person trunctuate];
-    Person* p = [Person model];
+    Person *p = [Person model];
     p.age = @(80);
     [p insertRecord];
     p.age = @(70);
@@ -358,28 +369,29 @@
     
     __block int pastSize = 0;
     __block BOOL error = NO;
-    RCCriteria* criteria = [[RCCriteria alloc] init];
+    RCCriteria *criteria = [[RCCriteria alloc] init];
     [criteria orderByAsc:@"age"];
     
-    [[Person allRecordsWithCriteria:criteria] execute: ^(Person* record){
-        if ([record.age intValue] < pastSize){
+    [[Person allRecordsWithCriteria:criteria] execute:^(Person *record) {
+        if ([record.age intValue] < pastSize) {
             error = YES;
         }
         pastSize = [record.age intValue];
         
-    } finished: ^(BOOL error){
+    } finished:^(BOOL error) {
         waitingForBlock = NO;
     }];
-    while(waitingForBlock) {
+    
+    while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
     STAssertFalse(error, @"Results were not ordered correctly.");
 }
 
-- (void)testFetchingAllRecordsWithDescOrderCriteria {
+-(void)testFetchingAllRecordsWithDescOrderCriteria {
     __block BOOL waitingForBlock = YES;
     [Person trunctuate];
-    Person* p = [Person model];
+    Person *p = [Person model];
     p.age = @(80);
     [p insertRecord];
     p.age = @(0);
@@ -401,27 +413,28 @@
     
     __block int pastSize = 100;
     __block BOOL error = NO;
-    RCCriteria* criteria = [[RCCriteria alloc] init];
+    RCCriteria *criteria = [[RCCriteria alloc] init];
     [criteria orderByDesc:@"age"];
     
-    [[Person allRecordsWithCriteria:criteria] execute: ^(Person* record){
-        if ([record.age intValue] > pastSize){
+    [[Person allRecordsWithCriteria:criteria] execute:^(Person *record) {
+        if ([record.age intValue] > pastSize) {
             error = YES;
         }
         pastSize = [record.age intValue];
-    } finished: ^(BOOL error){
+    } finished:^(BOOL error) {
         waitingForBlock = NO;
     }];
-    while(waitingForBlock) {
+    
+    while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
     STAssertFalse(error, @"Results were not ordered correctly.");
 }
 
-- (void)testFetchingAllRecordsWithCustomWhere {
+-(void)testFetchingAllRecordsWithCustomWhere {
     __block BOOL waitingForBlock = YES;
     [Person trunctuate];
-    Person* p = [Person model];
+    Person *p = [Person model];
     p.age = @(80);
     [p insertRecord];
     p.age = @(0);
@@ -442,21 +455,22 @@
     [p insertRecord];
     
     __block int recordCount = 0;
-    RCCriteria* criteria = [[RCCriteria alloc] init];
+    RCCriteria *criteria = [[RCCriteria alloc] init];
     [criteria where:@"age < 30"];
-    [[Person allRecordsWithCriteria:criteria] execute: ^(Person* record){
+    [[Person allRecordsWithCriteria:criteria] execute:^(Person *record) {
         recordCount++;
-    } finished: ^(BOOL error){
+    } finished:^(BOOL error) {
         waitingForBlock = NO;
     }];
-    while(waitingForBlock) {
+    
+    while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
     STAssertTrue(recordCount == 3, @"Results were not ordered correctly.");
 }
 
-- (void)testSettingPrimaryKey{
-    Person* p = [Person model];
+-(void)testSettingPrimaryKey {
+    Person *p = [Person model];
     p.name = @"Test";
     p.address = [@"Address" mutableCopy];
     p.age = @(21);
@@ -466,10 +480,11 @@
     STAssertFalse([[p primaryKeyValue] isEqualToNumber:@(-1)], @"Primary key should not be -1 after being saved.");
 }
 
-- (void)testTruncate {
+-(void)testTruncate {
     int i = testsize;
+    
     do {
-        Person* p = [Person model];
+        Person *p = [Person model];
         p.name = @"Test";
         [p saveRecord];
     } while (i-->1);
@@ -479,15 +494,17 @@
     STAssertEquals([[Person model] recordCount], 0, @"There should not be any people in the database.");
 }
 
-- (void)testTransactioning {
+-(void)testTransactioning {
     [Person trunctuate];
     [Person beginTransaction];
     int i = testsize;
+    
     do {
-        Person* p = [Person model];
+        Person *p = [Person model];
         p.name = @"Test";
         [p saveRecord];
-        if (i == floor(testsize/2)){
+        
+        if (i == floor(testsize/2)) {
             [Person rollback];
             [Person beginTransaction];
         }
@@ -498,44 +515,45 @@
     STAssertTrue( (endCount==testsize/2-1), @"Rollback did not remove first half of testsize.");
 }
 
-- (void)testJSONEncoding {
-    Person* p = [Person model];
+-(void)testJSONEncoding {
+    Person *p = [Person model];
     p.name = @"Json Test";
     p.address = [@"Json Test Address" mutableCopy];
     p.ip = @"localhost";
     p.age = @(100);
-    NSDictionary* obj = [p toJSON];
+    NSDictionary *obj = [p toJSON];
     
-    STAssertTrue([[obj objectForKey:@"_id"] isEqual: @(-1)], @"_id should be -1 from JSON");
-    STAssertTrue([[obj objectForKey:@"address"] isEqualToString: p.address], @"address should be supplied from JSON");
-    STAssertTrue([[obj objectForKey:@"ip"] isEqualToString: @"localhost"], @"ip should be supplied from JSON");
-    STAssertTrue([[obj objectForKey:@"age"] isEqual: @(100)], @"age should be 0 from JSON");
+    STAssertTrue([[obj objectForKey:@"_id"] isEqual:@(-1)], @"_id should be -1 from JSON");
+    STAssertTrue([[obj objectForKey:@"address"] isEqualToString:p.address], @"address should be supplied from JSON");
+    STAssertTrue([[obj objectForKey:@"ip"] isEqualToString:@"localhost"], @"ip should be supplied from JSON");
+    STAssertTrue([[obj objectForKey:@"age"] isEqual:@(100)], @"age should be 0 from JSON");
 }
 
-- (void)testJSONDecoding {
-    Person* p = [Person fromJSON:
-                 @{
-                   @"name" : @"test",
-                   @"address" : @"json",
-                   @"age" : @(22)
+-(void)testJSONDecoding {
+    Person *p = [Person fromJSON:
+                 @ {
+                   @"name" :@"test",
+                   @"address" :@"json",
+                   @"age" :@(22)
                    }
                  ];
     
     STAssertNil(p._id, @"_id should be -1 from JSON");
     STAssertTrue([p.address isEqualToString:@"json"], @"address should be supplied from JSON");
-    STAssertTrue([p.age isEqual: @(22)], @"age should be 100 from JSON");
+    STAssertTrue([p.age isEqual:@(22)], @"age should be 100 from JSON");
 }
 
-- (void)testJSONArrayDecoding {
-    NSArray* people = [Person fromJSON:
-                 @[@{
-                       @"name" : @"test",
-                       @"address" : @"json",
-                       @"age" : @(21)
-                       },@{
-                       @"name" : @"test2",
-                       @"address" : @"json2",
-                       @"age" : @(22)
+-(void)testJSONArrayDecoding {
+    NSArray *people = [Person fromJSON:
+                 @[@ {
+                       @"name" :@"test",
+                       @"address" :@"json",
+                       @"age" :@(21)
+                       },
+                     @ {
+                       @"name" :@"test2",
+                       @"address" :@"json2",
+                       @"age" :@(22)
                        }]
                  ];
     

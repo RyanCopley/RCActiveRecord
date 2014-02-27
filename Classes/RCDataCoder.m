@@ -32,6 +32,9 @@ static RCDataCoder *sharedSingleton;
         [self addAlias:@"NSArrayM" forType:[NSMutableArray class]];
         [self addAlias:@"__NSCFString" forType:[NSString class]];
         [self addAlias:@"CFString" forType:[NSString class]];
+        [self addAlias:@"__NSDate" forType:[NSDate class]];
+        [self addAlias:@"__NSCFConstantString" forType:[NSString class]];
+        [self addAlias:@"__NSCFNumber" forType:[NSNumber class]];
         
         
     }
@@ -155,5 +158,7 @@ static RCDataCoder *sharedSingleton;
     value = [value stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
     return value;
 }
+
+
 
 @end

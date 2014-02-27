@@ -12,7 +12,7 @@
 
 @implementation RCExampleCode
 
--(void) runExample{
+-(void)runExample {
 }
 
 @end
