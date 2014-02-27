@@ -19,6 +19,7 @@ Features
 * Customizable data coders
 * Foreign Keys between models
 * Foreign Key Auto Loading / Manual Loading Modes
+* Full Unit Tests (And passing ... )
 
 Features Coming Soon
 ==========
@@ -26,5 +27,4 @@ Features Coming Soon
 * A "open" function (It defaults to db.sqlite currently)
 * NSArray / NSDictionary Conditional Support
 * Migrations (Researching ideas of the best way to do this)
-* Full Test Suite (Half done-ish)
 * Subclassed models
