@@ -17,40 +17,31 @@
 
 @implementation RCActiveRecord
 
-@synthesize isNewRecord;
-@synthesize isSavedRecord;
-@synthesize _id;
-@synthesize creationDate;
-@synthesize updatedDate;
-@synthesize savedDate;
+@synthesize isNewRecord, isSavedRecord;
+@synthesize _id, creationDate, updatedDate, savedDate;
 @synthesize criteria;
-
-static NSDateFormatter *formatter;
 
 #pragma mark Active Record functions
 
--(id)schema{
+-(void)schema{
     
     RCInternals* internal = [RCInternals instance];
     
     NSString *key = NSStringFromClass( [self class] );
-    if ([internal.pkName objectForKey:key] == nil ) {
-        [internal.pkName setObject:@"_id" forKey:key]; /* default */
+    if ([internal.primaryKeys objectForKey:key] == nil ) {
+        [internal.primaryKeys setObject:@"_id" forKey:key]; /* default */
         [internal.schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
         [internal.foreignKeyData setObject: [@{} mutableCopy] forKey:key]; /* empty */
-        [internal.RCActiveRecordPreload setObject: @(1)forKey:key]; /* preload */
+        [internal.linkShouldPreload setObject: @(1)forKey:key]; /* preload */
     }
-    
     
     [[self class] registerColumn:@"creationDate"];
     [[self class] registerColumn:@"savedDate"];
     [[self class] registerColumn:@"updatedDate"];
     
-    
-    return self;
 }
 
--(id)defaultValues{
+-(void)defaultValues{
     
     _id = @(-1);
     creationDate = [[NSDate alloc] init];
@@ -58,23 +49,22 @@ static NSDateFormatter *formatter;
     updatedDate = [[NSDate alloc] initWithTimeIntervalSince1970:0];
     isNewRecord = YES;
     isSavedRecord = NO;
-    
-    return self;
 }
 
 -(id)init{
     self = [super init];
     if (self) {
-        
-        formatter = [[NSDateFormatter alloc] init];
-        [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
+
         
     }
     return self;
 }
 
 +(id)model{
-    return [[[[self class] alloc] defaultValues] schema]; //Only do initModel once, so this needs some conditional.
+    id model = [[self class] alloc];
+    [model defaultValues];
+    [model schema];
+    return model;
 }
 
 -(int)recordCount{
@@ -88,7 +78,7 @@ static NSDateFormatter *formatter;
     __block int recordCount;
     RCInternals* internal = [RCInternals instance];
     
-    [internal.RCActiveRecordQueue inDatabase:^(FMDatabase *db) {
+    [internal.internalQueue inDatabase:^(FMDatabase *db) {
         recordCount = [db intForQuery:query];
     }];
     return recordCount;
@@ -96,7 +86,7 @@ static NSDateFormatter *formatter;
 
 -(RCResultSet*)customQuery:(NSString*)query{
     RCInternals* internal = [RCInternals instance];
-    return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
+    return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.internalQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
 -(RCResultSet*)recordByPK:(NSNumber*)pk{
@@ -109,7 +99,7 @@ static NSDateFormatter *formatter;
     if (RCACTIVERECORDLOGGING) { NSLog(@"Query: %@", query); }
     
     RCInternals* internal = [RCInternals instance];
-    return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
+    return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.internalQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
 -(RCResultSet*)recordsByAttribute:(NSString*)attributeName value:(id)value{
@@ -121,7 +111,7 @@ static NSDateFormatter *formatter;
     if (RCACTIVERECORDLOGGING) { NSLog(@"Query: %@", query); }
     
     RCInternals* internal = [RCInternals instance];
-    return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
+    return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.internalQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
 +(RCResultSet*)allRecords{
@@ -130,7 +120,7 @@ static NSDateFormatter *formatter;
     
     
     RCInternals* internal = [RCInternals instance];
-    return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
+    return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.internalQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
 +(RCResultSet*)allRecordsWithCriteria:(RCCriteria*)criteria{
@@ -138,7 +128,7 @@ static NSDateFormatter *formatter;
     if (RCACTIVERECORDLOGGING) { NSLog(@"Query: %@", query); }
     
     RCInternals* internal = [RCInternals instance];
-    return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.RCActiveRecordQueue andQuery:query andActiveRecordClass: [self class]];
+    return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.internalQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
 -(NSDictionary*)toJSON{
@@ -173,7 +163,9 @@ static NSDateFormatter *formatter;
         return [NSArray arrayWithArray:array];
     }
     if ([json isKindOfClass:[NSDictionary class]]) {
-        id model = [[[[self class] alloc] defaultValues] schema];
+        id model = [[self class] alloc];
+        [model defaultValues];
+        [model schema];
         for( NSString *aKey in json ) {
             NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[aKey substringToIndex:1] uppercaseString],[aKey substringFromIndex:1]];
             id value = [json objectForKey:aKey];
@@ -187,8 +179,11 @@ static NSDateFormatter *formatter;
         NSString* aKey = [model primaryKeyName];
         NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[aKey substringToIndex:1] uppercaseString],[aKey substringFromIndex:1]];
         NSString* value = [json objectForKey:aKey];
-        NSNumberFormatter * f = [[NSNumberFormatter alloc] init];
-        [f setNumberStyle:NSNumberFormatterDecimalStyle];
+        static NSNumberFormatter * f = nil;
+        if (f == nil){
+            f = [[NSNumberFormatter alloc] init];
+            [f setNumberStyle:NSNumberFormatterDecimalStyle];
+        }
         NSNumber * myNumber = [f numberFromString:value];
         @try {
             [model performSelector: NSSelectorFromString(setConversion)withObject: myNumber];
@@ -205,7 +200,7 @@ static NSDateFormatter *formatter;
     RCInternals* internal = [RCInternals instance];
     if (!internal.inTransaction) {
         internal.inTransaction = YES;
-        [internal.RCActiveRecordQueue inDatabase:^(FMDatabase *db) {
+        [internal.internalQueue inDatabase:^(FMDatabase *db) {
             [db beginTransaction];
         }];
     }
@@ -213,7 +208,7 @@ static NSDateFormatter *formatter;
 
 +(void)commit{
     __weak RCInternals* internal = [RCInternals instance];
-    [internal.RCActiveRecordQueue inDatabase:^(FMDatabase *db) {
+    [internal.internalQueue inDatabase:^(FMDatabase *db) {
         [db commit];
         internal.inTransaction = NO;
     }];
@@ -221,7 +216,7 @@ static NSDateFormatter *formatter;
 
 +(void)rollback{
     __weak RCInternals* internal = [RCInternals instance];
-    [internal.RCActiveRecordQueue inDatabase:^(FMDatabase *db) {
+    [internal.internalQueue inDatabase:^(FMDatabase *db) {
         [db rollback];
         internal.inTransaction = NO;
     }];
@@ -251,7 +246,7 @@ static NSDateFormatter *formatter;
         __block NSString* query = [NSString stringWithFormat:@"INSERT INTO %@ (%@)VALUES (%@)", [self tableName], columns, data];
         if (RCACTIVERECORDLOGGING) { NSLog(@"Query: %@", query); }
         
-        [internal.RCActiveRecordQueue inDatabase:^(FMDatabase *db) {
+        [internal.internalQueue inDatabase:^(FMDatabase *db) {
             success = [db executeUpdate: query];
             NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[[self primaryKeyName] substringToIndex:1] uppercaseString],[[self primaryKeyName] substringFromIndex:1]];
             @try {
@@ -285,7 +280,7 @@ static NSDateFormatter *formatter;
             __block NSString* query = [NSString stringWithFormat:@"UPDATE %@ SET %@ WHERE `%@`=\"%@\";", [obj tableName], updateData,[self primaryKeyName], [self primaryKeyValue]];
             if (RCACTIVERECORDLOGGING) { NSLog(@"Query: %@", query); }
             
-            [internal.RCActiveRecordQueue inDatabase:^(FMDatabase *db) {
+            [internal.internalQueue inDatabase:^(FMDatabase *db) {
                 [db executeUpdate: query];
             }];
         }
@@ -314,7 +309,7 @@ static NSDateFormatter *formatter;
         }
         
         RCInternals* internal = [RCInternals instance];
-        [internal.RCActiveRecordQueue inDatabase:^(FMDatabase *db) {
+        [internal.internalQueue inDatabase:^(FMDatabase *db) {
             [db executeUpdate: query];
         }];
     }
@@ -350,12 +345,13 @@ static NSDateFormatter *formatter;
     }];
     NSString *key = NSStringFromClass( [self class] );
     if (RCACTIVERECORDLOGGING) { NSLog(@"Generating schema for table: %@",[[self alloc] tableName]); }
-    id obj = [[self alloc] defaultValues];
+    id obj = [[self alloc] init];
+    [obj defaultValues];
     
     RCInternals* internal = [RCInternals instance];
     NSDictionary* schema = [internal.schemaData objectForKey:key];
-    if ([internal.RCActiveRecordSchemas objectForKey: [obj tableName]] == nil) {
-        [internal.RCActiveRecordSchemas setObject: @"Defined" forKey: [obj tableName]];
+    if ([internal.schemas objectForKey: [obj tableName]] == nil) {
+        [internal.schemas setObject: @"Defined" forKey: [obj tableName]];
         NSMutableString* columnData = [[NSMutableString alloc] init];
         [columnData appendFormat:@"%@ INTEGER PRIMARY KEY %@", [obj primaryKeyName], ([[obj primaryKeyName] isEqualToString:@"_id"] ? @"AUTOINCREMENT" : @"")];
         for (NSString* columnName in schema) {
@@ -365,7 +361,7 @@ static NSDateFormatter *formatter;
         if (force) {
             [[self class] dropTable];
         }
-        [internal.RCActiveRecordQueue inDatabase:^(FMDatabase *db) {
+        [internal.internalQueue inDatabase:^(FMDatabase *db) {
             NSString* query = [NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (%@);", [obj tableName], columnData];
             if (RCACTIVERECORDLOGGING) { NSLog(@"Running: %@",query); }
             
@@ -395,8 +391,8 @@ static NSDateFormatter *formatter;
     id obj = [[self alloc] init];
     
     RCInternals* internal = [RCInternals instance];
-    [internal.RCActiveRecordSchemas removeObjectForKey:[obj tableName]];
-    [internal.RCActiveRecordQueue inDatabase:^(FMDatabase *db) {
+    [internal.schemas removeObjectForKey:[obj tableName]];
+    [internal.internalQueue inDatabase:^(FMDatabase *db) {
         NSString* query = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;", [obj tableName]];
         if (RCACTIVERECORDLOGGING) { NSLog(@"Running: %@",query); }
         [db executeUpdate: query];
@@ -412,7 +408,8 @@ static NSDateFormatter *formatter;
     if (columnData == nil){
         columnData = [[NSMutableDictionary alloc] init];
     }
-    id obj = [[self alloc] defaultValues];
+    id obj = [[self alloc] init];
+    [obj defaultValues];
     NSString* type = NSStringFromClass([[obj performSelector:NSSelectorFromString(columnName)] class]);
     
     [columnData setObject:@{
@@ -426,13 +423,13 @@ static NSDateFormatter *formatter;
 +(void)preloadModels:(BOOL)preload{
     RCInternals* internal = [RCInternals instance];
     NSString *key = NSStringFromClass( [self class] );
-    return [internal.RCActiveRecordPreload setObject:@(preload)forKey:key];
+    return [internal.linkShouldPreload setObject:@(preload)forKey:key];
 }
 
 +(BOOL)preloadEnabled{
     RCInternals* internal = [RCInternals instance];
     NSString *key = NSStringFromClass( [self class] );
-    return [[internal.RCActiveRecordPreload objectForKey:key] boolValue];
+    return [[internal.linkShouldPreload objectForKey:key] boolValue];
 }
 
 +(BOOL)hasSchemaDeclared{
@@ -442,7 +439,7 @@ static NSDateFormatter *formatter;
 
 -(NSString*)primaryKeyName{
     RCInternals* internal = [RCInternals instance];
-    return [internal.pkName valueForKey:NSStringFromClass( [self class] )];
+    return [internal.primaryKeys valueForKey:NSStringFromClass( [self class] )];
 }
 
 -(NSNumber*)primaryKeyValue {
@@ -454,7 +451,7 @@ static NSDateFormatter *formatter;
 }
 
 -(FMDatabaseQueue*)getFMDBQueue{ //Exposed for subclasses
-    return [RCInternals instance].RCActiveRecordQueue;
+    return [RCInternals instance].internalQueue;
 }
 
 //Internal

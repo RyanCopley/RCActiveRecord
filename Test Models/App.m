@@ -17,17 +17,17 @@
 @synthesize settings;
 @synthesize owner;
 
--(id)defaultValues{
+-(void)defaultValues{
+    [super defaultValues];
     name = @"";
     gitCommitHash = @"";
     versionNumber = @(0);
     files = [[NSArray alloc] init];
     settings = @{};
     owner = [[Person alloc] init];
-    return self;
 }
 
--(id)schema{
+-(void)schema{
     [super schema];
     if (![App hasSchemaDeclared]){
         [App registerColumn:@"name"];
@@ -38,7 +38,6 @@
         [App registerColumn:@"owner"];
         [App generateSchema:NO]; // If you use "YES" here, it will DROP the table and re-create the table in SQLite.
     }
-    return self;
 }
 
 @end

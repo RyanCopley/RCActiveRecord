@@ -11,22 +11,21 @@
 #import "RCCriteria.h"
 #import "RCResultSet.h"
 
-@interface RCActiveRecord : NSObject{
-    BOOL isNewRecord;
-    BOOL isSavedRecord;
-    NSArray* errors;
-}
+@interface RCActiveRecord : NSObject
 
 @property (nonatomic) BOOL isNewRecord;
 @property (nonatomic) BOOL isSavedRecord;
+@property (nonatomic, retain) NSArray* errors;
 @property (nonatomic, retain) RCCriteria* criteria;
+
+//Predefined fields
 @property (nonatomic, retain) NSNumber* _id;
 @property (nonatomic, retain) NSDate* creationDate;
 @property (nonatomic, retain) NSDate* savedDate;
 @property (nonatomic, retain) NSDate* updatedDate;
 
-- (id)defaultValues;
-- (id)schema;
+- (void)defaultValues;
+- (void)schema;
 - (id)init;
 + (id)model;
 - (void)setCriteria:(RCCriteria*)criteria;

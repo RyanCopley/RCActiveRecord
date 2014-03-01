@@ -15,17 +15,16 @@
 @synthesize age;
 @synthesize ip;
 
--(id)defaultValues{
+-(void)defaultValues{
     [super defaultValues];
     name = @"";
     address = [@"" mutableCopy];
     age = @(0);
     ip = @"";
-    return self;
 }
 
 
--(id)schema{
+-(void)schema{
     [super schema];
     if (![Person hasSchemaDeclared]){
         NSLog(@"Initialized person schema");
@@ -35,7 +34,6 @@
         [Person registerColumn:@"ip"];
         [Person generateSchema:NO]; // If you use "YES" here, it will DROP the table and re-create the table in SQLite.
     }
-    return self;
 }
 
 @end

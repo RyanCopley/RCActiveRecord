@@ -10,13 +10,14 @@
 
 @interface RCInternals : NSObject
 
-@property (nonatomic, strong) FMDatabaseQueue* RCActiveRecordQueue;
-@property (nonatomic, strong) NSMutableDictionary* RCActiveRecordSchemas;
-@property (nonatomic, strong) NSMutableDictionary* pkName;
+@property (nonatomic, strong) FMDatabaseQueue* internalQueue;
+@property (nonatomic, strong) NSMutableDictionary* schemas;
+@property (nonatomic, strong) NSMutableDictionary* primaryKeys;
 @property (nonatomic, strong) NSMutableDictionary* schemaData;
 @property (nonatomic, strong) NSMutableDictionary* foreignKeyData;
-@property (nonatomic, strong) NSMutableDictionary* RCActiveRecordPreload;
+@property (nonatomic, strong) NSMutableDictionary* linkShouldPreload;
 @property (nonatomic, assign) BOOL inTransaction;
+
 
 
 + (RCInternals *)instance;

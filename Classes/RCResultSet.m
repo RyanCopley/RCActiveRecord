@@ -28,7 +28,8 @@
             RCDataCoder* coder = [RCDataCoder sharedSingleton];
             FMResultSet* s = [db executeQuery: internalQuery];
             while ([s next]){
-                id AR = [[ARClass alloc] defaultValues];
+                id AR = [[ARClass alloc] init];
+                [AR defaultValues];
                 [(RCActiveRecord*)AR setIsNewRecord:NO];
                 [(RCActiveRecord*)AR setIsSavedRecord:YES];
                 @autoreleasepool {

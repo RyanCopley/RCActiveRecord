@@ -10,7 +10,7 @@
 
 @implementation RCInternals
 
-@synthesize RCActiveRecordQueue, RCActiveRecordSchemas, pkName, schemaData, foreignKeyData, RCActiveRecordPreload, inTransaction;
+@synthesize internalQueue, schemas, primaryKeys, schemaData, foreignKeyData, linkShouldPreload, inTransaction;
 
 static RCInternals *gInstance = NULL;
 
@@ -26,21 +26,20 @@ static RCInternals *gInstance = NULL;
 }
 
 -(void) instantiate {
-    if (pkName == nil) {
-        pkName = [[NSMutableDictionary alloc] init];
+    if (primaryKeys == nil) {
+        primaryKeys = [[NSMutableDictionary alloc] init];
         schemaData = [[NSMutableDictionary alloc] init];
         foreignKeyData = [[NSMutableDictionary alloc] init];
-        RCActiveRecordPreload = [[NSMutableDictionary alloc] init];
+        linkShouldPreload = [[NSMutableDictionary alloc] init];
         inTransaction = NO;
     }
     
-
-    if (!RCActiveRecordQueue) {
+    if (!internalQueue) {
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documentsDirectory = [paths objectAtIndex:0];
         NSString* dbPath =  [NSString stringWithFormat:@"%@/db.sqlite",documentsDirectory];
-        RCActiveRecordQueue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-        RCActiveRecordSchemas = [[NSMutableDictionary alloc] init];
+        internalQueue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+        schemas = [[NSMutableDictionary alloc] init];
     }
 }
 @end
