@@ -17,31 +17,26 @@
 @synthesize settings;
 @synthesize owner;
 
--(id)initDefaultValues{
-    self = [super init];
-    if (self){
-        name = @"";
-        gitCommitHash = @"";
-        versionNumber = @(0);
-        files = [[NSArray alloc] init];
-        settings = @{};
-        owner = [[Person alloc] init];
-    }
+-(id)defaultValues{
+    name = @"";
+    gitCommitHash = @"";
+    versionNumber = @(0);
+    files = [[NSArray alloc] init];
+    settings = @{};
+    owner = [[Person alloc] init];
     return self;
 }
 
--(id)initModel{
-    self = [super initModel];
-    if (self){
-        if (![App hasSchemaDeclared]){
-            [App registerColumn:@"name"];
-            [App registerColumn:@"gitCommitHash"];
-            [App registerColumn:@"versionNumber"];
-            [App registerColumn:@"files"];
-            [App registerColumn:@"settings"];
-            [App registerColumn:@"owner"];
-            [App generateSchema:NO]; // If you use "YES" here, it will DROP the table and re-create the table in SQLite.
-        }
+-(id)schema{
+    [super schema];
+    if (![App hasSchemaDeclared]){
+        [App registerColumn:@"name"];
+        [App registerColumn:@"gitCommitHash"];
+        [App registerColumn:@"versionNumber"];
+        [App registerColumn:@"files"];
+        [App registerColumn:@"settings"];
+        [App registerColumn:@"owner"];
+        [App generateSchema:NO]; // If you use "YES" here, it will DROP the table and re-create the table in SQLite.
     }
     return self;
 }

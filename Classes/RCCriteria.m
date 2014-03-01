@@ -54,7 +54,6 @@
     }
 }
 
-//Needs SQL injection proofing.
 -(void)addCondition:(NSString*)columnName is:(RCActiveRecordComparisonOperator)comparer to:(id)value{
     // TODO: Should also check to ensure value is of type NSArray.
     if (comparer == RCIn || comparer == RCNotIn) {
