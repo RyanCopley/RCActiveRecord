@@ -44,7 +44,7 @@
                         }
                         @catch (NSException* e){
                             error = YES;
-                            NSLog(@"[Error in RCActiveRecord Execution] This object (%@) is not properly synthesized (Invalid setter). Unable to set: %@", NSStringFromClass([AR class]), varName);
+                            NSLog(@"RCActiveRecord: (%@) is not properly synthesized (Invalid setter). Unable to set: %@", NSStringFromClass([AR class]), varName);
                         }
                     }
                 }

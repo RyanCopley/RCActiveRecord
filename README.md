@@ -24,7 +24,7 @@ Features
 Features Coming Soon
 ==========
 * Multiple database support
-* A "open" function (It defaults to db.sqlite currently)
 * NSArray / NSDictionary Conditional Support
 * Migrations (Researching ideas of the best way to do this)
 * Subclassed models
+* Decoupled from SQLite (?? Low priority for now)

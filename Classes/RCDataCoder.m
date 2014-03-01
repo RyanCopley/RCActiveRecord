@@ -30,13 +30,14 @@ static RCDataCoder *sharedSingleton;
         [self defaultEncoders];
 
         [self addAlias:@"__NSArrayI" forType:[NSArray class]];
-        [self addAlias:@"__NSArrayM" forType:[NSMutableArray class]];
         [self addAlias:@"__NSCFArray" forType:[NSArray class]];
+        [self addAlias:@"__NSArrayM" forType:[NSMutableArray class]];
         [self addAlias:@"__NSCFString" forType:[NSString class]];
-        [self addAlias:@"__NSDate" forType:[NSDate class]];
         [self addAlias:@"__NSCFConstantString" forType:[NSString class]];
         [self addAlias:@"__NSCFNumber" forType:[NSNumber class]];
-                
+        [self addAlias:@"__NSDate" forType:[NSDate class]];
+
+        
     }
     return self;
 }
@@ -123,6 +124,7 @@ static RCDataCoder *sharedSingleton;
 }
 
 -(void)defaultEncoders {
+    
     [self addEncoderForType:[NSArray class] encoder:^NSString*(NSArray* obj) {
         NSError* err;
         NSData *jsonData = [NSJSONSerialization dataWithJSONObject:obj options:NSJSONWritingPrettyPrinted error:&err];
@@ -138,9 +140,8 @@ static RCDataCoder *sharedSingleton;
         NSData *jsonData = [NSJSONSerialization dataWithJSONObject:obj options:NSJSONWritingPrettyPrinted error:&err];
         return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
     }];
-    __typeof__(self) __weak weakself = self;
     [self addEncoderForType:[NSString class] encoder:^NSString*(NSString* obj) {
-        return [weakself sanitize:[NSString stringWithFormat:@"%@",obj] ]; //As a safety precaution
+        return [NSString stringWithFormat:@"%@",obj];
     }];
     [self addEncoderForType:[NSNumber class] encoder:^NSString*(NSNumber* obj) {
         return [NSString stringWithFormat:@"%@",obj]; //Works pretty well
@@ -152,6 +153,7 @@ static RCDataCoder *sharedSingleton;
 
 ////////////////////////////////////////////////////////////////////////////////////
 
+// TODO: Refactor (Use prepared queries)
 -(NSString*) sanitize: (NSString*) value{
     value = [NSString stringWithFormat:@"%@",value];
     value = [value stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""];

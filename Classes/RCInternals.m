@@ -10,7 +10,7 @@
 
 @implementation RCInternals
 
-@synthesize internalQueue, schemas, primaryKeys, schemaData, foreignKeyData, linkShouldPreload, inTransaction;
+@synthesize internalQueue, schemaIsDefined, primaryKeys, schemaData, linkShouldPreload, inTransaction;
 
 static RCInternals *gInstance = NULL;
 
@@ -29,7 +29,6 @@ static RCInternals *gInstance = NULL;
     if (primaryKeys == nil) {
         primaryKeys = [[NSMutableDictionary alloc] init];
         schemaData = [[NSMutableDictionary alloc] init];
-        foreignKeyData = [[NSMutableDictionary alloc] init];
         linkShouldPreload = [[NSMutableDictionary alloc] init];
         inTransaction = NO;
     }
@@ -39,7 +38,7 @@ static RCInternals *gInstance = NULL;
         NSString *documentsDirectory = [paths objectAtIndex:0];
         NSString* dbPath =  [NSString stringWithFormat:@"%@/db.sqlite",documentsDirectory];
         internalQueue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-        schemas = [[NSMutableDictionary alloc] init];
+        schemaIsDefined = [[NSMutableDictionary alloc] init];
     }
 }
 @end

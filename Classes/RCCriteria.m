@@ -9,8 +9,8 @@
 #import "RCCriteria.h"
 
 @implementation RCCriteria
-@synthesize limit;
-@synthesize offset;
+
+@synthesize limit, offset;
 
 -(id)init{
     self = [super init];
