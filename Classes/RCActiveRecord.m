@@ -61,7 +61,7 @@
         criteria = [[RCCriteria alloc] init];
     }
     
-    NSString* query = [NSString stringWithFormat:@"SELECT COUNT(*)FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
+    NSString* query = [NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
     if (RCACTIVERECORDLOGGING) { NSLog(@"RCActiveRecord: Query: %@", query); }
     __block int recordCount;
     RCInternals* internal = [RCInternals instance];
