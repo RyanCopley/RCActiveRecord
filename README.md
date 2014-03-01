@@ -28,3 +28,5 @@ Features Coming Soon
 * Migrations (Researching ideas of the best way to do this)
 * Subclassed models
 * Decoupled from SQLite (?? Low priority for now)
+* Better error handling
+* Prepared statements overhaul
