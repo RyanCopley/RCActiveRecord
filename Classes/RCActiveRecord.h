@@ -26,7 +26,6 @@
 
 - (void)defaultValues;
 - (void)schema;
-- (id)init;
 + (id)model;
 - (void)setCriteria:(RCCriteria*)criteria;
 - (RCResultSet*)recordByPK:(NSNumber*)pk;

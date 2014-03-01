@@ -12,7 +12,6 @@
     NSMutableDictionary* dataEncoders;
     NSMutableDictionary* dataDecoders;
     NSMutableDictionary* typeAliases;
-    
 }
 
 +(RCDataCoder*)sharedSingleton;

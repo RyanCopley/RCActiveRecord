@@ -32,17 +32,15 @@
         [internal.primaryKeys setObject:@"_id" forKey:key]; /* default */
         [internal.schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
         [internal.foreignKeyData setObject: [@{} mutableCopy] forKey:key]; /* empty */
-        [internal.linkShouldPreload setObject: @(1)forKey:key]; /* preload */
+        [internal.linkShouldPreload setObject: @(1) forKey:key]; /* preload */
     }
     
     [[self class] registerColumn:@"creationDate"];
     [[self class] registerColumn:@"savedDate"];
     [[self class] registerColumn:@"updatedDate"];
-    
 }
 
 -(void)defaultValues{
-    
     _id = @(-1);
     creationDate = [[NSDate alloc] init];
     savedDate = [[NSDate alloc] initWithTimeIntervalSince1970:0];
@@ -51,19 +49,11 @@
     isSavedRecord = NO;
 }
 
--(id)init{
-    self = [super init];
-    if (self) {
-
-        
-    }
-    return self;
-}
-
 +(id)model{
     id model = [[self class] alloc];
     [model defaultValues];
     [model schema];
+    
     return model;
 }
 
@@ -71,16 +61,15 @@
     if (!criteria) {
         criteria = [[RCCriteria alloc] init];
     }
+    
     NSString* query = [NSString stringWithFormat:@"SELECT COUNT(*)FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
-    if (RCACTIVERECORDLOGGING) {
-        NSLog(@"Query: %@", query);
-    }
+    if (RCACTIVERECORDLOGGING) { NSLog(@"Query: %@", query); }
     __block int recordCount;
     RCInternals* internal = [RCInternals instance];
-    
     [internal.internalQueue inDatabase:^(FMDatabase *db) {
         recordCount = [db intForQuery:query];
     }];
+    
     return recordCount;
 }
 
@@ -94,10 +83,10 @@
         criteria = [[RCCriteria alloc] init];
         [criteria addCondition: [self primaryKeyName] is:RCEqualTo to: [NSString stringWithFormat:@"%@",pk]];
     }
+    
     [criteria setLimit:1];
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
     if (RCACTIVERECORDLOGGING) { NSLog(@"Query: %@", query); }
-    
     RCInternals* internal = [RCInternals instance];
     return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.internalQueue andQuery:query andActiveRecordClass: [self class]];
 }
@@ -107,9 +96,9 @@
         criteria = [[RCCriteria alloc] init];
         [criteria addCondition:attributeName is:RCEqualTo to: [NSString stringWithFormat:@"%@",value]];
     }
+    
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
     if (RCACTIVERECORDLOGGING) { NSLog(@"Query: %@", query); }
-    
     RCInternals* internal = [RCInternals instance];
     return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.internalQueue andQuery:query andActiveRecordClass: [self class]];
 }
@@ -117,8 +106,6 @@
 +(RCResultSet*)allRecords{
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@;", [[self model] tableName] ];
     if (RCACTIVERECORDLOGGING) { NSLog(@"Query: %@", query); }
-    
-    
     RCInternals* internal = [RCInternals instance];
     return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.internalQueue andQuery:query andActiveRecordClass: [self class]];
 }
@@ -126,7 +113,6 @@
 +(RCResultSet*)allRecordsWithCriteria:(RCCriteria*)criteria{
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [[self model] tableName], [criteria generateWhereClause] ];
     if (RCACTIVERECORDLOGGING) { NSLog(@"Query: %@", query); }
-    
     RCInternals* internal = [RCInternals instance];
     return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.internalQueue andQuery:query andActiveRecordClass: [self class]];
 }
@@ -146,7 +132,9 @@
             RCActiveRecord* tmp = value;
             [dict setValue: [tmp primaryKeyValue] forKey: key];
         }
+        
     }
+    
     return dict;
 }
 
@@ -222,6 +210,7 @@
     }];
 }
 
+// TODO: Refactor
 -(BOOL)insertRecord{
     __block BOOL success = NO;
     RCInternals* internal = [RCInternals instance];
@@ -260,6 +249,7 @@
     return success;
 }
 
+// TODO: Refactor
 -(BOOL)updateRecord{
     if (isNewRecord == NO) {
         
@@ -290,9 +280,8 @@
 }
 
 -(BOOL)saveRecord{
-    if (RCACTIVERECORDLOGGING) {
-        NSLog(@"Saving record...");
-    }
+    if (RCACTIVERECORDLOGGING) { NSLog(@"Saving record..."); }
+    
     if (isNewRecord) {
         return [self insertRecord];
     }else if (isSavedRecord) {
@@ -304,23 +293,24 @@
 -(BOOL)deleteRecord{
     if (!isNewRecord && isSavedRecord) {
         __block NSString* query = [NSString stringWithFormat:@"DELETE FROM %@ WHERE `%@`='%@';", [self tableName], [self primaryKeyName], [self primaryKeyValue]];
-        if (RCACTIVERECORDLOGGING) {
-            NSLog(@"Query: %@", query);
-        }
+        if (RCACTIVERECORDLOGGING) { NSLog(@"Query: %@", query); }
         
         RCInternals* internal = [RCInternals instance];
         [internal.internalQueue inDatabase:^(FMDatabase *db) {
             [db executeUpdate: query];
         }];
+        return YES;
     }
-    return YES;
+    return NO;
 }
 
+// TODO: Refactor
 +(BOOL)generateSchema: (BOOL)force{
     RCDataCoder* coder = [RCDataCoder sharedSingleton];
     [coder addEncoderForType:[self class] encoder:^NSString*(RCActiveRecord* obj) {
         return [NSString stringWithFormat:@"%@", [obj primaryKeyValue]];
     }];
+    
     [coder addDecoderForType:[self class] decoder:^id(NSString* stringRepresentation, Class type) {
         if ([type preloadEnabled]){
             __block BOOL waitingForBlock = YES;
@@ -432,6 +422,7 @@
     return [[internal.linkShouldPreload objectForKey:key] boolValue];
 }
 
+// TODO: Refactor
 +(BOOL)hasSchemaDeclared{
     RCInternals* internal = [RCInternals instance];
     return [[internal.schemaData objectForKey:NSStringFromClass( [self class] )] count] > 3; // This should not be hard coded in. It's 3 because I prepopulate 3 fields (creation time, update time, saved time or something like that)
@@ -447,7 +438,7 @@
 }
 
 -(NSString*)tableName{
-    return [NSStringFromClass([self class])lowercaseString];
+    return [NSStringFromClass([self class]) lowercaseString];
 }
 
 -(FMDatabaseQueue*)getFMDBQueue{ //Exposed for subclasses
@@ -455,7 +446,7 @@
 }
 
 //Internal
-// TODO: Rewrite this, it's ugly.
+// TODO: Refactor
 -(NSString*)objCDataTypeToSQLiteDataType:(NSString*)dataTypeStrRepresentation {
     if ([dataTypeStrRepresentation isEqualToString:@"__NSCFConstantString"]) {
         return @"TEXT";
