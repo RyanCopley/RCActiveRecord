@@ -72,8 +72,6 @@
                 migrationID = [latestAssistant.version intValue];
             }
             
-            NSLog(@"Beginning migrations from: %i", migrationID);
-            
             id tmp = [[[self class] alloc] init];
             while (!failed){
                 migrationID++;
@@ -81,6 +79,7 @@
                 if ([tmp respondsToSelector:migrationFunction]){
                     failed = !((BOOL)[tmp performSelector:migrationFunction]);
                 }else{
+                    if (RCACTIVERECORDLOGGING){ NSLog(@"RCActiveRecord: Failed to upgrade to %i", migrationID); }
                     migrationID--;
                     failed = true;
                 }

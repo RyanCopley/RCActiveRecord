@@ -15,6 +15,7 @@
 @synthesize age;
 @synthesize ip;
 @synthesize md5,version;
+@synthesize sha1;
 
 -(void)defaultValues{
     [super defaultValues];
@@ -24,6 +25,7 @@
     ip = @"";
     version = @(1.0f);
     md5 = @"e21b0ff3877dca5c2b3c5a37f3fa3ee4"; // Bonus points to whoever cracks this hash.
+    sha1 = @"";
 }
 
 -(void)schema{
@@ -41,6 +43,10 @@
 
 -(BOOL) migrateToVersion_2{
     [Person registerColumn:@"md5"];
+    return YES;
+}
+-(BOOL) migrateToVersion_3{
+    [Person registerColumn:@"sha1"];
     return YES;
 }
 
