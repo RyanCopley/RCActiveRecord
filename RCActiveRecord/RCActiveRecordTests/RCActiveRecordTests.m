@@ -10,6 +10,8 @@
 #import "Person.h"
 #import "App.h"
 
+#import "RCMigrationAssistant.h"
+
 #define testsize 100
 
 @implementation RCActiveRecordTests
@@ -17,6 +19,8 @@
 -(void)setUp {
     [super setUp];
     [Person model];
+    
+    [RCMigrationAssistant model]; //Kickstart off the migration assistant
 }
 
 -(void)tearDown {
@@ -133,6 +137,7 @@
 }
 
 -(void)testDropTable {
+    [Person trunctuate];
     [Person generateSchema:YES];
     STAssertTrue([[Person model] insertRecord], @"Person should insert");
     [Person dropTable];
@@ -466,6 +471,8 @@
     while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
+    
+    
     STAssertTrue(recordCount == 3, @"Results were not ordered correctly.");
 }
 
@@ -525,7 +532,6 @@
     
     STAssertTrue([[obj objectForKey:@"_id"] isEqual:@(-1)], @"_id should be -1 from JSON");
     STAssertTrue([[obj objectForKey:@"address"] isEqualToString:p.address], @"address should be supplied from JSON");
-    STAssertTrue([[obj objectForKey:@"ip"] isEqualToString:@"localhost"], @"ip should be supplied from JSON");
     STAssertTrue([[obj objectForKey:@"age"] isEqual:@(100)], @"age should be 0 from JSON");
 }
 

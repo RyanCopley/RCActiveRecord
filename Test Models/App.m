@@ -16,6 +16,7 @@
 @synthesize files;
 @synthesize settings;
 @synthesize owner;
+@synthesize version;
 
 -(void)defaultValues{
     [super defaultValues];
@@ -27,17 +28,15 @@
     owner = [[Person alloc] init];
 }
 
+//Defines the "base" schema. Once this is deployed, you should only rely on migrations.
 -(void)schema{
     [super schema];
-    if (![App hasSchemaDeclared]){
-        [App registerColumn:@"name"];
-        [App registerColumn:@"gitCommitHash"];
-        [App registerColumn:@"versionNumber"];
-        [App registerColumn:@"files"];
-        [App registerColumn:@"settings"];
-        [App registerColumn:@"owner"];
-        [App generateSchema:NO]; // If you use "YES" here, it will DROP the table and re-create the table in SQLite.
-    }
+    [App registerColumn:@"name"];
+    [App registerColumn:@"gitCommitHash"];
+    [App registerColumn:@"versionNumber"];
+    [App registerColumn:@"files"];
+    [App registerColumn:@"settings"];
+    [App registerColumn:@"owner"];
 }
 
 @end

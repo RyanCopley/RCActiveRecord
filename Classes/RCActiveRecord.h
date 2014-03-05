@@ -45,15 +45,19 @@
 - (BOOL)deleteRecord; //Tested
 + (void)preloadModels:(BOOL)preload;
 + (BOOL)preloadEnabled;
-+ (BOOL)hasSchemaDeclared;
-+ (BOOL)registerColumn:(NSString*)columnName;
-+ (BOOL)generateSchema: (BOOL)force; //Tested
-+ (BOOL)updateSchema;
 + (BOOL)trunctuate; //Tested
 + (BOOL)dropTable; //Tested
 - (NSString*)primaryKeyName;
 - (NSNumber*)primaryKeyValue; //Tested
 - (NSString*)tableName; //Tested
 - (FMDatabaseQueue*)getFMDBQueue;
+
+
+
++ (BOOL)hasSchemaDeclared;
++ (BOOL)registerColumn:(NSString*)columnName;
++ (BOOL)deleteColumn:(NSString*)columnName;
++ (BOOL)generateSchema: (BOOL)force; //Tested
++ (BOOL)updateSchema;
 
 @end

@@ -18,4 +18,6 @@
 @property (strong, nonatomic) NSDictionary* settings;
 @property (strong, nonatomic) Person* owner;
 
+@property (strong, nonatomic) NSNumber* version;
+
 @end

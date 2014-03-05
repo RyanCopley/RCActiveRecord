@@ -14,6 +14,8 @@
 @synthesize address;
 @synthesize age;
 @synthesize ip;
+@synthesize md5,version;
+@synthesize sha1;
 
 -(void)defaultValues{
     [super defaultValues];
@@ -21,19 +23,31 @@
     address = [@"" mutableCopy];
     age = @(0);
     ip = @"";
+    version = @(1.0f);
+    md5 = @"e21b0ff3877dca5c2b3c5a37f3fa3ee4"; // Bonus points to whoever cracks this hash.
+    sha1 = @"";
 }
-
 
 -(void)schema{
     [super schema];
-    if (![Person hasSchemaDeclared]){
-        NSLog(@"Initialized person schema");
-        [Person registerColumn:@"name"];
-        [Person registerColumn:@"address"];
-        [Person registerColumn:@"age"];
-        [Person registerColumn:@"ip"];
-        [Person generateSchema:NO]; // If you use "YES" here, it will DROP the table and re-create the table in SQLite.
-    }
+    [Person registerColumn:@"name"];
+    [Person registerColumn:@"address"];
+    [Person registerColumn:@"age"];
+    [Person registerColumn:@"ip"];
+}
+-(BOOL) migrateToVersion_1{
+    [Person registerColumn:@"version"];
+    [Person deleteColumn:@"ip"];
+    return YES;
+}
+
+-(BOOL) migrateToVersion_2{
+    [Person registerColumn:@"md5"];
+    return YES;
+}
+-(BOOL) migrateToVersion_3{
+    [Person registerColumn:@"sha1"];
+    return YES;
 }
 
 @end
