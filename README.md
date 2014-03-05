@@ -17,8 +17,7 @@ Later on you realize you need to upgrade the database?
 
 Fetching records is also fairly straight forward:
 
-![looking up a model](http://cl.ly/image/1H2t1r0x3l12/Screen%20Shot%202014-03-04%20at%2011.20.06%20PM.png "Looking up a model")
-http://cl.ly/image/0E0l1O2P1T27/Screen%20Shot%202014-03-04%20at%2011.23.22%20PM.png
+![looking up a model](http://cl.ly/image/0E0l1O2P1T27/Screen%20Shot%202014-03-04%20at%2011.23.22%20PM.png "Looking up a model")
 
 
 
