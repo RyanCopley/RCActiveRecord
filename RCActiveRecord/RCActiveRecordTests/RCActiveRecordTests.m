@@ -133,6 +133,7 @@
 }
 
 -(void)testDropTable {
+    [Person trunctuate];
     [Person generateSchema:YES];
     STAssertTrue([[Person model] insertRecord], @"Person should insert");
     [Person dropTable];

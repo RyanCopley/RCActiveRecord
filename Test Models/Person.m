@@ -26,13 +26,10 @@
 
 -(void)schema{
     [super schema];
-    if (![Person hasSchemaDeclared]){
-        NSLog(@"Initialized person schema");
-        [Person registerColumn:@"name"];
-        [Person registerColumn:@"address"];
-        [Person registerColumn:@"age"];
-        [Person registerColumn:@"ip"];
-    }
+    [Person registerColumn:@"name"];
+    [Person registerColumn:@"address"];
+    [Person registerColumn:@"age"];
+    [Person registerColumn:@"ip"];
 }
 
 @end

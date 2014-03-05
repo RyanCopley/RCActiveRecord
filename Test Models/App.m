@@ -29,14 +29,12 @@
 
 -(void)schema{
     [super schema];
-    if (![App hasSchemaDeclared]){
-        [App registerColumn:@"name"];
-        [App registerColumn:@"gitCommitHash"];
-        [App registerColumn:@"versionNumber"];
-        [App registerColumn:@"files"];
-        [App registerColumn:@"settings"];
-        [App registerColumn:@"owner"];
-    }
+    [App registerColumn:@"name"];
+    [App registerColumn:@"gitCommitHash"];
+    [App registerColumn:@"versionNumber"];
+    [App registerColumn:@"files"];
+    [App registerColumn:@"settings"];
+    [App registerColumn:@"owner"];
 }
 
 @end

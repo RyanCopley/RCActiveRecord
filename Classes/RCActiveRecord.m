@@ -11,7 +11,7 @@
 #import "FMDatabaseAdditions.h"
 #import "RCDataCoder.h"
 
-#define RCACTIVERECORDLOGGING 0
+#define RCACTIVERECORDLOGGING 1
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
@@ -24,7 +24,7 @@
 #pragma mark Active Record functions
 
 -(void)schema{
-    
+    if ([[self class] hasSchemaDeclared] == NO){
     RCInternals* internal = [RCInternals instance];
     
     NSString *key = NSStringFromClass( [self class] );
@@ -33,11 +33,11 @@
         [internal.schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
         [internal.linkShouldPreload setObject: @(1) forKey:key]; /* preload enabled */
     }
-    
-    [[self class] registerColumn:@"creationDate"];
-    [[self class] registerColumn:@"savedDate"];
-    [[self class] registerColumn:@"updatedDate"];
-    [[self class] generateSchema:NO];
+        [[self class] registerColumn:@"creationDate"];
+        [[self class] registerColumn:@"savedDate"];
+        [[self class] registerColumn:@"updatedDate"];
+        [[self class] generateSchema:NO];
+    }
 }
 
 -(void)defaultValues{
@@ -52,8 +52,9 @@
 +(id)model{
     id model = [[self class] alloc];
     [model defaultValues];
-    [model schema];
-    
+    if ([[self class] hasSchemaDeclared] == NO){
+        [model schema];
+    }
     return model;
 }
 
@@ -153,7 +154,6 @@
     if ([json isKindOfClass:[NSDictionary class]]) {
         id model = [[self class] alloc];
         [model defaultValues];
-        [model schema];
         for( NSString *aKey in json ) {
             NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[aKey substringToIndex:1] uppercaseString],[aKey substringFromIndex:1]];
             id value = [json objectForKey:aKey];
@@ -248,6 +248,7 @@
             }
         }];
     }
+    NSLog(@"Success Flag: %i", success);
     return success;
 }
 
@@ -385,11 +386,12 @@
 
 +(BOOL)dropTable{
     id obj = [[self alloc] init];
+    __weak id weakobj = obj;
     
     RCInternals* internal = [RCInternals instance];
     [internal.schemaIsDefined removeObjectForKey:[obj tableName]];
     [internal.internalQueue inDatabase:^(FMDatabase *db) {
-        NSString* query = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;", [obj tableName]];
+        NSString* query = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;", [weakobj tableName]];
         if (RCACTIVERECORDLOGGING) { NSLog(@"RCActiveRecord: Running: %@",query); }
         [db executeUpdate: query];
     }];

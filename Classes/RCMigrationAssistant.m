@@ -10,15 +10,17 @@
 
 @implementation RCMigrationAssistant
 
+@synthesize table,version;
+
 -(void)defaultValues{
     [super defaultValues];
+    table = @"";
+    version = @(0);
 }
 
 -(void)schema{
     [super schema];
-    if (![RCMigrationAssistant hasSchemaDeclared]){
-        [RCMigrationAssistant registerColumn:@""];
-        
-    }
+    [RCMigrationAssistant registerColumn:@"table"];
+    [RCMigrationAssistant registerColumn:@"version"];
 }
 @end
