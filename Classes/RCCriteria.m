@@ -70,7 +70,7 @@
     }else{
         [conditions addObject:
             [NSString stringWithFormat:
-                @"%@ %@ \"%@\"",
+                @"`%@` %@ \"%@\"",
                 columnName,
                 [self stringFromCompareOperator:comparer],
                 [NSString stringWithFormat:@"%@",[self sanitize:value]]
@@ -103,14 +103,7 @@
     }else{
         whereClause = [@"1=1" mutableCopy];
     }
-    //Limit...
-    if (limit > 0) {
-        [whereClause appendFormat: @" LIMIT %i ", limit];
-    }
-    //Offset
-    if (offset > 0) {
-        [whereClause appendFormat: @" OFFSET %i ", offset];
-    }
+    
     //Order...
     if (order != RCNoOrder) {
         NSString* orderStr;
@@ -120,7 +113,16 @@
         if (order == RCDescend) {
             orderStr = @"DESC";
         }
-        [whereClause appendFormat: @" ORDER BY `%@` %@", orderColumn, orderStr];
+        [whereClause appendFormat: @" ORDER BY %@ %@", orderColumn, orderStr];
+    }
+    
+    //Limit...
+    if (limit > 0) {
+        [whereClause appendFormat: @" LIMIT %i ", limit];
+    }
+    //Offset
+    if (offset > 0) {
+        [whereClause appendFormat: @" OFFSET %i ", offset];
     }
     return whereClause;
 }

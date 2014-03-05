@@ -10,6 +10,7 @@
 #import "RCActiveRecord.h"
 #import "FMDatabaseAdditions.h"
 #import "RCDataCoder.h"
+#import "RCMigrationAssistant.h"
 
 #define RCACTIVERECORDLOGGING 0
 #pragma clang diagnostic push
@@ -24,19 +25,110 @@
 #pragma mark Active Record functions
 
 -(void)schema{
-    
-    RCInternals* internal = [RCInternals instance];
-    
-    NSString *key = NSStringFromClass( [self class] );
-    if ([internal.primaryKeys objectForKey:key] == nil ) {
-        [internal.primaryKeys setObject:@"_id" forKey:key]; /* default */
-        [internal.schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
-        [internal.linkShouldPreload setObject: @(1) forKey:key]; /* preload enabled */
+    if ([[self class] hasSchemaDeclared] == NO){
+        RCInternals* internal = [RCInternals instance];
+        
+        NSString *key = NSStringFromClass( [self class] );
+        if ([internal.primaryKeys objectForKey:key] == nil ) {
+            [internal.primaryKeys setObject:@"_id" forKey:key]; /* default */
+            [internal.schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
+            [internal.linkShouldPreload setObject: @(1) forKey:key]; /* preload enabled */
+        }
+        [[self class] registerColumn:@"creationDate"];
+        [[self class] registerColumn:@"savedDate"];
+        [[self class] registerColumn:@"updatedDate"];
     }
-    
-    [[self class] registerColumn:@"creationDate"];
-    [[self class] registerColumn:@"savedDate"];
-    [[self class] registerColumn:@"updatedDate"];
+}
+
+-(void)upgrade {
+    //This made me lol
+    if ([self class] != [RCMigrationAssistant class]){
+        //Boilerplate shit
+        RCInternals* internal = [RCInternals instance];
+        NSString *key = NSStringFromClass( [self class] );
+        __block NSString* tableName = [self tableName];
+        
+        
+        //Run all of the migrations that we can
+        __block unsigned int failed = NO;
+        __block unsigned int migrationID = 1;
+        
+        
+        //Cache a copy of our schema
+        NSMutableDictionary* removedColumns = [[internal.schemaData objectForKey:key] mutableCopy];
+        
+        RCCriteria* _criteria = [[RCCriteria alloc] init];
+        [_criteria setLimit:1];
+        [_criteria orderByDesc:@"version"];
+        [_criteria addCondition:@"table" is:RCEqualTo to: [self tableName]];
+        
+        __block RCMigrationAssistant* latestAssistant = nil;
+        [[RCMigrationAssistant allRecordsWithCriteria:_criteria] execute:^(RCMigrationAssistant* row){
+            latestAssistant = row;
+        } finished:^(BOOL error){
+            
+            
+            if (latestAssistant){
+                migrationID = [latestAssistant.version intValue];
+            }
+            
+            id tmp = [[[self class] alloc] init];
+            while (!failed){
+                migrationID++;
+                SEL migrationFunction = NSSelectorFromString([NSString stringWithFormat:@"migrateToVersion_%i",migrationID]);
+                if ([tmp respondsToSelector:migrationFunction]){
+                    failed = !((BOOL)[tmp performSelector:migrationFunction]);
+                }else{
+                    if (RCACTIVERECORDLOGGING){ NSLog(@"RCActiveRecord: Failed to upgrade to %i", migrationID); }
+                    migrationID--;
+                    failed = true;
+                }
+            }
+            
+            //Run a diff tool over the results to know what is new and what is old
+            NSMutableDictionary* newColumns = [[internal.schemaData objectForKey:key] mutableCopy];
+            //    NSArray* tmpColumns = [newColumns allKeys];
+            
+            for (NSString* key in [removedColumns allKeys]) {
+                [newColumns removeObjectForKey:key];
+            }
+            
+            //    for (NSString* key in tmpColumns) {
+            //        [removedColumns removeObjectForKey:key];
+            //    }
+            
+            
+            [internal.internalQueue inDatabase:^(FMDatabase *db) {
+                for (NSString* newColumn in newColumns) {
+                    NSString* query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD COLUMN %@", tableName , newColumn];
+                    [db executeQuery:query];
+                }
+                
+            }];
+            /*
+             LOL DROPPING TABLES:
+             
+             BEGIN TRANSACTION;
+             CREATE TEMPORARY TABLE t1_backup(a,b);
+             INSERT INTO t1_backup SELECT a,b FROM t1;
+             DROP TABLE t1;
+             CREATE TABLE t1(a,b);
+             INSERT INTO t1 SELECT a,b FROM t1_backup;
+             DROP TABLE t1_backup;
+             COMMIT;
+             
+             */
+            
+            
+            if (!latestAssistant){
+                latestAssistant = [RCMigrationAssistant model];
+            }
+            latestAssistant.table = tableName;
+            latestAssistant.version = @(migrationID);
+            [latestAssistant saveRecord];
+            
+        }];
+    }
 }
 
 -(void)defaultValues{
@@ -51,8 +143,11 @@
 +(id)model{
     id model = [[self class] alloc];
     [model defaultValues];
-    [model schema];
-    
+    if ([[self class] hasSchemaDeclared] == NO){
+        [model schema];
+        [model upgrade];
+        [[model class] generateSchema:NO];
+    }
     return model;
 }
 
@@ -84,7 +179,7 @@
     }
     
     [criteria setLimit:1];
-    NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
+    NSString* query = [NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@;", [self tableName], [criteria generateWhereClause] ];
     if (RCACTIVERECORDLOGGING) { NSLog(@"RCActiveRecord: Query: %@", query); }
     RCInternals* internal = [RCInternals instance];
     return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.internalQueue andQuery:query andActiveRecordClass: [self class]];
@@ -96,21 +191,21 @@
         [criteria addCondition:attributeName is:RCEqualTo to: [NSString stringWithFormat:@"%@",value]];
     }
     
-    NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [self tableName], [criteria generateWhereClause] ];
+    NSString* query = [NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@;", [self tableName], [criteria generateWhereClause] ];
     if (RCACTIVERECORDLOGGING) { NSLog(@"RCActiveRecord: Query: %@", query); }
     RCInternals* internal = [RCInternals instance];
     return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.internalQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
 +(RCResultSet*)allRecords{
-    NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@;", [[self model] tableName] ];
+    NSString* query = [NSString stringWithFormat:@"SELECT * FROM `%@`;", [[self model] tableName] ];
     if (RCACTIVERECORDLOGGING) { NSLog(@"RCActiveRecord: Query: %@", query); }
     RCInternals* internal = [RCInternals instance];
     return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.internalQueue andQuery:query andActiveRecordClass: [self class]];
 }
 
 +(RCResultSet*)allRecordsWithCriteria:(RCCriteria*)criteria{
-    NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@;", [[self model] tableName], [criteria generateWhereClause] ];
+    NSString* query = [NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@;", [[self model] tableName], [criteria generateWhereClause] ];
     if (RCACTIVERECORDLOGGING) { NSLog(@"RCActiveRecord: Query: %@", query); }
     RCInternals* internal = [RCInternals instance];
     return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.internalQueue andQuery:query andActiveRecordClass: [self class]];
@@ -152,7 +247,6 @@
     if ([json isKindOfClass:[NSDictionary class]]) {
         id model = [[self class] alloc];
         [model defaultValues];
-        [model schema];
         for( NSString *aKey in json ) {
             NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[aKey substringToIndex:1] uppercaseString],[aKey substringFromIndex:1]];
             id value = [json objectForKey:aKey];
@@ -225,7 +319,7 @@
     
     RCDataCoder* coder = [RCDataCoder sharedSingleton];
     for (NSString* columnName in [schema copy]) {
-        [columns appendFormat:@"%@, ", columnName];
+        [columns appendFormat:@"`%@`, ", columnName];
         [data appendFormat:@"\"%@\", ", [coder encode: [self performSelector: NSSelectorFromString(columnName)]] ];
     }
     
@@ -233,7 +327,7 @@
         columns = [[columns substringToIndex:columns.length-2] mutableCopy]; //Remove the extra ", "
         data = [[data substringToIndex:data.length-2] mutableCopy]; //Remove the extra ", "
         
-        __block NSString* query = [NSString stringWithFormat:@"INSERT INTO %@ (%@)VALUES (%@)", [self tableName], columns, data];
+        __block NSString* query = [NSString stringWithFormat:@"INSERT INTO `%@` (%@)VALUES (%@)", [self tableName], columns, data];
         if (RCACTIVERECORDLOGGING) { NSLog(@"RCActiveRecord: Query: %@", query); }
         
         [internal.internalQueue inDatabase:^(FMDatabase *db) {
@@ -265,7 +359,7 @@
         }
         if ([updateData isEqualToString:@""] == FALSE) {
             updateData = [[updateData substringToIndex:updateData.length-2] mutableCopy];
-            __block NSString* query = [NSString stringWithFormat:@"UPDATE %@ SET %@ WHERE `%@`=\"%@\";", [self tableName], updateData,[self primaryKeyName], [self primaryKeyValue]];
+            __block NSString* query = [NSString stringWithFormat:@"UPDATE `%@` SET %@ WHERE `%@`=\"%@\";", [self tableName], updateData,[self primaryKeyName], [self primaryKeyValue]];
             if (RCACTIVERECORDLOGGING) { NSLog(@"RCActiveRecord: Query: %@", query); }
             
             [internal.internalQueue inDatabase:^(FMDatabase *db) {
@@ -305,6 +399,7 @@
 
 // TODO: Refactor 1/2
 +(BOOL)generateSchema: (BOOL)force{
+    __block BOOL success = YES;
     [[self class] generateDefaultCoders];
     
     if (RCACTIVERECORDLOGGING) { NSLog(@"RCActiveRecord: Generating schema for table: %@",[[self alloc] tableName]); }
@@ -320,7 +415,7 @@
         [columnData appendFormat:@"%@ INTEGER PRIMARY KEY %@", [obj primaryKeyName], ([[obj primaryKeyName] isEqualToString:@"_id"] ? @"AUTOINCREMENT" : @"")];
         for (NSString* columnName in schema) {
             NSDictionary* columnSchema = [schema objectForKey:columnName];
-            [columnData appendFormat:@", %@ %@", columnName, [obj objCDataTypeToSQLiteDataType: [columnSchema objectForKey:@"type"] ] ];
+            [columnData appendFormat:@", `%@` %@", columnName, [obj objCDataTypeToSQLiteDataType: [columnSchema objectForKey:@"type"] ] ];
         }
         if (force) {
             [[self class] dropTable];
@@ -331,13 +426,14 @@
             
             if (![db executeUpdate: query]) {
                 if ([db lastErrorCode] != 0) {
+                    success = NO;
                     NSLog(@"RCActiveRecord: FMDB Error: %d: %@ Query: %@", [db lastErrorCode], [db lastErrorMessage], query);
                 }
             }
         }];
         
     }
-    return YES;
+    return success;
 }
 
 +(void)generateDefaultCoders {
@@ -384,11 +480,12 @@
 
 +(BOOL)dropTable{
     id obj = [[self alloc] init];
+    __weak id weakobj = obj;
     
     RCInternals* internal = [RCInternals instance];
     [internal.schemaIsDefined removeObjectForKey:[obj tableName]];
     [internal.internalQueue inDatabase:^(FMDatabase *db) {
-        NSString* query = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;", [obj tableName]];
+        NSString* query = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;", [weakobj tableName]];
         if (RCACTIVERECORDLOGGING) { NSLog(@"RCActiveRecord: Running: %@",query); }
         [db executeUpdate: query];
     }];
@@ -405,14 +502,39 @@
     }
     id obj = [[self alloc] init];
     [obj defaultValues];
-    NSString* type = NSStringFromClass([[obj performSelector:NSSelectorFromString(columnName)] class]);
+    @try {
+        
+        NSString* type = NSStringFromClass([[obj performSelector:NSSelectorFromString(columnName)] class]);
+        
+        [columnData setObject:@{
+                                @"columnName" : columnName,
+                                @"type" : type                            }
+                       forKey: columnName];
+        [internal.schemaData setObject:columnData forKey:key];
+        return YES;
+    }
+    @catch (NSException* ex) {
+        NSLog(@"RCActiveRecord: This property (%@) does not exist for object", columnName);
+        return NO;
+    }
+    return NO;
+}
+
++(BOOL)deleteColumn:(NSString*)columnName{
     
-    [columnData setObject:@{
-                            @"columnName" : columnName,
-                            @"type" : type                            }
-                   forKey: columnName];
-    [internal.schemaData setObject:columnData forKey:key];
-    return YES;
+    RCInternals* internal = [RCInternals instance];
+    NSString *key = NSStringFromClass( [self class] );
+    NSMutableDictionary* columnData = [internal.schemaData objectForKey:key];
+    if (columnData == nil){
+        columnData = [[NSMutableDictionary alloc] init];
+    }
+    
+    if ([columnData objectForKey:columnName] != nil){
+        [columnData removeObjectForKey:columnName];
+        [internal.schemaData setObject:columnData forKey:key];
+        return YES;
+    }
+    return NO;
 }
 
 +(void)preloadModels:(BOOL)preload{
