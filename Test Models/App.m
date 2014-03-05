@@ -36,7 +36,6 @@
         [App registerColumn:@"files"];
         [App registerColumn:@"settings"];
         [App registerColumn:@"owner"];
-        [App generateSchema:NO]; // If you use "YES" here, it will DROP the table and re-create the table in SQLite.
     }
 }
 

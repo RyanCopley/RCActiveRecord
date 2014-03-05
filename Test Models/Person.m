@@ -32,7 +32,6 @@
         [Person registerColumn:@"address"];
         [Person registerColumn:@"age"];
         [Person registerColumn:@"ip"];
-        [Person generateSchema:NO]; // If you use "YES" here, it will DROP the table and re-create the table in SQLite.
     }
 }
 

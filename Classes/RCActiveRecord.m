@@ -37,6 +37,7 @@
     [[self class] registerColumn:@"creationDate"];
     [[self class] registerColumn:@"savedDate"];
     [[self class] registerColumn:@"updatedDate"];
+    [[self class] generateSchema:NO];
 }
 
 -(void)defaultValues{
