@@ -10,17 +10,12 @@
 
 @implementation Person
 
-@synthesize name;
-@synthesize address;
-@synthesize age;
-@synthesize ip;
-@synthesize md5,version;
-@synthesize sha1;
+@synthesize name, address, age, ip, md5, version, sha1;
 
 -(void)defaultValues{
     [super defaultValues];
     name = @"";
-    address = [@"" mutableCopy];
+    address = @"";
     age = @(0);
     ip = @"";
     version = @(1.0f);

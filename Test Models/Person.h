@@ -12,7 +12,7 @@
 
 @property (strong, nonatomic) NSString* name;
 @property (strong, nonatomic) NSString* ip;
-@property (strong, nonatomic) NSMutableString* address;
+@property (strong, nonatomic) NSString* address;
 @property (strong, nonatomic) NSNumber* age;
 @property (strong, nonatomic) NSString* md5;
 @property (strong, nonatomic) NSString* sha1;
