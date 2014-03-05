@@ -308,6 +308,7 @@
 
 // TODO: Refactor 1/2
 +(BOOL)generateSchema: (BOOL)force{
+    __block success = YES;
     [[self class] generateDefaultCoders];
     
     if (RCACTIVERECORDLOGGING) { NSLog(@"RCActiveRecord: Generating schema for table: %@",[[self alloc] tableName]); }
@@ -323,7 +324,7 @@
         [columnData appendFormat:@"%@ INTEGER PRIMARY KEY %@", [obj primaryKeyName], ([[obj primaryKeyName] isEqualToString:@"_id"] ? @"AUTOINCREMENT" : @"")];
         for (NSString* columnName in schema) {
             NSDictionary* columnSchema = [schema objectForKey:columnName];
-            [columnData appendFormat:@", %@ %@", columnName, [obj objCDataTypeToSQLiteDataType: [columnSchema objectForKey:@"type"] ] ];
+            [columnData appendFormat:@", `%@` %@", columnName, [obj objCDataTypeToSQLiteDataType: [columnSchema objectForKey:@"type"] ] ];
         }
         if (force) {
             [[self class] dropTable];
@@ -334,13 +335,14 @@
             
             if (![db executeUpdate: query]) {
                 if ([db lastErrorCode] != 0) {
+                    success = NO;
                     NSLog(@"RCActiveRecord: FMDB Error: %d: %@ Query: %@", [db lastErrorCode], [db lastErrorMessage], query);
                 }
             }
         }];
         
     }
-    return YES;
+    return success;
 }
 
 +(void)generateDefaultCoders {
