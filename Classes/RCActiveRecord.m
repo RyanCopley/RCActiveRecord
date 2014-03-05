@@ -308,7 +308,7 @@
 
 // TODO: Refactor 1/2
 +(BOOL)generateSchema: (BOOL)force{
-    __block success = YES;
+    __block BOOL success = YES;
     [[self class] generateDefaultCoders];
     
     if (RCACTIVERECORDLOGGING) { NSLog(@"RCActiveRecord: Generating schema for table: %@",[[self alloc] tableName]); }
