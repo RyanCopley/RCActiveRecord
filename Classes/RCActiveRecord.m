@@ -25,18 +25,18 @@
 
 -(void)schema{
     if ([[self class] hasSchemaDeclared] == NO){
-    RCInternals* internal = [RCInternals instance];
-    
-    NSString *key = NSStringFromClass( [self class] );
-    if ([internal.primaryKeys objectForKey:key] == nil ) {
-        [internal.primaryKeys setObject:@"_id" forKey:key]; /* default */
-        [internal.schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
-        [internal.linkShouldPreload setObject: @(1) forKey:key]; /* preload enabled */
-    }
+        RCInternals* internal = [RCInternals instance];
+        
+        NSString *key = NSStringFromClass( [self class] );
+        if ([internal.primaryKeys objectForKey:key] == nil ) {
+            [internal.primaryKeys setObject:@"_id" forKey:key]; /* default */
+            [internal.schemaData setObject: [@{} mutableCopy] forKey:key]; /* empty */
+            [internal.linkShouldPreload setObject: @(1) forKey:key]; /* preload enabled */
+        }
         [[self class] registerColumn:@"creationDate"];
         [[self class] registerColumn:@"savedDate"];
         [[self class] registerColumn:@"updatedDate"];
-        [[self class] generateSchema:NO];
+        
     }
 }
 
@@ -54,6 +54,7 @@
     [model defaultValues];
     if ([[self class] hasSchemaDeclared] == NO){
         [model schema];
+        [[model class] generateSchema:NO];
     }
     return model;
 }

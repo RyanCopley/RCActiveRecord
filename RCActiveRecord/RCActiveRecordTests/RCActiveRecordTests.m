@@ -10,6 +10,8 @@
 #import "Person.h"
 #import "App.h"
 
+#import "RCMigrationAssistant.h"
+
 #define testsize 100
 
 @implementation RCActiveRecordTests
@@ -17,6 +19,8 @@
 -(void)setUp {
     [super setUp];
     [Person model];
+    
+    [RCMigrationAssistant model]; //Kickstart off the migration assistant
 }
 
 -(void)tearDown {
