@@ -14,5 +14,7 @@
 @property (strong, nonatomic) NSString* ip;
 @property (strong, nonatomic) NSMutableString* address;
 @property (strong, nonatomic) NSNumber* age;
+@property (strong, nonatomic) NSString* md5;
+@property (strong, nonatomic) NSNumber* version;
 
 @end

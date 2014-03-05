@@ -471,6 +471,8 @@
     while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
+    
+    
     STAssertTrue(recordCount == 3, @"Results were not ordered correctly.");
 }
 
@@ -530,7 +532,6 @@
     
     STAssertTrue([[obj objectForKey:@"_id"] isEqual:@(-1)], @"_id should be -1 from JSON");
     STAssertTrue([[obj objectForKey:@"address"] isEqualToString:p.address], @"address should be supplied from JSON");
-    STAssertTrue([[obj objectForKey:@"ip"] isEqualToString:@"localhost"], @"ip should be supplied from JSON");
     STAssertTrue([[obj objectForKey:@"age"] isEqual:@(100)], @"age should be 0 from JSON");
 }
 
