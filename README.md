@@ -6,6 +6,19 @@ Inspired by the Yii CActiveRecord (PHP) and Mongoose ORM (Node.JS). Shout out to
 
 RCActiveRecord is designed to reduce boilerplate code for defining completely serializable and savable models. All the extra "fluff" features are designed to be out of the way unless you explicetly need them. Overall, I would like to say this is a fairly robust library.
 
+
+### install via CocoaPods
+```ruby
+pod 'RCActiveRecord'
+```
+
+## Requirements
+
+- Xcode4 and above
+- iOS 6.0 or above
+
+## How to get started
+
 Need to define a model quickly? 
 
 ![Basic Model](http://cl.ly/image/0Q0W070Z1O2G/Screen%20Shot%202014-03-04%20at%2011.19.56%20PM.png "Basic Model")
