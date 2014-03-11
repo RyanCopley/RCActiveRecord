@@ -13,8 +13,6 @@
 #import "RCMigrationAssistant.h"
 
 #define RCACTIVERECORDLOGGING 0
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
 @implementation RCActiveRecord
 
@@ -77,7 +75,11 @@
                 migrationID++;
                 SEL migrationFunction = NSSelectorFromString([NSString stringWithFormat:@"migrateToVersion_%i",migrationID]);
                 if ([tmp respondsToSelector:migrationFunction]){
+                    
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
                     failed = !((BOOL)[tmp performSelector:migrationFunction]);
+#pragma clang diagnostic pop
                 }else{
                     if (RCACTIVERECORDLOGGING){ NSLog(@"RCActiveRecord: Failed to upgrade to %i", migrationID); }
                     migrationID--;
@@ -219,7 +221,11 @@
     RCInternals* internal = [RCInternals instance];
     NSMutableDictionary* columnData = [internal.schemaData objectForKey:key];
     for (NSString* key in columnData) {
+        
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         id value = [self performSelector:NSSelectorFromString(key)];
+#pragma clang diagnostic pop
         if ([value isKindOfClass:[RCActiveRecord class]] == NO) {
             [dict setValue: value forKey: key];
         }else{
@@ -251,7 +257,10 @@
             NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[aKey substringToIndex:1] uppercaseString],[aKey substringFromIndex:1]];
             id value = [json objectForKey:aKey];
             @try {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
                 [model performSelector: NSSelectorFromString(setConversion) withObject: value];
+#pragma clang diagnostic pop
             }
             @catch (NSException* e) {
                 NSLog(@"RCActiveRecord: This object (%@)is not properly synthesized for the JSON Dictionary provided (Invalid setter). Unable to set: %@. Dictionary provided: %@", NSStringFromClass([model class]), aKey, json);
@@ -267,7 +276,10 @@
         }
         NSNumber * myNumber = [f numberFromString:value];
         @try {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
             [model performSelector: NSSelectorFromString(setConversion)withObject: myNumber];
+#pragma clang diagnostic pop
         }
         @catch (NSException* e) {
             NSLog(@"RCActiveRecord: This object (%@)is not properly synthesized for the JSON Dictionary provided (Invalid setter). Unable to set: %@. Dictionary provided: %@", NSStringFromClass([model class]), aKey, json);
@@ -320,7 +332,10 @@
     RCDataCoder* coder = [RCDataCoder sharedSingleton];
     for (NSString* columnName in [schema copy]) {
         [columns appendFormat:@"`%@`, ", columnName];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         [data appendFormat:@"\"%@\", ", [coder encode: [self performSelector: NSSelectorFromString(columnName)]] ];
+#pragma clang diagnostic pop
     }
     
     if ([columns isEqualToString:@""] == FALSE && [data isEqualToString:@""] == FALSE) {
@@ -334,7 +349,10 @@
             success = [db executeUpdate: query];
             NSString* setConversion = [NSString stringWithFormat:@"set%@%@:", [[[self primaryKeyName] substringToIndex:1] uppercaseString],[[self primaryKeyName] substringFromIndex:1]];
             @try {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
                 [self performSelector: NSSelectorFromString(setConversion)withObject: @([db lastInsertRowId])];
+#pragma clang diagnostic pop
             }
             @catch (NSException* e) {
                 NSLog(@"RCActiveRecord: %@ object is not properly synthesized. Unable to set: %@", NSStringFromClass([self class]), [self primaryKeyName]);
@@ -355,7 +373,10 @@
         NSMutableString* updateData = [[NSMutableString alloc] init];
         RCDataCoder* coder = [RCDataCoder sharedSingleton];
         for (NSString* columnName in schema) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
             [updateData appendFormat:@"`%@`=\"%@\", ", columnName,[coder encode: [self performSelector: NSSelectorFromString(columnName)]] ];
+#pragma clang diagnostic pop
         }
         if ([updateData isEqualToString:@""] == FALSE) {
             updateData = [[updateData substringToIndex:updateData.length-2] mutableCopy];
@@ -504,8 +525,11 @@
     [obj defaultValues];
     @try {
         
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         NSString* type = NSStringFromClass([[obj performSelector:NSSelectorFromString(columnName)] class]);
         
+#pragma clang diagnostic pop
         [columnData setObject:@{
                                 @"columnName" : columnName,
                                 @"type" : type                            }
@@ -561,7 +585,10 @@
 }
 
 -(NSNumber*)primaryKeyValue {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
     return [self performSelector:NSSelectorFromString([self primaryKeyName])];
+#pragma clang diagnostic pop
 }
 
 -(NSString*)tableName{
@@ -587,4 +614,3 @@
 
 @end
 
-#pragma clang diagnostic pop
