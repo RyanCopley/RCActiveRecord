@@ -46,13 +46,6 @@
         NSString *key = NSStringFromClass( [self class] );
         __block NSString* tableName = [self tableName];
         
-        
-        //Run all of the migrations that we can
-        __block unsigned int failed = NO;
-        __block unsigned int migrationID = 1;
-        
-        
-        
         RCCriteria* _criteria = [[RCCriteria alloc] init];
         [_criteria setLimit:1];
         [_criteria orderByDesc:@"version"];
@@ -63,6 +56,9 @@
             latestAssistant = row;
         } finished:^(BOOL error){
             
+            //Run all of the migrations that we can
+            unsigned int failed = NO;
+            unsigned int migrationID = 0;
             
             //Cache a copy of our schema
             NSMutableDictionary* removedColumns = nil;
@@ -93,7 +89,7 @@
                     failed = true;
                 }
             }
-            
+            if (removedColumns){
             //Run a diff tool over the results to know what is new and what is old
             NSMutableDictionary* newColumns = [[internal.schemaData objectForKey:key] mutableCopy];
             //    NSArray* tmpColumns = [newColumns allKeys];
@@ -128,6 +124,7 @@
              
              */
             
+            }
             
             if (!latestAssistant){
                 latestAssistant = [RCMigrationAssistant model];
