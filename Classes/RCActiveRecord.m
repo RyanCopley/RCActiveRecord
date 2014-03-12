@@ -52,8 +52,6 @@
         __block unsigned int migrationID = 1;
         
         
-        //Cache a copy of our schema
-        NSMutableDictionary* removedColumns = [[internal.schemaData objectForKey:key] mutableCopy];
         
         RCCriteria* _criteria = [[RCCriteria alloc] init];
         [_criteria setLimit:1];
@@ -66,13 +64,20 @@
         } finished:^(BOOL error){
             
             
+            //Cache a copy of our schema
+            NSMutableDictionary* removedColumns = nil;
+            
+            int untouchedMigrationID = -1;
             if (latestAssistant){
-                migrationID = [latestAssistant.version intValue];
+                untouchedMigrationID = [latestAssistant.version intValue];
             }
             
             id tmp = [[[self class] alloc] init];
             while (!failed){
                 migrationID++;
+                if (migrationID > untouchedMigrationID){
+                    removedColumns = [[internal.schemaData objectForKey:key] mutableCopy];
+                }
                 SEL migrationFunction = NSSelectorFromString([NSString stringWithFormat:@"migrateToVersion_%i",migrationID]);
                 if ([tmp respondsToSelector:migrationFunction]){
                     
@@ -80,6 +85,8 @@
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
                     failed = !((BOOL)[tmp performSelector:migrationFunction]);
 #pragma clang diagnostic pop
+                    
+                    
                 }else{
                     if (RCACTIVERECORDLOGGING){ NSLog(@"RCActiveRecord: Failed to upgrade to %i", migrationID); }
                     migrationID--;
