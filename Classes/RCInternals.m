@@ -15,30 +15,32 @@
 static RCInternals *gInstance = NULL;
 
 + (RCInternals *)instance {
-    @synchronized(self) {
-        if (gInstance == NULL) {
-            gInstance = [[self alloc] init];
-            [gInstance instantiate];
-        }
-    }
-    
-    return(gInstance);
+	@synchronized(self)
+	{
+		if (gInstance == NULL) {
+			gInstance = [[self alloc] init];
+			[gInstance instantiate];
+		}
+	}
+
+	return(gInstance);
 }
 
--(void) instantiate {
-    if (primaryKeys == nil) {
-        primaryKeys = [[NSMutableDictionary alloc] init];
-        schemaData = [[NSMutableDictionary alloc] init];
-        linkShouldPreload = [[NSMutableDictionary alloc] init];
-        inTransaction = NO;
-    }
-    
-    if (!internalQueue) {
-        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        NSString *documentsDirectory = [paths objectAtIndex:0];
-        NSString* dbPath =  [NSString stringWithFormat:@"%@/db.sqlite",documentsDirectory];
-        internalQueue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-        schemaIsDefined = [[NSMutableDictionary alloc] init];
-    }
+- (void)instantiate {
+	if (primaryKeys == nil) {
+		primaryKeys = [[NSMutableDictionary alloc] init];
+		schemaData = [[NSMutableDictionary alloc] init];
+		linkShouldPreload = [[NSMutableDictionary alloc] init];
+		inTransaction = NO;
+	}
+
+	if (!internalQueue) {
+		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+		NSString *documentsDirectory = [paths objectAtIndex:0];
+		NSString *dbPath =  [NSString stringWithFormat:@"%@/db.sqlite", documentsDirectory];
+		internalQueue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+		schemaIsDefined = [[NSMutableDictionary alloc] init];
+	}
 }
+
 @end

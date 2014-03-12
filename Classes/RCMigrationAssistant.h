@@ -10,7 +10,7 @@
 
 @interface RCMigrationAssistant : RCActiveRecord
 
-@property (nonatomic, strong) NSString* table;
-@property (nonatomic, strong) NSNumber* version;
+@property (nonatomic, strong) NSString *table;
+@property (nonatomic, strong) NSNumber *version;
 
 @end
