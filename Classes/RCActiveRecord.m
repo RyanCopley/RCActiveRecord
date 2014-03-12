@@ -95,31 +95,13 @@
 		        for (NSString * key in[removedColumns allKeys]) {
 		            [newColumns removeObjectForKey:key];
 				}
-
-		        //    for (NSString* key in tmpColumns) {
-		        //        [removedColumns removeObjectForKey:key];
-		        //    }
-
+                
 		        [internal.internalQueue inDatabase: ^(FMDatabase *db) {
 		            for (NSString * newColumn in newColumns) {
 		                NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD COLUMN %@", tableName, newColumn];
 		                [db executeQuery:query];
 					}
 				}];
-
-		        /*
-		           LOL DROPPING TABLES:
-
-		           BEGIN TRANSACTION;
-		           CREATE TEMPORARY TABLE t1_backup(a,b);
-		           INSERT INTO t1_backup SELECT a,b FROM t1;
-		           DROP TABLE t1;
-		           CREATE TABLE t1(a,b);
-		           INSERT INTO t1 SELECT a,b FROM t1_backup;
-		           DROP TABLE t1_backup;
-		           COMMIT;
-
-		         */
 			}
 
 		    //Make sure we know where to migrate from later on

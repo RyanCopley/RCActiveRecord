@@ -134,7 +134,6 @@
 				4E2936C017BB3CF20088B96B /* fmdb */,
 				4E29369217BB3CDF0088B96B /* Supporting Files */,
 				4E2936AF17BB3CE00088B96B /* RCActiveRecordTests */,
-				4E29368A17BB3CDF0088B96B /* Frameworks */,
 				4E29368917BB3CDF0088B96B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -158,6 +157,7 @@
 				4E2936A917BB3CE00088B96B /* SenTestingKit.framework */,
 			);
 			name = Frameworks;
+			path = ..;
 			sourceTree = "<group>";
 		};
 		4E29369117BB3CDF0088B96B /* RCActiveRecord */ = {
@@ -172,6 +172,7 @@
 		4E29369217BB3CDF0088B96B /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				4E29368A17BB3CDF0088B96B /* Frameworks */,
 				4E29369A17BB3CDF0088B96B /* RCAppDelegate.h */,
 				4E29369B17BB3CDF0088B96B /* RCAppDelegate.m */,
 				4E29369317BB3CDF0088B96B /* RCActiveRecord-Info.plist */,
