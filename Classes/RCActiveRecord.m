@@ -263,21 +263,10 @@
 		id model = [[self class] alloc];
 		[model defaultValues];
 		for (NSString *aKey in json) {
-			NSString *setConversion = [NSString stringWithFormat:@"set%@%@:", [[aKey substringToIndex:1] uppercaseString], [aKey substringFromIndex:1]];
 			id value = [json objectForKey:aKey];
-			@try {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-				[model performSelector:NSSelectorFromString(setConversion) withObject:value];
-#pragma clang diagnostic pop
-			}
-			@catch (NSException *e)
-			{
-				NSLog(@"RCActiveRecord: This object (%@)is not properly synthesized for the JSON Dictionary provided (Invalid setter). Unable to set: %@. Dictionary provided: %@", NSStringFromClass([model class]), aKey, json);
-			}
+            [model setProperty:aKey toValue:value];
 		}
 		NSString *aKey = [model primaryKeyName];
-		NSString *setConversion = [NSString stringWithFormat:@"set%@%@:", [[aKey substringToIndex:1] uppercaseString], [aKey substringFromIndex:1]];
 		NSString *value = [json objectForKey:aKey];
 		static NSNumberFormatter *f = nil;
 		if (f == nil) {
@@ -285,16 +274,9 @@
 			[f setNumberStyle:NSNumberFormatterDecimalStyle];
 		}
 		NSNumber *myNumber = [f numberFromString:value];
-		@try {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-			[model performSelector:NSSelectorFromString(setConversion) withObject:myNumber];
-#pragma clang diagnostic pop
-		}
-		@catch (NSException *e)
-		{
-			NSLog(@"RCActiveRecord: This object (%@)is not properly synthesized for the JSON Dictionary provided (Invalid setter). Unable to set: %@. Dictionary provided: %@", NSStringFromClass([model class]), aKey, json);
-		}
+        
+        [model setProperty:aKey toValue:myNumber];
+
 		return model;
 	}
 	return nil;
@@ -360,17 +342,9 @@
 
 		[internal.internalQueue inDatabase: ^(FMDatabase *db) {
 		    success = [db executeUpdate:query];
-		    NSString *setConversion = [NSString stringWithFormat:@"set%@%@:", [[[self primaryKeyName] substringToIndex:1] uppercaseString], [[self primaryKeyName] substringFromIndex:1]];
-		    @try {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-		        [self performSelector:NSSelectorFromString(setConversion) withObject:@([db lastInsertRowId])];
-#pragma clang diagnostic pop
-			}
-		    @catch (NSException *e)
-		    {
-		        NSLog(@"RCActiveRecord: %@ object is not properly synthesized. Unable to set: %@", NSStringFromClass([self class]), [self primaryKeyName]);
-			}
+            
+            [self setProperty:[self primaryKeyName] toValue:@([db lastInsertRowId])];
+            
 		}];
 	}
 	return success;
@@ -625,6 +599,23 @@
 }
 
 //Internal
+
+
+-(void) setProperty:(NSString*)prop toValue:(id)value{
+    NSString *setConversion = [NSString stringWithFormat:@"set%@%@:", [[prop substringToIndex:1] uppercaseString], [prop substringFromIndex:1]];
+    @try {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+        [self performSelector:NSSelectorFromString(setConversion) withObject:value];
+#pragma clang diagnostic pop
+    }
+    @catch (NSException *e)
+    {
+        NSLog(@"RCActiveRecord: %@ object is not properly synthesized. Unable to set: %@", NSStringFromClass([self class]), prop);
+    }
+}
+
+
 // TODO: Refactor
 - (NSString *)objCDataTypeToSQLiteDataType:(NSString *)dataTypeStrRepresentation {
 	if ([dataTypeStrRepresentation isEqualToString:@"__NSCFConstantString"]) {
