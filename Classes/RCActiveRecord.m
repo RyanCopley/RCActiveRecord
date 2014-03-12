@@ -213,10 +213,7 @@
 	RCInternals *internal = [RCInternals instance];
 	NSMutableDictionary *columnData = [internal.schemaData objectForKey:key];
 	for (NSString *key in columnData) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-		id value = [self performSelector:NSSelectorFromString(key)];
-#pragma clang diagnostic pop
+		id value = [self getProperty:key];
 		if ([value isKindOfClass:[RCActiveRecord class]] == NO) {
 			[dict setValue:value forKey:key];
 		}
@@ -505,11 +502,7 @@
 	id obj = [[self alloc] init];
 	[obj defaultValues];
 	@try {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-		NSString *type = NSStringFromClass([[obj performSelector:NSSelectorFromString(columnName)] class]);
-
-#pragma clang diagnostic pop
+		NSString *type = NSStringFromClass([[obj getProperty:columnName] class]);
 		[columnData setObject:@{
 		     @"columnName" : columnName,
 		     @"type" : type
@@ -566,10 +559,7 @@
 }
 
 - (NSNumber *)primaryKeyValue {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-	return [self performSelector:NSSelectorFromString([self primaryKeyName])];
-#pragma clang diagnostic pop
+    return [self getProperty:[self primaryKeyName]];
 }
 
 - (NSString *)tableName {
@@ -595,6 +585,14 @@
     {
         NSLog(@"RCActiveRecord: %@ object is not properly synthesized. Unable to set: %@", NSStringFromClass([self class]), prop);
     }
+}
+
+-(id) getProperty:(NSString*)prop {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+    return [self performSelector:NSSelectorFromString(prop)];
+#pragma clang diagnostic pop
+    
 }
 
 
