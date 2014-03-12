@@ -41,9 +41,6 @@
 -(void)upgrade {
     //This made me lol
     if ([self class] != [RCMigrationAssistant class]){
-        //Boilerplate shit
-        RCInternals* internal = [RCInternals instance];
-        NSString *key = NSStringFromClass( [self class] );
         __block NSString* tableName = [self tableName];
         
         RCCriteria* _criteria = [[RCCriteria alloc] init];
@@ -55,6 +52,10 @@
         [[RCMigrationAssistant allRecordsWithCriteria:_criteria] execute:^(RCMigrationAssistant* row){
             latestAssistant = row;
         } finished:^(BOOL error){
+            int untouchedMigrationID = -1;
+            if (latestAssistant){
+                untouchedMigrationID = [latestAssistant.version intValue];
+            }
             
             //Run all of the migrations that we can
             unsigned int failed = NO;
@@ -63,69 +64,64 @@
             //Cache a copy of our schema
             NSMutableDictionary* removedColumns = nil;
             
-            int untouchedMigrationID = -1;
-            if (latestAssistant){
-                untouchedMigrationID = [latestAssistant.version intValue];
-            }
-            
+            NSString *key = NSStringFromClass( [self class] );
+            RCInternals* internal = [RCInternals instance];
             id tmp = [[[self class] alloc] init];
             while (!failed){
                 migrationID++;
                 if (migrationID > untouchedMigrationID){
                     removedColumns = [[internal.schemaData objectForKey:key] mutableCopy];
                 }
+                
                 SEL migrationFunction = NSSelectorFromString([NSString stringWithFormat:@"migrateToVersion_%i",migrationID]);
                 if ([tmp respondsToSelector:migrationFunction]){
-                    
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
                     failed = !((BOOL)[tmp performSelector:migrationFunction]);
 #pragma clang diagnostic pop
-                    
-                    
                 }else{
                     if (RCACTIVERECORDLOGGING){ NSLog(@"RCActiveRecord: Failed to upgrade to %i", migrationID); }
                     migrationID--;
                     failed = true;
                 }
             }
+            
             if (removedColumns){
-            //Run a diff tool over the results to know what is new and what is old
-            NSMutableDictionary* newColumns = [[internal.schemaData objectForKey:key] mutableCopy];
-            //    NSArray* tmpColumns = [newColumns allKeys];
-            
-            for (NSString* key in [removedColumns allKeys]) {
-                [newColumns removeObjectForKey:key];
-            }
-            
-            //    for (NSString* key in tmpColumns) {
-            //        [removedColumns removeObjectForKey:key];
-            //    }
-            
-            
-            [internal.internalQueue inDatabase:^(FMDatabase *db) {
-                for (NSString* newColumn in newColumns) {
-                    NSString* query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD COLUMN %@", tableName , newColumn];
-                    [db executeQuery:query];
+                //Run a diff tool over the results to know what is new and what is old
+                NSMutableDictionary* newColumns = [[internal.schemaData objectForKey:key] mutableCopy];
+                for (NSString* key in [removedColumns allKeys]) {
+                    [newColumns removeObjectForKey:key];
                 }
                 
-            }];
-            /*
-             LOL DROPPING TABLES:
-             
-             BEGIN TRANSACTION;
-             CREATE TEMPORARY TABLE t1_backup(a,b);
-             INSERT INTO t1_backup SELECT a,b FROM t1;
-             DROP TABLE t1;
-             CREATE TABLE t1(a,b);
-             INSERT INTO t1 SELECT a,b FROM t1_backup;
-             DROP TABLE t1_backup;
-             COMMIT;
-             
-             */
-            
+                //    for (NSString* key in tmpColumns) {
+                //        [removedColumns removeObjectForKey:key];
+                //    }
+                
+                [internal.internalQueue inDatabase:^(FMDatabase *db) {
+                    for (NSString* newColumn in newColumns) {
+                        NSString* query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD COLUMN %@", tableName , newColumn];
+                        [db executeQuery:query];
+                    }
+                    
+                }];
+                
+                /*
+                 LOL DROPPING TABLES:
+                 
+                 BEGIN TRANSACTION;
+                 CREATE TEMPORARY TABLE t1_backup(a,b);
+                 INSERT INTO t1_backup SELECT a,b FROM t1;
+                 DROP TABLE t1;
+                 CREATE TABLE t1(a,b);
+                 INSERT INTO t1 SELECT a,b FROM t1_backup;
+                 DROP TABLE t1_backup;
+                 COMMIT;
+                 
+                 */
+                
             }
             
+            //Make sure we know where to migrate from later on
             if (!latestAssistant){
                 latestAssistant = [RCMigrationAssistant model];
             }
