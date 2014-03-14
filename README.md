@@ -59,3 +59,4 @@ Features Coming Soon
 * Subclassed models
 * Better error handling
 * Prepared statements overhaul
+* JSON Mapping
