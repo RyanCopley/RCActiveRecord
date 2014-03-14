@@ -9,8 +9,9 @@ RCActiveRecord is designed to reduce boilerplate code for defining completely se
 
 ### Install via CocoaPods
 ```ruby
-pod 'RCActiveRecord'
+pod 'RCActiveRecord', '~> 2.0'
 ```
+(Or git check out 2.0.0)
 
 ## Requirements
 
