@@ -12,6 +12,10 @@
 
 @synthesize limit, offset;
 
++ (RCCriteria*) criteria {
+    return [[RCCriteria alloc] init];
+}
+
 - (id)init {
 	self = [super init];
 	if (self) {

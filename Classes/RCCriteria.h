@@ -45,5 +45,6 @@ typedef enum {
 - (void)orderByDesc:(NSString *)columnName; //Tested
 - (void)where:(NSString *)sqlWhere; //Tested //Note: The [RCCriteria where: ...] function will override ANY and ALL conditions provided. It is one or the other, not both.
 - (NSString *)generateWhereClause;
++ (RCCriteria*) criteria;
 
 @end
