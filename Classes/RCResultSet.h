@@ -18,8 +18,8 @@
 	BOOL error;
 }
 
-- (void)execute:(void (^)(id recordResult))recordCallback; //Tested
-- (void)execute:(void (^)(id recordResult))recordCallback finished:(void (^)(BOOL error))finishedCallback;  //Tested
+- (void)each:(void (^)(id recordResult))recordCallback; //Tested
+- (void)each:(void (^)(id recordResult))recordCallback finished:(void (^)(BOOL error))finishedCallback;  //Tested
 - (RCResultSet *)initWithFMDatabaseQueue:(FMDatabaseQueue *)_queue andQuery:(NSString *)query andActiveRecordClass:(Class)_ARClass; //Internal
 
 @end

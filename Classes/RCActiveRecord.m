@@ -49,7 +49,7 @@
 		[_criteria addCondition:@"table" is:RCEqualTo to:[self tableName]];
 
 		__block RCMigrationAssistant *latestAssistant = nil;
-		[[RCMigrationAssistant allRecordsWithCriteria:_criteria] execute: ^(RCMigrationAssistant *row) {
+		[[RCMigrationAssistant allRecordsWithCriteria:_criteria] each: ^(RCMigrationAssistant *row) {
 		    latestAssistant = row;
 		} finished: ^(BOOL error) {
 		    int untouchedMigrationID = -1;
@@ -449,7 +449,7 @@
 	            [numFormatter setNumberStyle:NSNumberFormatterNoStyle];
 			}
 	        __block id _record = nil;
-	        [[[type model] recordByPK:[numFormatter numberFromString:stringRepresentation]] execute: ^(id record) {
+	        [[[type model] recordByPK:[numFormatter numberFromString:stringRepresentation]] each: ^(id record) {
 	            _record = record;
 			} finished: ^(BOOL error) {
 	            waitingForBlock = NO;

@@ -17,11 +17,11 @@
 
 @implementation RCResultSet
 
-- (void)execute:(void (^) (id recordResult))recordCallback {
-	[self execute:recordCallback finished: ^(BOOL error) {}];
+- (void)each:(void (^) (id recordResult))recordCallback {
+	[self each:recordCallback finished: ^(BOOL error) {}];
 }
 
-- (void)execute:(void (^) (id recordResult))recordCallback finished:(void (^) (BOOL error))finishedCallback {
+- (void)each:(void (^) (id recordResult))recordCallback finished:(void (^) (BOOL error))finishedCallback {
 	dispatch_async(processQueue, ^{
 	    error = NO;
 	    [queue inDatabase: ^(FMDatabase *db) {

@@ -91,7 +91,7 @@
     [p updateRecord]; // Update it
     
     __block Person *tmp;
-    [[[Person model] recordsByAttribute:@"address" value:@"Address-update"] execute:^(Person *record) {
+    [[[Person model] recordsByAttribute:@"address" value:@"Address-update"] each:^(Person *record) {
         tmp = record;
     } finished:^(BOOL error) {
         waitingForBlock = NO;
@@ -164,7 +164,7 @@
     [p2 saveRecord];
     
     __block int foundRecords = 0;
-    [[Person allRecords] execute:^(Person *record) {
+    [[Person allRecords] each:^(Person *record) {
         foundRecords++;
         
         if (foundRecords == 1) {
@@ -206,7 +206,7 @@
     __block int foundRecords = 0;
     RCCriteria *criteria = [[RCCriteria alloc] init];
     [criteria addCondition:@"name" is:RCEqualTo to:@"Test"];
-    [[Person allRecordsWithCriteria:criteria] execute:^(Person *record) {
+    [[Person allRecordsWithCriteria:criteria] each:^(Person *record) {
         foundRecords++;
         
     } finished:^(BOOL error) {
@@ -243,7 +243,7 @@
     RCCriteria *criteria = [[RCCriteria alloc] init];
     [criteria addCondition:@"age" is:RCLessThan to:@(33)];
     [criteria addCondition:@"age" is:RCGreaterThan to:@(25)];
-    [[Person allRecordsWithCriteria:criteria] execute:^(Person *record) {
+    [[Person allRecordsWithCriteria:criteria] each:^(Person *record) {
         foundRecords++;
     } finished:^(BOOL error) {
         waitingForBlock = NO;
@@ -277,7 +277,7 @@
     [criteria addCondition:@"age" is:RCLessThan to:@(33)];
     [criteria addCondition:@"age" is:RCGreaterThan to:@(19)];
     [criteria setLimit:2];
-    [[Person allRecordsWithCriteria:criteria] execute:^(Person *record) {
+    [[Person allRecordsWithCriteria:criteria] each:^(Person *record) {
         foundRecords++;
     } finished:^(BOOL error) {
         waitingForBlock = NO;
@@ -317,7 +317,7 @@
     [criteria setOffset:2];
     [criteria setLimit:5];
     
-    [[Person allRecordsWithCriteria:criteria] execute:^(Person *record) {
+    [[Person allRecordsWithCriteria:criteria] each:^(Person *record) {
         recordCount++;
         
         if (recordCount == 1) {
@@ -377,7 +377,7 @@
     RCCriteria *criteria = [[RCCriteria alloc] init];
     [criteria orderByAsc:@"age"];
     
-    [[Person allRecordsWithCriteria:criteria] execute:^(Person *record) {
+    [[Person allRecordsWithCriteria:criteria] each:^(Person *record) {
         if ([record.age intValue] < pastSize) {
             error = YES;
         }
@@ -421,7 +421,7 @@
     RCCriteria *criteria = [[RCCriteria alloc] init];
     [criteria orderByDesc:@"age"];
     
-    [[Person allRecordsWithCriteria:criteria] execute:^(Person *record) {
+    [[Person allRecordsWithCriteria:criteria] each:^(Person *record) {
         if ([record.age intValue] > pastSize) {
             error = YES;
         }
@@ -462,7 +462,7 @@
     __block int recordCount = 0;
     RCCriteria *criteria = [[RCCriteria alloc] init];
     [criteria where:@"age < 30"];
-    [[Person allRecordsWithCriteria:criteria] execute:^(Person *record) {
+    [[Person allRecordsWithCriteria:criteria] each:^(Person *record) {
         recordCount++;
     } finished:^(BOOL error) {
         waitingForBlock = NO;
