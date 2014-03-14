@@ -176,7 +176,7 @@ Features
 * Full Unit Tests (And passing ... )
 * Migrations
 
-Features Coming Soon
+To-Do Laundry List
 ==========
 * Multiple database support
 * NSArray / NSDictionary Conditional Support
@@ -184,3 +184,4 @@ Features Coming Soon
 * Better error handling
 * Prepared statements overhaul
 * JSON Mapping
+* Observations
