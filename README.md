@@ -20,7 +20,7 @@ pod 'RCActiveRecord', '~> 2.0'
 
 ## How to get started
 
-Need to define a model quickly? 
+Need to define a model quickly? (You also need the appropriate .h file with the properties defined as you wish)
 
 ```Objective-C
 #import "Person.h"
