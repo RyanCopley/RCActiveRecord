@@ -29,6 +29,7 @@ Need to define a model quickly? (You also need the appropriate .h file with the 
 
 @synthesize name, address, age, ip, md5, version, sha1;
 
+//This is actually mandatory. If anyone knows how to figure out the class of a nil object, message me :)
 -(void)defaultValues{
     [super defaultValues];
     name = @"";
@@ -40,6 +41,7 @@ Need to define a model quickly? (You also need the appropriate .h file with the 
     sha1 = @"";
 }
 
+//Register your tables here. Don't worry about the data types-- It takes care of it for you!
 -(void)schema{
     [super schema];
     [Person registerColumn:@"name"];
@@ -67,7 +69,7 @@ Later on you realize you need to upgrade the database?
     age = @(0);
     ip = @"";
     version = @(1.0f);
-    md5 = @"e21b0ff3877dca5c2b3c5a37f3fa3ee4"; // Bonus points to whoever cracks this hash.
+    md5 = @"";
     sha1 = @"";
 }
 
@@ -121,7 +123,7 @@ Fetching all records is also fairly straight forward:
 Oh, so you don't want all the records, but want to define a set of criteria? There's a few ways!
 
 ```Objective-C
-RCCriteria *criteria = [[RCCriteria alloc] init];
+RCCriteria *criteria = [RCCriteria criteria];
 [criteria addCondition:@"age" is:RCLessThan to:@(33)];
 [criteria addCondition:@"age" is:RCGreaterThan to:@(25)];
 [[Person allRecordsWithCriteria:criteria] each:^(Person *record) {
