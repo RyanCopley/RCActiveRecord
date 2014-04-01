@@ -136,7 +136,7 @@ RCCriteria *criteria = [RCCriteria criteria];
 Although sometimes creating an RCCriteria object can be a bit excessive, so,
 
 ```Objective-C
-[[[Person model] recordsByAttribute:@"address" value:@"Address-update"] each:^(Person *record) {
+[[[Person model] recordsByAttribute:@"address" value:@"1 Infinite Loop"] each:^(Person *record) {
     /// ...
 } finished:^(BOOL error) {
     /// ...
