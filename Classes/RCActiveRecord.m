@@ -492,37 +492,41 @@
 	return YES;
 }
 
+
 + (BOOL)registerColumn:(NSString *)columnName {
+	id obj = [[self alloc] init];
+	[obj defaultValues];
+    return [self registerColumn:columnName ofType: [[obj getProperty:columnName] class]];
+}
+
++ (BOOL)registerColumn:(NSString *)columnName ofType:(Class) classType {
 	RCInternals *internal = [RCInternals instance];
 	NSString *key = NSStringFromClass([self class]);
 	NSMutableDictionary *columnData = [internal.schemaData objectForKey:key];
 	if (columnData == nil) {
 		columnData = [[NSMutableDictionary alloc] init];
 	}
-	id obj = [[self alloc] init];
-	[obj defaultValues];
-	@try {
-		NSString *type = NSStringFromClass([[obj getProperty:columnName] class]);
-        
-        if (type == nil){
-            NSLog(@"Variable: %@ was not initialized with a defaultValue and you did not specify a class. I can't determine what a nil object is during runtime. ", columnName);
-            return NO;
-        }
-        
-		[columnData setObject:@{
-		     @"columnName" : columnName,
-		     @"type" : type
-		 }
-		               forKey:columnName];
-		[internal.schemaData setObject:columnData forKey:key];
-		return YES;
-	}
-	@catch (NSException *ex)
-	{
-		NSLog(@"RCActiveRecord: This property (%@) does not exist for object", columnName);
-		return NO;
-	}
-	return NO;
+
+    id obj = [[self alloc] init];
+    [obj defaultValues];
+    if ([[obj getProperty:columnName] class] == nil){
+        //Hail Mary
+        [obj setProperty:columnName toValue: [[classType alloc] init]];
+    }
+    
+    NSString *type = NSStringFromClass([[obj getProperty:columnName] class]);
+    
+    if (type == nil){
+        NSLog(@"Variable: %@ was not initialized with a defaultValue and you did not specify a class. I can't determine what a nil object is during runtime. ", columnName);
+        return NO;
+    }
+    
+    // TODO: I would like a true model here instead, eventually.
+    [columnData setObject:@{ @"columnName" : columnName, @"type" : type } forKey: columnName];
+    [internal.schemaData setObject:columnData forKey:key];
+    return YES;
+    
+    
 }
 
 + (BOOL)deleteColumn:(NSString *)columnName {

@@ -55,6 +55,7 @@
 
 
 + (BOOL)hasSchemaDeclared;
++ (BOOL)registerColumn:(NSString *)columnName ofType:(Class) type;
 + (BOOL)registerColumn:(NSString *)columnName;
 + (BOOL)deleteColumn:(NSString *)columnName;
 + (BOOL)generateSchema:(BOOL)force;  //Tested
