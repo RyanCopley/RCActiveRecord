@@ -503,6 +503,12 @@
 	[obj defaultValues];
 	@try {
 		NSString *type = NSStringFromClass([[obj getProperty:columnName] class]);
+        
+        if (type == nil){
+            NSLog(@"Variable: %@ was not initialized with a defaultValue and you did not specify a class. I can't determine what a nil object is during runtime. ", columnName);
+            return NO;
+        }
+        
 		[columnData setObject:@{
 		     @"columnName" : columnName,
 		     @"type" : type
