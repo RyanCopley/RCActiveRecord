@@ -93,7 +93,7 @@
     __block Person *tmp;
     [[[Person model] recordsByAttribute:@"address" value:@"Address-update"] each:^(Person *record) {
         tmp = record;
-    } finished:^(BOOL error) {
+    } finished:^(NSInteger count, BOOL error) {
         waitingForBlock = NO;
     }];
     
@@ -174,7 +174,7 @@
         if (foundRecords == 2) {
             STAssertTrue([record.name isEqualToString:@"Test2"], @"Loading the record did not render the correct name.");
         }
-    } finished:^(BOOL error) {
+    } finished:^(NSInteger count, BOOL error) {
         STAssertFalse(error, @"An error was flagged");
         waitingForBlock = NO;
     }];
@@ -209,7 +209,7 @@
     [[Person allRecordsWithCriteria:criteria] each:^(Person *record) {
         foundRecords++;
         
-    } finished:^(BOOL error) {
+    } finished:^(NSInteger count, BOOL error) {
         waitingForBlock = NO;
     }];
     
@@ -245,7 +245,7 @@
     [criteria addCondition:@"age" is:RCGreaterThan to:@(25)];
     [[Person allRecordsWithCriteria:criteria] each:^(Person *record) {
         foundRecords++;
-    } finished:^(BOOL error) {
+    } finished:^(NSInteger count, BOOL error) {
         waitingForBlock = NO;
     }];
     
@@ -279,7 +279,7 @@
     [criteria setLimit:2];
     [[Person allRecordsWithCriteria:criteria] each:^(Person *record) {
         foundRecords++;
-    } finished:^(BOOL error) {
+    } finished:^(NSInteger count, BOOL error) {
         waitingForBlock = NO;
     }];
     
@@ -339,7 +339,7 @@
         if (recordCount == 5) {
             STAssertTrue([record.age isEqual:@(20)], @"This age should be 20.");
         }
-    } finished:^(BOOL error) {
+    } finished:^(NSInteger count, BOOL error) {
         waitingForBlock = NO;
     }];
     
@@ -383,7 +383,7 @@
         }
         pastSize = [record.age intValue];
         
-    } finished:^(BOOL error) {
+    } finished:^(NSInteger count, BOOL error) {
         waitingForBlock = NO;
     }];
     
@@ -426,7 +426,7 @@
             error = YES;
         }
         pastSize = [record.age intValue];
-    } finished:^(BOOL error) {
+    } finished:^(NSInteger count, BOOL error) {
         waitingForBlock = NO;
     }];
     
@@ -464,7 +464,7 @@
     [criteria where:@"age < 30"];
     [[Person allRecordsWithCriteria:criteria] each:^(Person *record) {
         recordCount++;
-    } finished:^(BOOL error) {
+    } finished:^(NSInteger count, BOOL error) {
         waitingForBlock = NO;
     }];
     

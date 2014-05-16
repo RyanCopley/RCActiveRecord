@@ -54,6 +54,10 @@
 
 
 
++ (void)migrate:(void (^)(BOOL success))block;
+
+
+
 + (BOOL)hasSchemaDeclared;
 + (BOOL)registerColumn:(NSString *)columnName ofType:(Class) type;
 + (BOOL)registerColumn:(NSString *)columnName;

@@ -18,15 +18,16 @@
 @implementation RCResultSet
 
 - (void)each:(void (^) (id recordResult))recordCallback {
-	[self each:recordCallback finished: ^(BOOL error) {}];
+	[self each:recordCallback finished: ^(NSInteger count, BOOL error) {}];
 }
 
-- (void)each:(void (^) (id recordResult))recordCallback finished:(void (^) (BOOL error))finishedCallback {
+- (void)each:(void (^) (id recordResult))recordCallback finished:(void (^) (NSInteger count, BOOL error))finishedCallback {
 	dispatch_async(processQueue, ^{
 	    error = NO;
 	    [queue inDatabase: ^(FMDatabase *db) {
 	        RCDataCoder *coder = [RCDataCoder sharedSingleton];
 	        FMResultSet *s = [db executeQuery:internalQuery];
+            int i=0;
 	        while ([s next]) {
 	            id AR = [[ARClass alloc] init];
 	            [AR defaultValues];
@@ -49,9 +50,10 @@
 					}
 				}
 	            recordCallback(AR);
+                i++;
 			}
-	        dispatch_async(dispatch_queue_create("", NULL), ^{
-	            finishedCallback(error);
+	        dispatch_async(dispatch_get_main_queue(), ^{
+	            finishedCallback(i, error);
 			});
 		}];
 	});
