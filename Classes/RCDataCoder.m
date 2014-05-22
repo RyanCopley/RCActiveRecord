@@ -36,6 +36,7 @@ static RCDataCoder *sharedSingleton;
 		[self addAlias:@"__NSCFConstantString" forType:[NSString class]];
 		[self addAlias:@"__NSCFNumber" forType:[NSNumber class]];
 		[self addAlias:@"__NSDate" forType:[NSDate class]];
+		[self addAlias:@"__NSTaggedDate" forType:[NSDate class]];
 	}
 	return self;
 }
