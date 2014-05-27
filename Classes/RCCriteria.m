@@ -83,7 +83,7 @@
 	else {
 		[conditions addObject:
 		 [NSString stringWithFormat:
-		  @"`%@` %@ \"%@\"",
+		  @"`%@` %@ '%@'",
 		  columnName,
 		  [self stringFromCompareOperator:comparer],
 		  [NSString stringWithFormat:@"%@", [self sanitize:value]]
@@ -148,6 +148,7 @@
 - (NSString *)sanitize:(NSString *)string {
 	string = [NSString stringWithFormat:@"%@", string];
 	string = [string stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""];
+	string = [string stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
 	return string;
 }
 

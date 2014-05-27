@@ -10,8 +10,6 @@
 #import "Person.h"
 #import "App.h"
 
-#import "RCMigrationAssistant.h"
-
 #define testsize 100
 
 @implementation RCActiveRecordTests
@@ -19,8 +17,6 @@
 -(void)setUp {
     [super setUp];
     [Person model];
-    
-    [RCMigrationAssistant model]; //Kickstart off the migration assistant
 }
 
 -(void)tearDown {
@@ -28,12 +24,12 @@
 }
 
 -(void)testNewModel {
-    STAssertNotNil([Person model], @"Person Model failed to load");
+    XCTAssertNotNil([Person model], @"Person Model failed to load");
 }
 
 -(void)testFreshFlags {
-    STAssertTrue([[Person model] isNewRecord], @"Fresh models should be marked as New");
-    STAssertFalse([[Person model] isSavedRecord], @"Fresh models should not be marked as saved");
+    XCTAssertTrue([[Person model] isNewRecord], @"Fresh models should be marked as New");
+    XCTAssertFalse([[Person model] isSavedRecord], @"Fresh models should not be marked as saved");
 }
 
 -(void)testSavedFlag {
@@ -42,24 +38,24 @@
     p.name = @"Test";
     [p saveRecord];
     
-    STAssertFalse([p isNewRecord], @"Saved models should not be new");
-    STAssertTrue([p isSavedRecord], @"Saved models should be marked as saved");
+    XCTAssertFalse([p isNewRecord], @"Saved models should not be new");
+    XCTAssertTrue([p isSavedRecord], @"Saved models should be marked as saved");
     
 }
 
 -(void)testTableName {
-    STAssertTrue([[[Person model] tableName] isEqualToString:@"person"], @"Table name should reflect class name in lowercase format");
+    XCTAssertTrue([[[Person model] tableName] isEqualToString:@"person"], @"Table name should reflect class name in lowercase format");
 }
 
 -(void)testInsertRecord {
     [Person trunctuate];
     Person *p = [Person model];
     p.name = @"Test";
-    STAssertTrue([[Person model] recordCount] == 0, @"There should be 0 person in the database.");
+    XCTAssertTrue([[Person model] recordCount] == 0, @"There should be 0 person in the database.");
     [p insertRecord]; // 1
-    STAssertTrue([[Person model] recordCount] == 1, @"There should be 1 people in the database.");
+    XCTAssertTrue([[Person model] recordCount] == 1, @"There should be 1 people in the database.");
     [p insertRecord]; // 2
-    STAssertTrue([[Person model] recordCount] == 2, @"There should be 2 people in the database.");
+    XCTAssertTrue([[Person model] recordCount] == 2, @"There should be 2 people in the database.");
 }
 
 -(void)testSaveRecord {
@@ -72,10 +68,10 @@
     
     [p saveRecord]; // 1
     [p saveRecord]; // 1
-    STAssertTrue([[Person model] recordCount] == 1, @"There should be only 1 person in the database.");
+    XCTAssertTrue([[Person model] recordCount] == 1, @"There should be only 1 person in the database.");
     [p insertRecord]; // 2
     [p insertRecord]; // 3
-    STAssertTrue([[Person model] recordCount] == 3, @"There should be 3 people in the database.");
+    XCTAssertTrue([[Person model] recordCount] == 3, @"There should be 3 people in the database.");
 }
 
 -(void)testUpdateRecord {
@@ -102,10 +98,10 @@
     }
     
     if (tmp == nil) {
-        STAssertTrue(false, @"Did not find any records");
+        XCTAssertTrue(false, @"Did not find any records");
     } else {
         NSLog(@"Name: %@", tmp.name);
-        STAssertTrue([tmp.name isEqualToString:@"UpdatedName"], @"Update did not update the database");
+        XCTAssertTrue([tmp.name isEqualToString:@"UpdatedName"], @"Update did not update the database");
     }
     
 }
@@ -118,32 +114,32 @@
     p.age = @(21);
     p.ip = @"localhost";
     
-    STAssertEquals([p recordCount], 0, @"Truncate did not empty table");
+    XCTAssertEqual([p recordCount], 0, @"Truncate did not empty table");
     [p saveRecord]; // 1
-    STAssertEquals([p recordCount], 1, @"Save did not work");
+    XCTAssertEqual([p recordCount], 1, @"Save did not work");
     [p deleteRecord]; // 0
-    STAssertEquals([p recordCount], 0, @"Delete did not remove the record");
+    XCTAssertEqual([p recordCount], 0, @"Delete did not remove the record");
 }
 
 -(void)testRecordCount {
     [Person trunctuate];
     Person *p = [Person model];
     p.name = @"Test";
-    STAssertEquals([p recordCount], 0, @"There should be 0 records at this point");
+    XCTAssertEqual([p recordCount], 0, @"There should be 0 records at this point");
     [p saveRecord]; // 1
-    STAssertEquals([p recordCount], 1, @"There should be 1 record at this point");
+    XCTAssertEqual([p recordCount], 1, @"There should be 1 record at this point");
     [p deleteRecord]; // 0
-    STAssertEquals([p recordCount], 0, @"There should be 0 records at this point");
+    XCTAssertEqual([p recordCount], 0, @"There should be 0 records at this point");
 }
 
 -(void)testDropTable {
     [Person trunctuate];
     [Person generateSchema:YES];
-    STAssertTrue([[Person model] insertRecord], @"Person should insert");
+    XCTAssertTrue([[Person model] insertRecord], @"Person should insert");
     [Person dropTable];
-    STAssertFalse([[Person model] insertRecord], @"Person should fail to insert");
+    XCTAssertFalse([[Person model] insertRecord], @"Person should fail to insert");
     [Person generateSchema:YES];
-    STAssertTrue([[Person model] insertRecord], @"Person should insert");
+    XCTAssertTrue([[Person model] insertRecord], @"Person should insert");
 }
 
 -(void)testFetchingAllRecords {
@@ -168,14 +164,14 @@
         foundRecords++;
         
         if (foundRecords == 1) {
-            STAssertTrue([record.name isEqualToString:@"Test"], @"Loading the record did not render the correct name.");
+            XCTAssertTrue([record.name isEqualToString:@"Test"], @"Loading the record did not render the correct name.");
         }
         
         if (foundRecords == 2) {
-            STAssertTrue([record.name isEqualToString:@"Test2"], @"Loading the record did not render the correct name.");
+            XCTAssertTrue([record.name isEqualToString:@"Test2"], @"Loading the record did not render the correct name.");
         }
     } finished:^(NSInteger count, BOOL error) {
-        STAssertFalse(error, @"An error was flagged");
+        XCTAssertFalse(error, @"An error was flagged");
         waitingForBlock = NO;
     }];
     
@@ -183,7 +179,7 @@
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
     
-    STAssertTrue(foundRecords==2, @"All records did not return a valid amount of objects");
+    XCTAssertTrue(foundRecords==2, @"All records did not return a valid amount of objects");
 }
 
 -(void)testFetchingAllRecordsWithCriteria {
@@ -216,7 +212,8 @@
     while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
-    STAssertTrue(foundRecords==1, @"All records w/ criteria did not return a valid amount of objects");
+    
+    XCTAssertTrue(foundRecords==1, @"All records w/ criteria did not return a valid amount of objects");
 }
 
 -(void)testFetchingAllRecordsWithComplexCriteria {
@@ -252,7 +249,7 @@
     while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
-    STAssertTrue(foundRecords==3, @"All records w/ complex criteria did not return a valid amount of objects");
+    XCTAssertTrue(foundRecords==3, @"All records w/ complex criteria did not return a valid amount of objects");
 }
 
 -(void)testFetchingAllRecordsWithLimitCriteria {
@@ -286,7 +283,7 @@
     while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
-    STAssertTrue(foundRecords==2, @"All records w/ complex + limit criteria did not return a valid amount of objects");
+    XCTAssertTrue(foundRecords==2, @"All records w/ complex + limit criteria did not return a valid amount of objects");
 }
 
 -(void)testFetchingAllRecordsWithLimitAndOffset {
@@ -321,23 +318,23 @@
         recordCount++;
         
         if (recordCount == 1) {
-            STAssertTrue([record.age isEqual:@(60)], @"This age should be 60.");
+            XCTAssertTrue([record.age isEqual:@(60)], @"This age should be 60.");
         }
         
         if (recordCount == 2) {
-            STAssertTrue([record.age isEqual:@(50)], @"This age should be 50.");
+            XCTAssertTrue([record.age isEqual:@(50)], @"This age should be 50.");
         }
         
         if (recordCount == 3) {
-            STAssertTrue([record.age isEqual:@(30)], @"This age should be 30.");
+            XCTAssertTrue([record.age isEqual:@(30)], @"This age should be 30.");
         }
         
         if (recordCount == 4) {
-            STAssertTrue([record.age isEqual:@(40)], @"This age should be 40.");
+            XCTAssertTrue([record.age isEqual:@(40)], @"This age should be 40.");
         }
         
         if (recordCount == 5) {
-            STAssertTrue([record.age isEqual:@(20)], @"This age should be 20.");
+            XCTAssertTrue([record.age isEqual:@(20)], @"This age should be 20.");
         }
     } finished:^(NSInteger count, BOOL error) {
         waitingForBlock = NO;
@@ -346,7 +343,7 @@
     while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
-    STAssertTrue(recordCount = 5, @"Results were not ordered correctly.");
+    XCTAssertTrue(recordCount = 5, @"Results were not ordered correctly.");
 }
 
 -(void)testFetchingAllRecordsWithAscOrderCriteria {
@@ -390,7 +387,7 @@
     while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
-    STAssertFalse(error, @"Results were not ordered correctly.");
+    XCTAssertFalse(error, @"Results were not ordered correctly.");
 }
 
 -(void)testFetchingAllRecordsWithDescOrderCriteria {
@@ -433,7 +430,7 @@
     while (waitingForBlock) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
-    STAssertFalse(error, @"Results were not ordered correctly.");
+    XCTAssertFalse(error, @"Results were not ordered correctly.");
 }
 
 -(void)testFetchingAllRecordsWithCustomWhere {
@@ -473,7 +470,7 @@
     }
     
     
-    STAssertTrue(recordCount == 3, @"Results were not ordered correctly.");
+    XCTAssertTrue(recordCount == 3, @"Results were not ordered correctly.");
 }
 
 -(void)testSettingPrimaryKey {
@@ -482,9 +479,9 @@
     p.address = [@"Address" mutableCopy];
     p.age = @(21);
     p.ip = @"localhost";
-    STAssertTrue([[p primaryKeyValue] isEqualToNumber:@(-1)], @"Primary key should be -1 before being saved.");
+    XCTAssertTrue([[p primaryKeyValue] isEqualToNumber:@(-1)], @"Primary key should be -1 before being saved.");
     [p saveRecord];
-    STAssertFalse([[p primaryKeyValue] isEqualToNumber:@(-1)], @"Primary key should not be -1 after being saved.");
+    XCTAssertFalse([[p primaryKeyValue] isEqualToNumber:@(-1)], @"Primary key should not be -1 after being saved.");
 }
 
 -(void)testTruncate {
@@ -495,10 +492,10 @@
         p.name = @"Test";
         [p saveRecord];
     } while (i-->1);
-    STAssertTrue([[Person model] recordCount] >= testsize, @"There should be `testsize` people in the database.");
+    XCTAssertTrue([[Person model] recordCount] >= testsize, @"There should be `testsize` people in the database.");
     
     [Person trunctuate];
-    STAssertEquals([[Person model] recordCount], 0, @"There should not be any people in the database.");
+    XCTAssertEqual([[Person model] recordCount], 0, @"There should not be any people in the database.");
 }
 
 -(void)testTransactioning {
@@ -519,7 +516,7 @@
     [Person commit];
     int endCount = [[Person model] recordCount];
     
-    STAssertTrue( (endCount==testsize/2-1), @"Rollback did not remove first half of testsize.");
+    XCTAssertTrue( (endCount==testsize/2-1), @"Rollback did not remove first half of testsize.");
 }
 
 -(void)testJSONEncoding {
@@ -530,9 +527,9 @@
     p.age = @(100);
     NSDictionary *obj = [p toJSON];
     
-    STAssertTrue([[obj objectForKey:@"_id"] isEqual:@(-1)], @"_id should be -1 from JSON");
-    STAssertTrue([[obj objectForKey:@"address"] isEqualToString:p.address], @"address should be supplied from JSON");
-    STAssertTrue([[obj objectForKey:@"age"] isEqual:@(100)], @"age should be 0 from JSON");
+    XCTAssertTrue([[obj objectForKey:@"_id"] isEqual:@(-1)], @"_id should be -1 from JSON");
+    XCTAssertTrue([[obj objectForKey:@"address"] isEqualToString:p.address], @"address should be supplied from JSON");
+    XCTAssertTrue([[obj objectForKey:@"age"] isEqual:@(100)], @"age should be 0 from JSON");
 }
 
 -(void)testJSONDecoding {
@@ -544,9 +541,9 @@
                    }
                  ];
     
-    STAssertNil(p._id, @"_id should be -1 from JSON");
-    STAssertTrue([p.address isEqualToString:@"json"], @"address should be supplied from JSON");
-    STAssertTrue([p.age isEqual:@(22)], @"age should be 100 from JSON");
+    XCTAssertNil(p._id, @"_id should be -1 from JSON");
+    XCTAssertTrue([p.address isEqualToString:@"json"], @"address should be supplied from JSON");
+    XCTAssertTrue([p.age isEqual:@(22)], @"age should be 100 from JSON");
 }
 
 -(void)testJSONArrayDecoding {
@@ -563,9 +560,9 @@
                        }]
                  ];
     
-    STAssertTrue([people count] == 2, @"The supplied JSON should generate 2 records");
-    STAssertTrue([((Person*)people[0]).name isEqualToString:@"test"], @"The first record should have the name `test`");
-    STAssertTrue([((Person*)people[1]).address isEqualToString:@"json2"], @"The second record should have the address `json2`");
+    XCTAssertTrue([people count] == 2, @"The supplied JSON should generate 2 records");
+    XCTAssertTrue([((Person*)people[0]).name isEqualToString:@"test"], @"The first record should have the name `test`");
+    XCTAssertTrue([((Person*)people[1]).address isEqualToString:@"json2"], @"The second record should have the address `json2`");
 }
 
 @end

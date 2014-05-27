@@ -10,7 +10,7 @@
 
 @implementation Person
 
-@synthesize name, address, age, ip, md5, version, sha1;
+@synthesize name, address, age, ip, md5, version, sha1, test;
 
 -(void)defaultValues{
     [super defaultValues];
@@ -20,6 +20,7 @@
     ip = @"";
     md5 = @"e21b0ff3877dca5c2b3c5a37f3fa3ee4"; // Bonus points to whoever cracks this hash.
     sha1 = @"";
+    test = @(0);
 }
 
 -(void)schema{
@@ -33,21 +34,20 @@
     
     //If you don't want to set a default value above, you must specify the class type.
     [Person registerColumn:@"version" ofType: [NSNumber class]];
-}
--(BOOL) migrateToVersion_1{
     
+    [Person migrate:^(){
+        [Person deleteColumn:@"ip"];
+    }];
     
-    [Person deleteColumn:@"ip"];
-    return YES;
-}
-
--(BOOL) migrateToVersion_2{
-    [Person registerColumn:@"md5"];
-    return YES;
-}
--(BOOL) migrateToVersion_3{
-    [Person registerColumn:@"sha1"];
-    return YES;
+    [Person migrate:^(){
+        [Person registerColumn:@"md5"];
+    }];
+    [Person migrate:^(){
+        [Person registerColumn:@"sha1"];
+    }];
+    [Person migrate:^(){
+        [Person registerColumn:@"test"];
+    }];
 }
 
 @end

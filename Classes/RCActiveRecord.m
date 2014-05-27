@@ -10,7 +10,6 @@
 #import "RCActiveRecord.h"
 #import "FMDatabaseAdditions.h"
 #import "RCDataCoder.h"
-#import "RCMigrationAssistant.h"
 
 #define RCACTIVERECORDLOGGING 0
 
@@ -51,7 +50,6 @@
 	[model defaultValues];
 	if ([[self class] hasSchemaDeclared] == NO) {
 		[model schema];
-		[model upgrade];
 		[[model class] generateSchema:NO];
 	}
 	return model;
@@ -120,9 +118,10 @@
 
 + (RCResultSet *)allRecordsWithCriteria:(RCCriteria *)criteria {
 	NSString *query = [NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@;", [[self model] tableName], [criteria generateWhereClause]];
-	if (RCACTIVERECORDLOGGING) {
+	if (1) {
 		NSLog(@"RCActiveRecord: Query: %@", query);
 	}
+    
 	RCInternals *internal = [RCInternals instance];
 	return [[RCResultSet alloc] initWithFMDatabaseQueue:internal.internalQueue andQuery:query andActiveRecordClass:[self class]];
 }
@@ -355,6 +354,29 @@
 	return success;
 }
 
++ (void)migrate:(void (^)())block{
+    
+    __block NSString *tableName = [self tableName];
+    
+    NSString *key = NSStringFromClass([self class]);
+    RCInternals *internal = [RCInternals instance];
+    
+    NSArray* processedKeys = [[internal.schemaData objectForKey:key] allKeys];
+    
+    block();
+    
+    NSMutableDictionary *freshSchema = [[internal.schemaData objectForKey:key] mutableCopy];
+    [freshSchema removeObjectsForKeys: processedKeys];
+    
+    [internal.internalQueue inDatabase: ^(FMDatabase *db) {
+        for (NSString * newColumn in freshSchema) {
+            NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD COLUMN %@", tableName, newColumn];
+            id returnedValue = [db executeQuery:query];
+            NSLog(@"Returned value: %@", returnedValue);
+        }
+    }];
+}
+
 + (void)generateDefaultCoders {
 	RCDataCoder *coder = [RCDataCoder sharedSingleton];
 	[coder addEncoderForType:[self class] encoder: ^NSString *(RCActiveRecord *obj) {
@@ -449,88 +471,6 @@
     return YES;
 }
 
-+ (void)migrate:(void (^)(BOOL success))block{
-    //TODO
-}
-
-
-- (void)upgrade {
-	if ([self class] != [RCMigrationAssistant class]) {
-		__block NSString *tableName = [self tableName];
-        
-		RCCriteria *_criteria = [[RCCriteria alloc] init];
-		[_criteria setLimit:1];
-		[_criteria orderByDesc:@"version"];
-		[_criteria addCondition:@"table" is:RCEqualTo to:[self tableName]];
-        
-		__block RCMigrationAssistant *latestAssistant = nil;
-		[[RCMigrationAssistant allRecordsWithCriteria:_criteria] each: ^(RCMigrationAssistant *row) {
-		    latestAssistant = row;
-		} finished: ^(NSInteger count, BOOL error) {
-		    int untouchedMigrationID = -1;
-		    if (latestAssistant) {
-		        untouchedMigrationID = [latestAssistant.version intValue];
-			}
-            
-		    //Run all of the migrations that we can
-		    unsigned int failed = NO;
-		    unsigned int migrationID = 0;
-            
-		    //Cache a copy of our schema
-		    NSMutableDictionary *removedColumns = nil;
-            
-		    NSString *key = NSStringFromClass([self class]);
-		    RCInternals *internal = [RCInternals instance];
-		    id tmp = [[[self class] alloc] init];
-		    while (!failed) {
-		        migrationID++;
-		        if (migrationID > untouchedMigrationID) {
-		            removedColumns = [[internal.schemaData objectForKey:key] mutableCopy];
-				}
-                
-		        SEL migrationFunction = NSSelectorFromString([NSString stringWithFormat:@"migrateToVersion_%i", migrationID]);
-		        if ([tmp respondsToSelector:migrationFunction]) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-		            failed = !((BOOL)[tmp performSelector : migrationFunction]);
-#pragma clang diagnostic pop
-				}
-		        else {
-		            if (RCACTIVERECORDLOGGING) {
-		                NSLog(@"RCActiveRecord: Failed to upgrade to %i", migrationID);
-					}
-		            migrationID--;
-		            failed = true;
-				}
-			}
-            
-		    if (removedColumns) {
-		        //Run a diff tool over the results to know what is new and what is old
-		        NSMutableDictionary *newColumns = [[internal.schemaData objectForKey:key] mutableCopy];
-		        for (NSString * key in[removedColumns allKeys]) {
-		            [newColumns removeObjectForKey:key];
-				}
-                
-		        [internal.internalQueue inDatabase: ^(FMDatabase *db) {
-		            for (NSString * newColumn in newColumns) {
-		                NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD COLUMN %@", tableName, newColumn];
-		                [db executeQuery:query];
-					}
-				}];
-			}
-            
-		    //Make sure we know where to migrate from later on
-		    if (!latestAssistant) {
-		        latestAssistant = [RCMigrationAssistant model];
-			}
-		    latestAssistant.table = tableName;
-		    latestAssistant.version = @(migrationID);
-		    [latestAssistant saveRecord];
-		}];
-	}
-}
-
-
 + (BOOL)deleteColumn:(NSString *)columnName {
 	RCInternals *internal = [RCInternals instance];
 	NSString *key = NSStringFromClass([self class]);
@@ -576,6 +516,10 @@
 
 - (NSString *)tableName {
 	return [NSStringFromClass([self class]) lowercaseString];
+}
+
++ (NSString *)tableName {
+	return [NSStringFromClass(self) lowercaseString];
 }
 
 - (FMDatabaseQueue *)getFMDBQueue { //Exposed for subclasses

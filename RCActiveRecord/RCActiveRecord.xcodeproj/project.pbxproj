@@ -16,7 +16,6 @@
 		4E29369E17BB3CDF0088B96B /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 4E29369D17BB3CDF0088B96B /* Default.png */; };
 		4E2936A017BB3CDF0088B96B /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4E29369F17BB3CDF0088B96B /* Default@2x.png */; };
 		4E2936A217BB3CDF0088B96B /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4E2936A117BB3CDF0088B96B /* Default-568h@2x.png */; };
-		4E2936AA17BB3CE00088B96B /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E2936A917BB3CE00088B96B /* SenTestingKit.framework */; };
 		4E2936AB17BB3CE00088B96B /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E29368B17BB3CDF0088B96B /* UIKit.framework */; };
 		4E2936AC17BB3CE00088B96B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E29368D17BB3CDF0088B96B /* Foundation.framework */; };
 		4E2936B417BB3CE00088B96B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4E2936B217BB3CE00088B96B /* InfoPlist.strings */; };
@@ -35,7 +34,6 @@
 		4EF75F3C180889660058DA37 /* App.m in Sources */ = {isa = PBXBuildFile; fileRef = 4EF75F3B180889660058DA37 /* App.m */; };
 		947072DB18C18B950068AE99 /* RCInternals.m in Sources */ = {isa = PBXBuildFile; fileRef = 947072DA18C18B950068AE99 /* RCInternals.m */; };
 		94D1F60C18A30981007EA4D6 /* RCDataCoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 94D1F60B18A30981007EA4D6 /* RCDataCoder.m */; };
-		94EAAD8818C6A1F1001980C3 /* RCMigrationAssistant.m in Sources */ = {isa = PBXBuildFile; fileRef = 94EAAD8718C6A1F1001980C3 /* RCMigrationAssistant.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,8 +60,7 @@
 		4E29369D17BB3CDF0088B96B /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		4E29369F17BB3CDF0088B96B /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		4E2936A117BB3CDF0088B96B /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
-		4E2936A817BB3CE00088B96B /* RCActiveRecordTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RCActiveRecordTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4E2936A917BB3CE00088B96B /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
+		4E2936A817BB3CE00088B96B /* RCActiveRecordTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RCActiveRecordTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E2936B117BB3CE00088B96B /* RCActiveRecordTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "RCActiveRecordTests-Info.plist"; sourceTree = "<group>"; };
 		4E2936B317BB3CE00088B96B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		4E2936B517BB3CE00088B96B /* RCActiveRecordTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCActiveRecordTests.h; sourceTree = "<group>"; };
@@ -96,8 +93,6 @@
 		947072DA18C18B950068AE99 /* RCInternals.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCInternals.m; sourceTree = "<group>"; };
 		94D1F60A18A30981007EA4D6 /* RCDataCoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCDataCoder.h; sourceTree = "<group>"; };
 		94D1F60B18A30981007EA4D6 /* RCDataCoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCDataCoder.m; sourceTree = "<group>"; };
-		94EAAD8618C6A1F1001980C3 /* RCMigrationAssistant.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCMigrationAssistant.h; sourceTree = "<group>"; };
-		94EAAD8718C6A1F1001980C3 /* RCMigrationAssistant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCMigrationAssistant.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,7 +111,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4E2936AA17BB3CE00088B96B /* SenTestingKit.framework in Frameworks */,
 				4E2936AB17BB3CE00088B96B /* UIKit.framework in Frameworks */,
 				4E2936AC17BB3CE00088B96B /* Foundation.framework in Frameworks */,
 			);
@@ -142,7 +136,7 @@
 			isa = PBXGroup;
 			children = (
 				4E29368817BB3CDF0088B96B /* RCActiveRecord.app */,
-				4E2936A817BB3CE00088B96B /* RCActiveRecordTests.octest */,
+				4E2936A817BB3CE00088B96B /* RCActiveRecordTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -154,7 +148,6 @@
 				4E29368B17BB3CDF0088B96B /* UIKit.framework */,
 				4E29368D17BB3CDF0088B96B /* Foundation.framework */,
 				4E29368F17BB3CDF0088B96B /* CoreGraphics.framework */,
-				4E2936A917BB3CE00088B96B /* SenTestingKit.framework */,
 			);
 			name = Frameworks;
 			path = ..;
@@ -237,8 +230,6 @@
 				4EF75F321807A6CF0058DA37 /* RCResultSet.m */,
 				94D1F60A18A30981007EA4D6 /* RCDataCoder.h */,
 				94D1F60B18A30981007EA4D6 /* RCDataCoder.m */,
-				94EAAD8618C6A1F1001980C3 /* RCMigrationAssistant.h */,
-				94EAAD8718C6A1F1001980C3 /* RCMigrationAssistant.m */,
 			);
 			name = Classes;
 			path = ../Classes;
@@ -292,8 +283,8 @@
 			);
 			name = RCActiveRecordTests;
 			productName = RCActiveRecordTests;
-			productReference = 4E2936A817BB3CE00088B96B /* RCActiveRecordTests.octest */;
-			productType = "com.apple.product-type.bundle";
+			productReference = 4E2936A817BB3CE00088B96B /* RCActiveRecordTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -302,6 +293,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = RC;
+				LastTestingUpgradeCheck = 0510;
 				LastUpgradeCheck = 0460;
 				ORGANIZATIONNAME = "Ryan Copley";
 			};
@@ -376,7 +368,6 @@
 				4E2936CF17BB3D070088B96B /* FMDatabaseQueue.m in Sources */,
 				4E2936D117BB3D070088B96B /* FMResultSet.m in Sources */,
 				4E2936DB17BBD0250088B96B /* RCActiveRecord.m in Sources */,
-				94EAAD8818C6A1F1001980C3 /* RCMigrationAssistant.m in Sources */,
 				4E2936DE17BBD0340088B96B /* RCCriteria.m in Sources */,
 				947072DB18C18B950068AE99 /* RCInternals.m in Sources */,
 				4EF75F331807A6CF0058DA37 /* RCResultSet.m in Sources */,
@@ -510,13 +501,13 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
 					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+					"$(inherited)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "RCActiveRecord/RCActiveRecord-Prefix.pch";
 				INFOPLIST_FILE = "RCActiveRecordTests/RCActiveRecordTests-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
 		};
@@ -527,13 +518,13 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
 					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+					"$(inherited)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "RCActiveRecord/RCActiveRecord-Prefix.pch";
 				INFOPLIST_FILE = "RCActiveRecordTests/RCActiveRecordTests-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Release;
 		};

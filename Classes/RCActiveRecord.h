@@ -37,7 +37,7 @@
 - (NSDictionary *)toJSON; //Tested
 + (id)fromJSON:(id)json; //Tested
 + (void)beginTransaction; //Tested
-+ (void)commit; //Tested (No real way to test this actually but whatever)
++ (void)commit;
 + (void)rollback; //Tested
 - (BOOL)insertRecord; //Tested
 - (BOOL)updateRecord; //Tested
@@ -54,7 +54,7 @@
 
 
 
-+ (void)migrate:(void (^)(BOOL success))block;
++ (void)migrate:(void(^)())block;
 
 
 

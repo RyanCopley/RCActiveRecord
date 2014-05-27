@@ -6,8 +6,8 @@
 //  Copyright (c) 2013 Ryan Copley. All rights reserved.
 //
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
-@interface RCActiveRecordTests : SenTestCase
+@interface RCActiveRecordTests : XCTestCase
 
 @end

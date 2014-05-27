@@ -17,5 +17,6 @@
 @property (strong, nonatomic) NSString* md5;
 @property (strong, nonatomic) NSString* sha1;
 @property (strong, nonatomic) NSNumber* version;
+@property (strong, nonatomic) NSNumber* test;
 
 @end
