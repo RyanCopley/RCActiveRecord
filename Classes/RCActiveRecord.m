@@ -118,7 +118,7 @@
 
 + (RCResultSet *)allRecordsWithCriteria:(RCCriteria *)criteria {
 	NSString *query = [NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@;", [[self model] tableName], [criteria generateWhereClause]];
-	if (1) {
+	if (RCACTIVERECORDLOGGING) {
 		NSLog(@"RCActiveRecord: Query: %@", query);
 	}
     
