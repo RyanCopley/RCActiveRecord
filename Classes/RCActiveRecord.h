@@ -43,8 +43,6 @@
 - (BOOL)updateRecord; //Tested
 - (BOOL)saveRecord; //Tested
 - (BOOL)deleteRecord; //Tested
-+ (void)preloadModels:(BOOL)preload;
-+ (BOOL)preloadEnabled;
 + (BOOL)trunctuate; //Tested
 + (BOOL)dropTable; //Tested
 - (NSString *)primaryKeyName;

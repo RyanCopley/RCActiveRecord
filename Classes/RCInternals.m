@@ -10,7 +10,7 @@
 
 @implementation RCInternals
 
-@synthesize internalQueue, schemaIsDefined, primaryKeys, schemaData, linkShouldPreload, inTransaction;
+@synthesize internalQueue, schemaIsDefined, schemaData, inTransaction;
 
 static RCInternals *gInstance = NULL;
 
@@ -27,10 +27,8 @@ static RCInternals *gInstance = NULL;
 }
 
 - (void)instantiate {
-	if (primaryKeys == nil) {
-		primaryKeys = [[NSMutableDictionary alloc] init];
+	if (schemaData == nil) {
 		schemaData = [[NSMutableDictionary alloc] init];
-		linkShouldPreload = [[NSMutableDictionary alloc] init];
 		inTransaction = NO;
 	}
 

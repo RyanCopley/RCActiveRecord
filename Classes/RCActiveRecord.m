@@ -26,11 +26,11 @@
 		RCInternals *internal = [RCInternals instance];
 
 		NSString *key = NSStringFromClass([self class]);
-		if ([internal.primaryKeys objectForKey:key] == nil) {
-			[internal.primaryKeys setObject:@"_id" forKey:key]; /* default */
+        //Register a spot for the schema data if need be
+		if ([internal.schemaData objectForKey:key] == nil) {
 			[internal.schemaData setObject:[@{} mutableCopy] forKey:key];  /* empty */
-			[internal.linkShouldPreload setObject:@(1) forKey:key];  /* preload enabled */
 		}
+        
 		[[self class] registerColumn:@"creationDate"];
 		[[self class] registerColumn:@"savedDate"];
 		[[self class] registerColumn:@"updatedDate"];
@@ -252,6 +252,7 @@
 
 // TODO: Refactor
 - (BOOL)updateRecord {
+    
 	if (isNewRecord == NO) {
 		RCInternals *internal = [RCInternals instance];
 		self.updatedDate = [NSDate date];
@@ -265,6 +266,7 @@
 			[updateData appendFormat:@"`%@`=\"%@\", ", columnName, [coder encode:[self performSelector:NSSelectorFromString(columnName)]]];
 #pragma clang diagnostic pop
 		}
+        
 		if ([updateData isEqualToString:@""] == FALSE) {
 			updateData = [[updateData substringToIndex:updateData.length - 2] mutableCopy];
 			__block NSString *query = [NSString stringWithFormat:@"UPDATE `%@` SET %@ WHERE `%@`=\"%@\";", [self tableName], updateData, [self primaryKeyName], [self primaryKeyValue]];
@@ -331,8 +333,9 @@
 		NSMutableString *columnData = [[NSMutableString alloc] init];
 		[columnData appendFormat:@"%@ INTEGER PRIMARY KEY %@", [obj primaryKeyName], ([[obj primaryKeyName] isEqualToString:@"_id"] ? @"AUTOINCREMENT" : @"")];
 		for (NSString *columnName in schema) {
-			NSDictionary *columnSchema = [schema objectForKey:columnName];
-			[columnData appendFormat:@", `%@` %@", columnName, [obj objCDataTypeToSQLiteDataType:[columnSchema objectForKey:@"type"]]];
+			//NSDictionary *columnSchema = [schema objectForKey:columnName];
+            
+			[columnData appendFormat:@", `%@` %@", columnName, @"text"]; //This could be done more efficiently based on the datatype
 		}
 		if (force) {
 			[[self class] dropTable];
@@ -356,23 +359,37 @@
 
 + (void)migrate:(void (^)())block{
     
-    __block NSString *tableName = [self tableName];
     
     NSString *key = NSStringFromClass([self class]);
     RCInternals *internal = [RCInternals instance];
     
+    //Grab a copy of the current schema
     NSArray* processedKeys = [[internal.schemaData objectForKey:key] allKeys];
     
     block();
-    
+    //Get the New+old schema
     NSMutableDictionary *freshSchema = [[internal.schemaData objectForKey:key] mutableCopy];
+    
+    //Set theory. New+old - old = new.
     [freshSchema removeObjectsForKeys: processedKeys];
     
+    //Alter the DB to reflect the new
+    __block NSString *tableName = [self tableName];
     [internal.internalQueue inDatabase: ^(FMDatabase *db) {
         for (NSString * newColumn in freshSchema) {
             NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD COLUMN %@", tableName, newColumn];
-            id returnedValue = [db executeQuery:query];
-            NSLog(@"Returned value: %@", returnedValue);
+            if (RCACTIVERECORDLOGGING) {
+                NSLog(@"RCActiveRecord: Running: %@", query);
+            }
+
+            BOOL returnedValue = [db executeUpdate:query];
+            if (RCACTIVERECORDLOGGING){
+                if (!returnedValue){
+                    NSLog(@"This migration was already performed");
+                }else{
+                    NSLog(@"Successfully migrated column: %@ to %@", newColumn, tableName);
+                }
+            }
         }
     }];
 }
@@ -384,28 +401,8 @@
 	}];
 
 	[coder addDecoderForType:[self class] decoder: ^id (NSString *stringRepresentation, Class type) {
-	    if ([type preloadEnabled]) {
-	        __block BOOL waitingForBlock = YES;
-
-	        static NSNumberFormatter *numFormatter;
-	        if (numFormatter == nil) {
-	            numFormatter = [[NSNumberFormatter alloc] init];
-	            [numFormatter setNumberStyle:NSNumberFormatterNoStyle];
-			}
-	        __block id _record = nil;
-	        [[[type model] recordByPK:[numFormatter numberFromString:stringRepresentation]] each: ^(id record) {
-	            _record = record;
-			} finished: ^(NSInteger count, BOOL error) {
-	            waitingForBlock = NO;
-			}];
-	        while (waitingForBlock) {
-	            [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
-			}
-	        return _record;
-		}
-	    else {
-	        return stringRepresentation;
-		}
+        //Eventually some preloading could go here
+        return stringRepresentation;
 	}];
 }
 
@@ -487,18 +484,6 @@
 	return NO;
 }
 
-+ (void)preloadModels:(BOOL)preload {
-	RCInternals *internal = [RCInternals instance];
-	NSString *key = NSStringFromClass([self class]);
-	return [internal.linkShouldPreload setObject:@(preload) forKey:key];
-}
-
-+ (BOOL)preloadEnabled {
-	RCInternals *internal = [RCInternals instance];
-	NSString *key = NSStringFromClass([self class]);
-	return [[internal.linkShouldPreload objectForKey:key] boolValue];
-}
-
 // TODO: Refactor
 + (BOOL)hasSchemaDeclared {
 	RCInternals *internal = [RCInternals instance];
@@ -506,12 +491,11 @@
 }
 
 - (NSString *)primaryKeyName {
-	RCInternals *internal = [RCInternals instance];
-	return [internal.primaryKeys valueForKey:NSStringFromClass([self class])];
+	return @"_id";
 }
 
 - (NSNumber *)primaryKeyValue {
-    return [self getProperty:[self primaryKeyName]];
+    return _id;
 }
 
 - (NSString *)tableName {
@@ -549,21 +533,6 @@
     return [self performSelector:NSSelectorFromString(prop)];
 #pragma clang diagnostic pop
     
-}
-
-
-// TODO: Refactor
-- (NSString *)objCDataTypeToSQLiteDataType:(NSString *)dataTypeStrRepresentation {
-	if ([dataTypeStrRepresentation isEqualToString:@"__NSCFConstantString"]) {
-		return @"TEXT";
-	}
-	else if ([dataTypeStrRepresentation isEqualToString:@"__NSCFString"]) {
-		return @"TEXT";
-	}
-	else if ([dataTypeStrRepresentation isEqualToString:@"__NSCFNumber"]) {
-		return @"REAL";
-	}
-	return @"INTEGER";
 }
 
 @end

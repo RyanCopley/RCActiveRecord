@@ -22,6 +22,7 @@
 }
 
 - (void)each:(void (^) (id recordResult))recordCallback finished:(void (^) (NSInteger count, BOOL error))finishedCallback {
+    
 	dispatch_async(processQueue, ^{
 	    error = NO;
 	    [queue inDatabase: ^(FMDatabase *db) {

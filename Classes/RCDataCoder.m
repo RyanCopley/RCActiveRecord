@@ -32,11 +32,14 @@ static RCDataCoder *sharedSingleton;
 		[self addAlias:@"__NSArrayI" forType:[NSArray class]];
 		[self addAlias:@"__NSCFArray" forType:[NSArray class]];
 		[self addAlias:@"__NSArrayM" forType:[NSMutableArray class]];
+		[self addAlias:@"__NSDictionaryI" forType:[NSDictionary class]];
+		[self addAlias:@"__NSDictionaryM" forType:[NSMutableDictionary class]];
 		[self addAlias:@"__NSCFString" forType:[NSString class]];
 		[self addAlias:@"__NSCFConstantString" forType:[NSString class]];
 		[self addAlias:@"__NSCFNumber" forType:[NSNumber class]];
 		[self addAlias:@"__NSDate" forType:[NSDate class]];
 		[self addAlias:@"__NSTaggedDate" forType:[NSDate class]];
+		[self addAlias:@"__NSCFBoolean" forType:[NSNumber class]];
 	}
 	return self;
 }
@@ -56,6 +59,9 @@ static RCDataCoder *sharedSingleton;
 }
 
 - (NSString *)encode:(id)obj {
+    if (!obj){
+        return @"";
+    }
 	NSString *classStr = NSStringFromClass([obj class]);
 
 	NSString * (^encodeBlock)(id value) = [dataEncoders objectForKey:classStr];
@@ -63,6 +69,10 @@ static RCDataCoder *sharedSingleton;
 		//Fetch aliases if needed
 		encodeBlock = [dataEncoders objectForKey:[typeAliases objectForKey:classStr]];
 	}
+    
+    if (encodeBlock == NULL){
+        return @"";
+    }
 
 	return [self sanitize:encodeBlock(obj)];
 }
@@ -81,26 +91,39 @@ static RCDataCoder *sharedSingleton;
 		//Fetch aliases if needed
 		decodeBlock = [dataDecoders objectForKey:[typeAliases objectForKey:classStr]];
 	}
+    
+    if (decodeBlock == NULL){
+
+    }
 	return decodeBlock(stringRepresentation, type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 - (void)defaultDecoders {
-	__typeof__(self) __weak weakself = self;
-
+    
 	[self addDecoderForType:[NSArray class] decoder: ^id (NSString *stringRepresentation, Class type) {
 	    NSError *err = nil;
 	    return [NSJSONSerialization JSONObjectWithData:[stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
 	}];
-
+    
+	[self addDecoderForType:[NSMutableArray class] decoder: ^id (NSString *stringRepresentation, Class type) {
+	    NSError *err = nil;
+	    return [[NSJSONSerialization JSONObjectWithData:[stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err] mutableCopy];
+	}];
+    
 	[self addDecoderForType:[NSDictionary class] decoder: ^id (NSString *stringRepresentation, Class type) {
 	    NSError *err = nil;
 	    return [NSJSONSerialization JSONObjectWithData:[stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err];
 	}];
+    
+	[self addDecoderForType:[NSMutableDictionary class] decoder: ^id (NSString *stringRepresentation, Class type) {
+	    NSError *err = nil;
+	    return [[NSJSONSerialization JSONObjectWithData:[stringRepresentation dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&err] mutableCopy];
+	}];
 
 	[self addDecoderForType:[NSString class] decoder: ^id (NSString *stringRepresentation, Class type) {
-	    return [weakself sanitize:stringRepresentation];
+	    return stringRepresentation;
 	}];
 
 	[self addDecoderForType:[NSNumber class] decoder: ^id (NSString *stringRepresentation, Class type) {
@@ -128,12 +151,24 @@ static RCDataCoder *sharedSingleton;
 	    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:obj options:NSJSONWritingPrettyPrinted error:&err];
 	    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 	}];
+	[self addEncoderForType:[NSMutableArray class] encoder: ^NSString *(NSMutableArray *obj) {
+	    NSError *err;
+	    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:obj options:NSJSONWritingPrettyPrinted error:&err];
+	    return [[[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding] mutableCopy];
+	}];
 	[self addEncoderForType:[NSMutableArray class] encoder: ^NSString *(NSArray *obj) {
 	    NSError *err;
 	    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:obj options:NSJSONWritingPrettyPrinted error:&err];
 	    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 	}];
 	[self addEncoderForType:[NSDictionary class] encoder: ^NSString *(NSDictionary *obj) {
+	    NSError *err;
+	    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:obj options:NSJSONWritingPrettyPrinted error:&err];
+	    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+	}];
+    
+    
+	[self addEncoderForType:[NSMutableDictionary class] encoder: ^NSString *(NSMutableDictionary *obj) {
 	    NSError *err;
 	    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:obj options:NSJSONWritingPrettyPrinted error:&err];
 	    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];

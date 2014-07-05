@@ -12,9 +12,7 @@
 
 @property (nonatomic, strong) FMDatabaseQueue *internalQueue;
 @property (nonatomic, strong) NSMutableDictionary *schemaIsDefined;
-@property (nonatomic, strong) NSMutableDictionary *primaryKeys;
 @property (nonatomic, strong) NSMutableDictionary *schemaData;
-@property (nonatomic, strong) NSMutableDictionary *linkShouldPreload;
 @property (nonatomic, assign) BOOL inTransaction;
 
 
